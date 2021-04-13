@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.SystemExpMapper">
+
+    <insert id="insertRecord">
+        INSERT INTO ${table} (FNumber,FJieshu,FDate,FEmp,
+        F100V,F200V,F300V,F400V,F500V,F600V,F700V,F800V,F900V,F1000V,
+        FZuidiID,FZuidiV,Fusage,FNote,FSubmitDate,FBase,FSubmitter,FModifier)
+        VALUES
+        (#{expStackInfo.FNumber},#{expStackInfo.FJieshu},#{expStackInfo.FDate},#{expStackInfo.FEmp}
+        ,#{expStackInfo.F100V},#{expStackInfo.F200V},#{expStackInfo.F300V}
+        ,#{expStackInfo.F400V},#{expStackInfo.F500V},#{expStackInfo.F600V}
+        ,#{expStackInfo.F700V},#{expStackInfo.F800V},#{expStackInfo.F900V}
+        ,#{expStackInfo.F1000V},#{expStackInfo.FZuidiID},#{expStackInfo.FZuidiV},#{expStackInfo.Fusage}
+        ,#{expStackInfo.FNote},#{expStackInfo.FSubmitDate}
+        ,#{expStackInfo.FBase},#{expStackInfo.FSubmitter},#{expStackInfo.FModifier}
+        )
+    </insert>
+
+
+    <select id="queryOne" resultType="me.zhengjie.domain.ExpSystemInfo">
+
+        select  * from ${table}
+        where
+        FNumber = #{code}
+        AND FBase = #{base}
+        ORDER  by FSubmitDate desc
+    </select>
+
+
+    <select id="queryAll" resultType="me.zhengjie.domain.ExpSystemInfo">
+
+        select TOP(10000) * from ${table}
+        where
+        FSubmitDate BETWEEN #{start} AND #{end}
+        AND FBase = #{base}
+        ORDER  by FSubmitDate desc, FNumber asc
+    </select>
+
+    <select id="queryByFid" resultType="me.zhengjie.domain.ExpSystemInfo">
+
+        select  * from ${table}
+        where
+        FID = #{fid}
+    </select>
+
+    <update id="updateRecord" >
+        update ${table} SET
+            FJieshu=#{stackInfo.FJieshu},
+            <if test="stackInfo.FNumber != null" >
+            FNumber=#{stackInfo.FNumber},
+            </if>
+            <if test="stackInfo.FDate != null" >
+            FDate=#{stackInfo.FDate},
+            </if>
+            <if test="stackInfo.FEmp != null" >
+            FEmp=#{stackInfo.FEmp},
+            </if>
+            F100V=#{stackInfo.F100V},
+            F200V=#{stackInfo.F200V},
+            F300V=#{stackInfo.F300V},
+            F400V=#{stackInfo.F400V},
+            F500V=#{stackInfo.F500V},
+            F600V=#{stackInfo.F600V},
+            F700V=#{stackInfo.F700V},
+            F800V=#{stackInfo.F800V},
+            F900V=#{stackInfo.F900V},
+            F1000V=#{stackInfo.F1000V},
+            <if test="stackInfo.FZuidiID != null" >
+            FZuidiID=#{stackInfo.FZuidiID},
+            </if>
+            <if test="stackInfo.FZuidiV != null" >
+            FZuidiV=#{stackInfo.FZuidiV},
+            </if>
+            <if test="stackInfo.Fusage != null" >
+            Fusage=#{stackInfo.Fusage},
+            </if>
+
+            <if test="stackInfo.FNote!= null" >
+            FNote=#{stackInfo.FNote},
+            </if>
+            <if test="stackInfo.FSubmitDate!= null" >
+            FSubmitDate=#{stackInfo.FSubmitDate},
+            </if>
+            <if test="stackInfo.FBase!= null" >
+            FBase=#{stackInfo.FBase},
+            </if>
+            <if test="stackInfo.FSubmitter!= null" >
+            FSubmitter=#{stackInfo.FSubmitter},
+            </if>
+            <if test="stackInfo.FModifier!= null" >
+            FModifier=#{stackInfo.FModifier}
+            </if>
+        WHERE
+            FID = #{stackInfo.FID}
+    </update>
+
+    <select id="getStatistics" resultType="me.zhengjie.statistics.CommonStatistics">
+        SELECT
+	      FBase as base,
+	      COUNT ( 1 ) AS totalCnt,
+	      COUNT ( DISTINCT FNUMBER ) AS distCnt
+        FROM
+	        ${table}
+        WHERE
+	    FDate BETWEEN #{start} AND #{end}
+	    AND FBase IS NOT NULL
+        GROUP BY FBase
+    </select>
+</mapper>

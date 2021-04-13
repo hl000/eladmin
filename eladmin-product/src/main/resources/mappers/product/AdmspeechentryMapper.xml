@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="me.zhengjie.mapper.AdmspeechentryBatisMapper" >
+  <resultMap id="BaseResultMap" type="me.zhengjie.service.dto.AdmspeechentryDto" >
+    <id column="FID" property="fid" jdbcType="INTEGER" />
+    <result column="fhead_id" property="fHeadid" jdbcType="INTEGER" />
+    <result column="FNumber" property="fNumber" jdbcType="VARCHAR" />
+    <result column="FName" property="fName" jdbcType="VARCHAR" />
+    <result column="foutput_quantity" property="fOutputquantity" jdbcType="REAL" />
+    <result column="frejects_quantity" property="fRejectsquantity" jdbcType="REAL" />
+    <result column="fbalance_quantity" property="fBalancequantity" jdbcType="REAL" />
+    <result column="fnote" property="fNote" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    FID, fhead_id, FNumber, FName, foutput_quantity, frejects_quantity, fbalance_quantity,
+    fnote
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select
+    <include refid="Base_Column_List" />
+    from admspeechentry
+    where FID = #{fid,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from admspeechentry
+    where FID = #{fid,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByHeadId" parameterType="java.lang.Integer" >
+    delete from admspeechentry
+    where fhead_id = #{fHeadid,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="me.zhengjie.service.dto.AdmspeechentryDto" >
+    insert into admspeechentry (FID, fhead_id, FNumber,
+      FName, foutput_quantity, frejects_quantity,
+      fbalance_quantity, fnote)
+    values (#{fid,jdbcType=INTEGER}, #{fHeadid,jdbcType=INTEGER}, #{fNumber,jdbcType=VARCHAR},
+      #{fName,jdbcType=VARCHAR}, #{fOutputquantity,jdbcType=REAL}, #{fRejectsquantity,jdbcType=REAL},
+      #{fBalancequantity,jdbcType=REAL}, #{fNote,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="me.zhengjie.service.dto.AdmspeechentryDto" >
+    insert into admspeechentry
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="fid != null" >
+        FID,
+      </if>
+      <if test="fHeadid != null" >
+        fhead_id,
+      </if>
+      <if test="fNumber != null" >
+        FNumber,
+      </if>
+      <if test="fName != null" >
+        FName,
+      </if>
+      <if test="fOutputquantity != null" >
+        foutput_quantity,
+      </if>
+      <if test="fRejectsquantity != null" >
+        frejects_quantity,
+      </if>
+      <if test="fBalancequantity != null" >
+        fbalance_quantity,
+      </if>
+      <if test="fNote != null" >
+        fnote,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="fid != null" >
+        #{fid,jdbcType=INTEGER},
+      </if>
+      <if test="fHeadid != null" >
+        #{fHeadid,jdbcType=INTEGER},
+      </if>
+      <if test="fNumber != null" >
+        #{fNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="fName != null" >
+        #{fName,jdbcType=VARCHAR},
+      </if>
+      <if test="fOutputquantity != null" >
+        #{fOutputquantity,jdbcType=REAL},
+      </if>
+      <if test="fRejectsquantity != null" >
+        #{fRejectsquantity,jdbcType=REAL},
+      </if>
+      <if test="fBalancequantity != null" >
+        #{fBalancequantity,jdbcType=REAL},
+      </if>
+      <if test="fNote != null" >
+        #{fNote,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="me.zhengjie.service.dto.AdmspeechentryDto" >
+    update admspeechentry
+    <set >
+      <if test="fHeadid != null" >
+        fhead_id = #{fHeadid,jdbcType=INTEGER},
+      </if>
+      <if test="fNumber != null" >
+        FNumber = #{fNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="fName != null" >
+        FName = #{fName,jdbcType=VARCHAR},
+      </if>
+      <if test="fOutputquantity != null" >
+        foutput_quantity = #{fOutputquantity,jdbcType=REAL},
+      </if>
+      <if test="fRejectsquantity != null" >
+        frejects_quantity = #{fRejectsquantity,jdbcType=REAL},
+      </if>
+      <if test="fBalancequantity != null" >
+        fbalance_quantity = #{fBalancequantity,jdbcType=REAL},
+      </if>
+      <if test="fNote != null" >
+        fnote = #{fNote,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where FID = #{fid,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="me.zhengjie.service.dto.AdmspeechentryDto" >
+    update admspeechentry
+    set fhead_id = #{fHeadid,jdbcType=INTEGER},
+      FNumber = #{fNumber,jdbcType=VARCHAR},
+      FName = #{fName,jdbcType=VARCHAR},
+      foutput_quantity = #{fOutputquantity,jdbcType=REAL},
+      frejects_quantity = #{fRejectsquantity,jdbcType=REAL},
+      fbalance_quantity = #{fBalancequantity,jdbcType=REAL},
+      fnote = #{fNote,jdbcType=VARCHAR}
+    where FID = #{fid,jdbcType=INTEGER}
+  </update>
+  <select id="getAdmspeechentry" resultMap="BaseResultMap" parameterType="me.zhengjie.service.dto.AdmspeechentryQueryCriteria" >
+    select
+    <include refid="Base_Column_List" />
+    from admspeechentry
+    where 1=1
+    <if test="fHeadid != null" >
+      and fhead_id = #{fHeadid,jdbcType=VARCHAR}
+    </if>
+  </select>
+</mapper>

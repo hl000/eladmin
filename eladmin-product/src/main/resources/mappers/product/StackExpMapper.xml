@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.StackExpMapper">
+
+    <insert id="insertRecord">
+        INSERT INTO ${table} (FNumber,FJieshu,FDate,FEmp,FJiaya,FCishu,
+        F500V,F500KW,F600V,F600KW,F700V,F700KW,F800V,F800KW,F900V,F900KW,F1000V,
+        F1000KW,FPingjunV,FZuidi1,FZuidi2,FZuidi3,FMEA,FMEADate,FBIP,FTanzhi,
+        FZuzhaung,FZuzhaungEmp,FNote,FSubmitDate,FBase,FSubmitter,FModifier)
+        VALUES
+        (#{expStackInfo.FNumber},#{expStackInfo.FJieshu},#{expStackInfo.FDate},#{expStackInfo.FEmp},#{expStackInfo.FJiaya}
+        ,#{expStackInfo.FCishu},#{expStackInfo.F500V},#{expStackInfo.F500KW},#{expStackInfo.F600V},#{expStackInfo.F600KW}
+        ,#{expStackInfo.F700V},#{expStackInfo.F700KW},#{expStackInfo.F800V},#{expStackInfo.F800KW},#{expStackInfo.F900V}
+        ,#{expStackInfo.F900KW},#{expStackInfo.F1000V},#{expStackInfo.F1000KW},#{expStackInfo.FPingjunV},#{expStackInfo.FZuidi1}
+        ,#{expStackInfo.FZuidi2},#{expStackInfo.FZuidi3},#{expStackInfo.FMEA},#{expStackInfo.FMEADate},#{expStackInfo.FBIP},#{expStackInfo.FTanzhi}
+        ,#{expStackInfo.FZuzhaung},#{expStackInfo.FZuzhaungEmp},#{expStackInfo.FNote},#{expStackInfo.FSubmitDate}
+        ,#{expStackInfo.FBase},#{expStackInfo.FSubmitter},#{expStackInfo.FModifier}
+        )
+    </insert>
+
+
+    <select id="queryOne" resultType="me.zhengjie.domain.ExpStackInfo">
+
+        select  * from ${table}
+        where
+        FNumber = #{code}
+        AND FBase = #{base}
+        ORDER  by FSubmitDate desc
+    </select>
+
+
+    <select id="queryAll" resultType="me.zhengjie.domain.ExpStackInfo">
+
+        select TOP(10000) * from ${table}
+        where
+        FSubmitDate BETWEEN #{start} AND #{end}
+        AND FBase = #{base}
+        ORDER  by FSubmitDate desc, FNumber asc
+    </select>
+
+    <select id="queryByFid" resultType="me.zhengjie.domain.ExpStackInfo">
+
+        select  * from ${table}
+        where
+        FID = #{fid}
+    </select>
+
+    <update id="updateRecord" >
+        update ${table} SET
+            FJieshu=#{stackInfo.FJieshu},
+            <if test="stackInfo.FNumber != null" >
+            FNumber=#{stackInfo.FNumber},
+            </if>
+            <if test="stackInfo.FDate != null" >
+            FDate=#{stackInfo.FDate},
+            </if>
+            <if test="stackInfo.FEmp != null" >
+            FEmp=#{stackInfo.FEmp},
+            </if>
+            <if test="stackInfo.FJiaya != null" >
+            FJiaya=#{stackInfo.FJiaya},
+            </if>
+            <if test="stackInfo.FCishu != 0" >
+            FCishu=#{stackInfo.FCishu},
+            </if>
+            F500V=#{stackInfo.F500V},
+            F500KW=#{stackInfo.F500KW},
+            F600V=#{stackInfo.F600V},
+            F600KW=#{stackInfo.F600KW},
+            F700V=#{stackInfo.F700V},
+            F700KW=#{stackInfo.F700KW},
+            F800V=#{stackInfo.F800V},
+            F800KW=#{stackInfo.F800KW},
+            F900V=#{stackInfo.F900V},
+            F900KW=#{stackInfo.F900KW},
+            F1000V=#{stackInfo.F1000V},
+            F1000KW=#{stackInfo.F1000KW},
+            <if test="stackInfo.FPingjunV != null" >
+            FPingjunV=#{stackInfo.FPingjunV},
+            </if>
+            <if test="stackInfo.FZuidi1 != null" >
+            FZuidi1=#{stackInfo.FZuidi1},
+            </if>
+            <if test="stackInfo.FZuidi2 != null" >
+            FZuidi2=#{stackInfo.FZuidi2},
+            </if>
+            <if test="stackInfo.FZuidi3 != null" >
+            FZuidi3=#{stackInfo.FZuidi3},
+            </if>
+            <if test="stackInfo.FMEA != null" >
+            FMEA=#{stackInfo.FMEA},
+            </if>
+            <if test="stackInfo.FMEADate!= null" >
+            FMEADate=#{stackInfo.FMEADate},
+            </if>
+            <if test="stackInfo.FBIP!= null" >
+            FBIP=#{stackInfo.FBIP},
+            </if>
+            <if test="stackInfo.FTanzhi!= null" >
+            FTanzhi=#{stackInfo.FTanzhi},
+            </if>
+            <if test="stackInfo.FZuzhaung!= null" >
+            FZuzhaung=#{stackInfo.FZuzhaung},
+            </if>
+            <if test="stackInfo.FZuzhaungEmp!= null" >
+            FZuzhaungEmp=#{stackInfo.FZuzhaungEmp},
+            </if>
+            <if test="stackInfo.FNote!= null" >
+            FNote=#{stackInfo.FNote},
+            </if>
+            <if test="stackInfo.FSubmitDate!= null" >
+            FSubmitDate=#{stackInfo.FSubmitDate},
+            </if>
+            <if test="stackInfo.FBase!= null" >
+            FBase=#{stackInfo.FBase},
+            </if>
+            <if test="stackInfo.FSubmitter!= null" >
+            FSubmitter=#{stackInfo.FSubmitter},
+            </if>
+            <if test="stackInfo.FModifier!= null" >
+            FModifier=#{stackInfo.FModifier}
+            </if>
+        WHERE
+            FID = #{stackInfo.FID}
+    </update>
+
+    <select id="getStatistics" resultType="me.zhengjie.statistics.CommonStatistics">
+        SELECT
+	      FBase as base,
+	      COUNT ( 1 ) AS totalCnt,
+	      COUNT ( DISTINCT FNUMBER ) AS distCnt
+        FROM
+	        ${table}
+        WHERE
+	    FDate BETWEEN #{start} AND #{end}
+	    AND FBase IS NOT NULL
+        GROUP BY FBase
+    </select>
+</mapper>

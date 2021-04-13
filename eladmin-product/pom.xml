@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>eladmin</artifactId>
+        <groupId>me.zhengjie</groupId>
+        <version>2.6</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>eladmin-product</artifactId>
+    <name>报工模块</name>
+    <dependencies>
+        <dependency>
+            <groupId>me.zhengjie</groupId>
+            <artifactId>eladmin-logging</artifactId>
+            <version>2.6</version>
+            <scope>compile</scope>
+        </dependency>
+      <dependency>
+        <groupId>com.microsoft.sqlserver</groupId>
+        <artifactId>mssql-jdbc</artifactId><!--sqlserver依赖  驱动jar-->
+        <scope>runtime</scope>
+        <version>6.4.0.jre8</version>
+      </dependency>
+
+    </dependencies>
+
+
+</project>

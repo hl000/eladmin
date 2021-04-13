@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.PlmMapper">
+
+    <select id="selectRecordByKv" resultType="me.zhengjie.dto.MainDto" parameterType="me.zhengjie.request.KvDto">
+
+        select TOP(30000) * from ${table}
+        where
+        (#{value} is NULL  or ${key} = #{value})
+        ORDER  by DIANDUI
+    </select>
+
+
+    <select id="getCountByKV" resultType="Integer" parameterType="me.zhengjie.request.KvDto">
+        select count(1) from ${table}
+        where
+        <foreach collection="subList" item="item" separator=" AND ">
+            ${item.key} = #{item.value}
+        </foreach>
+    </select>
+
+
+    <select id="getSelectItem" resultType="me.zhengjie.base.ResKv">
+       SELECT * FROM ${table} where type = #{type} ORDER BY label
+    </select>
+
+    <select id="getSelectItemValue" resultType="java.lang.String" parameterType="me.zhengjie.request.KvDto">
+        SELECT DISTINCT ${key}  FROM ${table} ${extra}
+    </select>
+
+
+    <select id="getMeaDetail" resultType="me.zhengjie.dto.MeaDto" parameterType="me.zhengjie.request.KvDto">
+        SELECT *  from ${table}
+        where
+        (${key} = #{value})
+    </select>
+
+
+    <select id="getGongZhuangDetail" resultType="me.zhengjie.dto.GongzhuangPaperDto" parameterType="me.zhengjie.request.KvDto">
+
+        select * from ${table}
+        where
+        <foreach collection="subList" item="item" separator=" AND ">
+            ${item.key} = #{item.value}
+        </foreach>
+    </select>
+
+
+    <select id="getNewGongZhuangDetail" resultType="me.zhengjie.dto.GongzhuangPaperDto" parameterType="me.zhengjie.request.KvDto">
+
+        select secondDir as FBANBEN, writer as FFUZEREN, thirdDir as FGONGXU, storePath as FWENDANG, fileName as FWENJIAN, forthDir as  FGONGZHUANG
+        from ${table}
+        where
+        <foreach collection="subList" item="item" separator=" AND ">
+            ${item.key} = #{item.value}
+        </foreach>
+        ORDER  by version desc
+    </select>
+
+    <select id="getShouHouDetail" resultType="me.zhengjie.dto.ShouHouDto" parameterType="me.zhengjie.request.KvDto">
+        select * from ${table}
+        where FLicensenumber = #{value}
+        order by FMAINTENANCEDATE
+    </select>
+
+    <select id="getSheBeiPaperDetail" resultType="me.zhengjie.dto.SheBeiPaperDto" parameterType="me.zhengjie.request.KvDto">
+        select * from
+        (SELECT ROW_NUMBER() OVER (ORDER BY FID ASC) AS XUHAO, * FROM ${table}
+        where
+        <foreach collection="subList" item="item" separator=" AND ">
+            ${item.key} = #{item.value}
+        </foreach>
+        )t
+        where t.XUHAO BETWEEN #{fromIndex} AND #{endIndex}
+    </select>
+
+    <insert id="insertDoc">
+        INSERT INTO ${table} (fileName,originalFileName,fileDesc, suffix, writer,
+        version, tag, storePath, firstDir, secondDir, thirdDir, forthDir, isDeleted, fileSize)
+        VALUES  (#{fileName},#{originalFileName},#{fileDesc},#{suffix},#{writer},
+        #{version},#{tag},#{storePath},#{firstDir},#{secondDir},#{thirdDir},#{forthDir}, 0,#{fileSize})
+    </insert>
+
+    <select id="queryPaper" resultType="me.zhengjie.Doc.PlmFile" parameterType="me.zhengjie.dto.PaperDto">
+        select TOP (5000) * from ${table}
+        where
+          isDeleted = 0
+          AND version BETWEEN #{startTime} AND #{endTime}
+          AND (fileName LIKE #{fileName})
+          AND (writer LIKE  #{writer} )
+          AND (suffix LIKE  #{suffix} )
+          AND (firstDir LIKE  #{firstDir} )
+          AND (secondDir LIKE  #{secondDir} )
+          AND (thirdDir LIKE  #{thirdDir} )
+          AND (forthDir LIKE  #{forthDir} )
+        ORDER by version DESC
+    </select>
+
+
+
+    <select id="queryPaper2" resultType="me.zhengjie.Doc.PlmFile" parameterType="me.zhengjie.request.KvDto">
+        select TOP (5000)  * from ${table}
+        where
+        isDeleted = 0 AND
+        <foreach collection="subList" item="item" separator=" AND ">
+            ${item.key} = #{item.value}
+        </foreach>
+        ORDER by version DESC
+    </select>
+
+    <insert id="insertFileLog">
+        INSERT INTO ${table} (fileName,people, opTime, opType)
+        VALUES (#{fileName},#{people},#{opTime},#{opType})
+    </insert>
+
+    <select id="queryAllowedPart" resultType="java.lang.String" parameterType="me.zhengjie.request.KvDto">
+
+        SELECT part  from ${table}
+        where
+        (name = #{name} AND kind  = #{kind}  AND allowed =1)
+
+    </select>
+
+
+
+    <select id="getStackExpDetail" resultType="me.zhengjie.domain.ExpStackInfo" parameterType="me.zhengjie.request.KvDto">
+
+        SELECT *  from ${table}
+        where
+        (FNumber = #{value})
+        ORDER  by FSubmitDate desc, FNumber asc
+    </select>
+
+    <select id="getStackNewestShouHou" resultType="me.zhengjie.dto.StackReplaceDto">
+
+      <!--  select *  from ${table}
+        where  FGBIANHAO in
+        (select FGBIANHAO from(  select max(fdate)fdate,FGBIANHAO from ${table}  where FGBIANHAO in
+        <foreach collection="code" item="item"  open="("  separator=" , " close=")">
+            #{item}
+        </foreach>
+        group by FGBIANHAO)t1)   and   fdate in (select fdate from(  select max(fdate)fdate,FGBIANHAO from ${table}
+        where FGBIANHAO in
+        <foreach collection="code" item="item"  open="("  separator=" , " close=")">
+            #{item}
+        </foreach>
+        group by FGBIANHAO)t1)
+        ORDER BY FDATE
+-->
+        SELECT * FROM ${table}T1
+        INNER JOIN (SELECT MAX(FDATE)FDATE,FGBIANHAO FROM ${table}
+        GROUP BY FGBIANHAO) T2 ON T1.FDATE=T2.FDATE  AND T1.FGBIANHAO=T2.FGBIANHAO
+    </select>
+
+
+
+    <select id="getCarMileage" resultType="me.zhengjie.dto.car.CarInfo" parameterType="me.zhengjie.request.KvDto">
+
+        SELECT FNUMBER as number,FRIQI as fdate, Fleixing as carType,   FDIZHI as base, FLICHENG as mileage
+          from ${table}
+        where
+        (FNUMBER = #{value})
+        ORDER  by FRIQI desc
+    </select>
+
+
+    <select id="getCarConsume" resultType="me.zhengjie.dto.car.CarInfo" parameterType="me.zhengjie.request.KvDto">
+
+        SELECT Fchepai as number,FDate as fdate, FLuxian as route,   FJiaqing as jiaQing, Fgongli as mileage, Fqihao as qinghao
+          from ${table}
+        where
+        (Fchepai = #{value})
+        ORDER  by FDate desc
+    </select>
+
+</mapper>

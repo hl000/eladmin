@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.FixHistoryMapper">
+
+
+
+
+    <select id="queryOne" resultType="me.zhengjie.domain.FixRecordInfo">
+
+        select  * from ${table}
+        where
+        Flicensenumber = #{car} AND Faddress = #{base}
+        ORDER  by Fmaintenancedate desc
+    </select>
+
+
+    <select id="queryAll" resultType="me.zhengjie.domain.FixRecordInfo">
+
+        select TOP(10000) * from ${table}
+        where
+        Fmaintenancedate BETWEEN #{start} AND #{end} AND Faddress = #{base}
+        ORDER  by Fmaintenancedate desc, Flicensenumber asc
+    </select>
+
+    <select id="queryByFid" resultType="me.zhengjie.domain.FixRecordInfo">
+
+        select  * from ${table}
+        where
+        number = #{id}
+    </select>
+
+
+    <select id="queryStackReplaceById" resultType="me.zhengjie.domain.StackReplaceInfo">
+
+        select  * from ${table}
+        where
+        FID = #{id}
+    </select>
+
+
+    <select id="queryStackReplaceOne" resultType="me.zhengjie.domain.StackReplaceInfo">
+
+        select  * from ${table}
+        where
+        FCHEPAI = #{car} AND Fjidi = #{base}
+        ORDER  by FCHEPAI desc
+    </select>
+
+
+    <select id="queryStackReplaceAll" resultType="me.zhengjie.domain.StackReplaceInfo">
+
+        select TOP(10000) * from ${table}
+        where
+        FDATE BETWEEN #{start} AND #{end} AND Fjidi = #{base}
+        ORDER  by FDATE desc, FCHEPAI asc
+    </select>
+
+
+    <select id="queryByStack" resultType="me.zhengjie.domain.StackReplaceInfo">
+
+        select TOP(10000) * from ${table}
+        where FYBIANHAO = #{code} OR FGBIANHAO = #{code}
+        ORDER  by FDATE 
+    </select>
+
+
+    <insert id="insertCarFixRecord">
+        INSERT INTO ${table} (FPname,Fsubmissiondate,Fmaintenancedate,Flicensenumber,Fplace,FEstimatedTime,Ffaultcode,
+        Ffailure1,Fsolution,Fsubstitutepart,Fspareparts,Frepair,Fcause,Fpersonnel,Fduration,FNote,Faddress,
+        Ffailure,FCLEIXING, Fdengji)
+        VALUES
+        (#{fixInfo.FPname},#{fixInfo.Fsubmissiondate},#{fixInfo.Fmaintenancedate},#{fixInfo.Flicensenumber},#{fixInfo.Fplace},#{fixInfo.FEstimatedTime}
+        ,#{fixInfo.Ffaultcode},#{fixInfo.Ffailure1},#{fixInfo.Fsolution},#{fixInfo.Fsubstitutepart},#{fixInfo.Fspareparts}
+        ,#{fixInfo.Frepair},#{fixInfo.Fcause},#{fixInfo.Fpersonnel},#{fixInfo.Fduration},#{fixInfo.FNote}
+        ,#{fixInfo.Faddress},#{fixInfo.Ffailure},#{fixInfo.FCLEIXING},#{fixInfo.Fdengji}
+        )
+
+    </insert>
+
+    <insert id="insertStackFixRecord">
+        INSERT INTO ${table} (FDATE,FCHEPAI,FGONGLI,FSHIJIAN,FYUANYIN,FYBIANHAO,
+        FGBIANHAO,FRENYUAN,FGONGSHI,FNOTE1,FCATE,Fjidi,Fdaima,
+        Fjibie,Fyuanxitong, Fxinxitong, Fleixing, FPname,FEstimatedTime)
+        VALUES
+        (#{fixInfo.FDATE},#{fixInfo.FCHEPAI},#{fixInfo.FGONGLI},#{fixInfo.FSHIJIAN},#{fixInfo.FYUANYIN}
+        ,#{fixInfo.FYBIANHAO},#{fixInfo.FGBIANHAO},#{fixInfo.FRENYUAN},#{fixInfo.FGONGSHI},#{fixInfo.FNOTE1}
+        ,#{fixInfo.FCATE},#{fixInfo.Fjidi},#{fixInfo.Fdaima},#{fixInfo.Fjibie},#{fixInfo.Fyuanxitong}
+        ,#{fixInfo.Fxinxitong},#{fixInfo.Fleixing},#{fixInfo.FPname},#{fixInfo.FEstimatedTime}
+        )
+
+    </insert>
+
+    <update id="updateCarFixRecord" >
+        update ${table} SET
+        Fsubmissiondate = #{fixInfo.Fsubmissiondate},
+        Flicensenumber = #{fixInfo.Flicensenumber},
+        Fplace = #{fixInfo.Fplace},
+        FEstimatedTime = #{fixInfo.FEstimatedTime},
+        Ffaultcode = #{fixInfo.Ffaultcode},
+        Ffailure1 = #{fixInfo.Ffailure1},
+        Fsolution = #{fixInfo.Fsolution},
+        Fsubstitutepart = #{fixInfo.Fsubstitutepart},
+        Fspareparts = #{fixInfo.Fspareparts},
+        Frepair = #{fixInfo.Frepair},
+        Fcause = #{fixInfo.Fcause},
+        Fpersonnel = #{fixInfo.Fpersonnel},
+        Fduration = #{fixInfo.Fduration},
+        FNote = #{fixInfo.FNote},
+        Faddress = #{fixInfo.Faddress},
+        Ffailure = #{fixInfo.Ffailure},
+        FCLEIXING = #{fixInfo.FCLEIXING},
+        Fdengji = #{fixInfo.Fdengji}
+        WHERE
+        number = #{fixInfo.number}
+    </update>
+
+    <update id="updateStackFixRecord" >
+        update ${table} SET
+        FDATE = #{fixInfo.FDATE},
+        FCHEPAI = #{fixInfo.FCHEPAI},
+        FGONGLI = #{fixInfo.FGONGLI},
+        FSHIJIAN = #{fixInfo.FSHIJIAN},
+        FYUANYIN = #{fixInfo.FYUANYIN},
+        FYBIANHAO = #{fixInfo.FYBIANHAO},
+        FGBIANHAO = #{fixInfo.FGBIANHAO},
+        FRENYUAN = #{fixInfo.FRENYUAN},
+        FGONGSHI = #{fixInfo.FGONGSHI},
+        FNOTE1 = #{fixInfo.FNOTE1},
+        FCATE = #{fixInfo.FCATE},
+        Fjidi = #{fixInfo.Fjidi},
+        Fdaima = #{fixInfo.Fdaima},
+        Fjibie = #{fixInfo.Fjibie},
+        Fyuanxitong = #{fixInfo.Fyuanxitong},
+        Fxinxitong = #{fixInfo.Fxinxitong},
+        Fleixing = #{fixInfo.Fleixing},
+        FEstimatedTime = #{fixInfo.FEstimatedTime}
+        WHERE
+        FID  = #{fixInfo.FID}
+    </update>
+
+
+    <select id="getFixStatistics" resultType="me.zhengjie.statistics.CommonStatistics">
+        SELECT
+        Faddress as base,
+        COUNT ( 1 ) AS totalCnt,
+        COUNT ( DISTINCT Flicensenumber ) AS distCnt
+        FROM
+        ${table}
+        WHERE
+        Fmaintenancedate BETWEEN #{start} AND #{end}
+        AND Faddress IS NOT NULL
+        GROUP BY Faddress
+    </select>
+
+
+    <select id="getStackReplaceStatistics" resultType="me.zhengjie.statistics.CommonStatistics">
+        SELECT
+        Fjidi as base,
+        COUNT ( 1 ) AS totalCnt,
+        COUNT ( DISTINCT FYBIANHAO ) AS distCnt
+        FROM
+        ${table}
+        WHERE
+        FDATE BETWEEN #{start} AND #{end}
+        AND Fjidi IS NOT NULL
+        GROUP BY Fjidi
+    </select>
+
+</mapper>

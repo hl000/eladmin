@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.SysLocalBatisMapper">
+  <resultMap id="BaseResultMap" type="me.zhengjie.service.dto.SysLocalDto" >
+    <id column="local_id" property="localId" jdbcType="INTEGER" />
+    <result column="local_name" property="localName" jdbcType="VARCHAR" />
+    <result column="local_status" property="status" jdbcType="VARCHAR" />
+    <result column="local_order" property="localOrder" jdbcType="VARCHAR" />
+  </resultMap>
+    <select id="getLocal" resultMap="BaseResultMap">
+        SELECT
+        local_id,local_name
+         FROM sys_local where local_status='0'
+         order by local_order
+    </select>
+
+    <select id="getLocalByUser" resultType="java.lang.String">
+        SELECT
+	      local_name
+        FROM
+	      ${table1} t1
+	    JOIN ${table2} t2 ON t1.local_id = t2.local_id
+          WHERE
+	    user_id = #{id} AND local_status = 0
+    </select>
+</mapper>

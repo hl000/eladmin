@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="me.zhengjie.mapper.AdminventoryBatisMapper" >
+  <resultMap id="BaseResultMap" type="me.zhengjie.service.dto.AdminventoryDto" >
+    <id column="FID" property="fid" jdbcType="INTEGER" />
+    <result column="FNumber" property="fnumber" jdbcType="VARCHAR" />
+    <result column="FName" property="fname" jdbcType="VARCHAR" />
+    <result column="FStd" property="fstd" jdbcType="VARCHAR" />
+    <result column="FUnit" property="funit" jdbcType="VARCHAR" />
+    <result column="FOld_Number" property="foldNumber" jdbcType="VARCHAR" />
+    <result column="FDept" property="fdept" jdbcType="VARCHAR" />
+    <result column="FState" property="fstate" jdbcType="VARCHAR" />
+    <result column="FRemark" property="fremark" jdbcType="VARCHAR" />
+    <result column="FDept_Id" property="fdeptId" jdbcType="VARCHAR" />
+    <result column="FRequired" property="frequired" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    FID, FNumber, FName, FStd, FUnit, FOld_Number, FDept, FState, FRemark, FDept_Id,
+    FRequired
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select
+    <include refid="Base_Column_List" />
+    from adminventory
+    where FID = #{fid,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from adminventory
+    where FID = #{fid,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="me.zhengjie.service.dto.AdminventoryDto" >
+    insert into adminventory (FID, FNumber, FName,
+      FStd, FUnit, FOld_Number,
+      FDept, FState, FRemark,
+      FDept_Id, FRequired)
+    values (#{fid,jdbcType=INTEGER}, #{fnumber,jdbcType=VARCHAR}, #{fname,jdbcType=VARCHAR},
+      #{fstd,jdbcType=VARCHAR}, #{funit,jdbcType=VARCHAR}, #{foldNumber,jdbcType=VARCHAR},
+      #{fdept,jdbcType=VARCHAR}, #{fstate,jdbcType=VARCHAR}, #{fremark,jdbcType=VARCHAR},
+      #{fdeptId,jdbcType=VARCHAR}, #{frequired,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="me.zhengjie.service.dto.AdminventoryDto" >
+    insert into adminventory
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="fid != null" >
+        FID,
+      </if>
+      <if test="fnumber != null" >
+        FNumber,
+      </if>
+      <if test="fname != null" >
+        FName,
+      </if>
+      <if test="fstd != null" >
+        FStd,
+      </if>
+      <if test="funit != null" >
+        FUnit,
+      </if>
+      <if test="foldNumber != null" >
+        FOld_Number,
+      </if>
+      <if test="fdept != null" >
+        FDept,
+      </if>
+      <if test="fstate != null" >
+        FState,
+      </if>
+      <if test="fremark != null" >
+        FRemark,
+      </if>
+      <if test="fdeptId != null" >
+        FDept_Id,
+      </if>
+      <if test="frequired != null" >
+        FRequired,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="fid != null" >
+        #{fid,jdbcType=INTEGER},
+      </if>
+      <if test="fnumber != null" >
+        #{fnumber,jdbcType=VARCHAR},
+      </if>
+      <if test="fname != null" >
+        #{fname,jdbcType=VARCHAR},
+      </if>
+      <if test="fstd != null" >
+        #{fstd,jdbcType=VARCHAR},
+      </if>
+      <if test="funit != null" >
+        #{funit,jdbcType=VARCHAR},
+      </if>
+      <if test="foldNumber != null" >
+        #{foldNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="fdept != null" >
+        #{fdept,jdbcType=VARCHAR},
+      </if>
+      <if test="fstate != null" >
+        #{fstate,jdbcType=VARCHAR},
+      </if>
+      <if test="fremark != null" >
+        #{fremark,jdbcType=VARCHAR},
+      </if>
+      <if test="fdeptId != null" >
+        #{fdeptId,jdbcType=VARCHAR},
+      </if>
+      <if test="frequired != null" >
+        #{frequired,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="me.zhengjie.service.dto.AdminventoryDto" >
+    update adminventory
+    <set >
+      <if test="fnumber != null" >
+        FNumber = #{fnumber,jdbcType=VARCHAR},
+      </if>
+      <if test="fname != null" >
+        FName = #{fname,jdbcType=VARCHAR},
+      </if>
+      <if test="fstd != null" >
+        FStd = #{fstd,jdbcType=VARCHAR},
+      </if>
+      <if test="funit != null" >
+        FUnit = #{funit,jdbcType=VARCHAR},
+      </if>
+      <if test="foldNumber != null" >
+        FOld_Number = #{foldNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="fdept != null" >
+        FDept = #{fdept,jdbcType=VARCHAR},
+      </if>
+      <if test="fstate != null" >
+        FState = #{fstate,jdbcType=VARCHAR},
+      </if>
+      <if test="fremark != null" >
+        FRemark = #{fremark,jdbcType=VARCHAR},
+      </if>
+      <if test="fdeptId != null" >
+        FDept_Id = #{fdeptId,jdbcType=VARCHAR},
+      </if>
+      <if test="frequired != null" >
+        FRequired = #{frequired,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where FID = #{fid,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="me.zhengjie.service.dto.AdminventoryDto" >
+    update adminventory
+    set FNumber = #{fnumber,jdbcType=VARCHAR},
+      FName = #{fname,jdbcType=VARCHAR},
+      FStd = #{fstd,jdbcType=VARCHAR},
+      FUnit = #{funit,jdbcType=VARCHAR},
+      FOld_Number = #{foldNumber,jdbcType=VARCHAR},
+      FDept = #{fdept,jdbcType=VARCHAR},
+      FState = #{fstate,jdbcType=VARCHAR},
+      FRemark = #{fremark,jdbcType=VARCHAR},
+      FDept_Id = #{fdeptId,jdbcType=VARCHAR},
+      FRequired = #{frequired,jdbcType=VARCHAR}
+    where FID = #{fid,jdbcType=INTEGER}
+  </update>
+  <select id="getAdminventory" resultMap="BaseResultMap" parameterType="me.zhengjie.service.dto.AdminventoryQueryCriteria" >
+    select
+    <include refid="Base_Column_List" />
+    from adminventory
+    where 1=1
+      <if test="fnumber != null" >
+        and FNumber = #{fnumber,jdbcType=VARCHAR}
+      </if>
+      <if test="fstate != null" >
+        and FState = #{fstate,jdbcType=VARCHAR}
+      </if>
+      <if test="fdeptId != null" >
+        and FDept_Id like '%${fdeptId}%'
+      </if>
+      <if test="frequired != null" >
+        and FRequired = #{frequired,jdbcType=VARCHAR}
+      </if>
+    ORDER  by FName
+  </select>
+
+</mapper>

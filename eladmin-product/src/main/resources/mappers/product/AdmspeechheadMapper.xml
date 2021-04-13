@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="me.zhengjie.mapper.AdmspeechheadBatisMapper" >
+  <resultMap id="BaseResultMap" type="me.zhengjie.service.dto.AdmspeechheadDto" >
+    <id column="F_Id" property="fId" jdbcType="INTEGER" />
+    <result column="F_Use_Id" property="fUseId" jdbcType="INTEGER" />
+    <result column="F_Date" property="fDate" jdbcType="TIMESTAMP" />
+    <result column="F_Address" property="fAddress" jdbcType="VARCHAR" />
+    <result column="F_Model" property="fModel" jdbcType="VARCHAR" />
+    <result column="F_Today" property="fToday" jdbcType="VARCHAR" />
+    <result column="F_Tomorrow" property="fTomorrow" jdbcType="VARCHAR" />
+    <result column="F_Produce_Date" property="fProduceDate" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    F_Id, F_Use_Id, F_Date, F_Address, F_Model, F_Today, F_Tomorrow, F_Produce_Date
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select
+    <include refid="Base_Column_List" />
+    from admspeechhead
+    where F_Id = #{fId,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from admspeechhead
+    where F_Id = #{fId,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="me.zhengjie.service.dto.AdmspeechheadDto" >
+    insert into admspeechhead (F_Id, F_Use_Id, F_Date,
+      F_Address, F_Model, F_Today,
+      F_Tomorrow, F_Produce_Date)
+    values (#{fId,jdbcType=INTEGER}, #{fUseId,jdbcType=INTEGER}, #{fDate,jdbcType=TIMESTAMP},
+      #{fAddress,jdbcType=VARCHAR}, #{fModel,jdbcType=VARCHAR}, #{fToday,jdbcType=VARCHAR},
+      #{fTomorrow,jdbcType=VARCHAR}, #{fProduceDate,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="me.zhengjie.service.dto.AdmspeechheadDto" useGeneratedKeys="true" keyProperty="fId">
+    insert into admspeechhead
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="fId != null" >
+        F_Id,
+      </if>
+      <if test="fUseId != null" >
+        F_Use_Id,
+      </if>
+      <if test="fDate != null" >
+        F_Date,
+      </if>
+      <if test="fAddress != null" >
+        F_Address,
+      </if>
+      <if test="fModel != null" >
+        F_Model,
+      </if>
+      <if test="fToday != null" >
+        F_Today,
+      </if>
+      <if test="fTomorrow != null" >
+        F_Tomorrow,
+      </if>
+      <if test="fProduceDate != null" >
+        F_Produce_Date,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="fId != null" >
+        #{fId,jdbcType=INTEGER},
+      </if>
+      <if test="fUseId != null" >
+        #{fUseId,jdbcType=INTEGER},
+      </if>
+      <if test="fDate != null" >
+        #{fDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="fAddress != null" >
+        #{fAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="fModel != null" >
+        #{fModel,jdbcType=VARCHAR},
+      </if>
+      <if test="fToday != null" >
+        #{fToday,jdbcType=VARCHAR},
+      </if>
+      <if test="fTomorrow != null" >
+        #{fTomorrow,jdbcType=VARCHAR},
+      </if>
+      <if test="fProduceDate != null" >
+        #{fProduceDate,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="me.zhengjie.service.dto.AdmspeechheadDto" >
+    update admspeechhead
+    <set >
+      <if test="fUseId != null" >
+        F_Use_Id = #{fUseId,jdbcType=INTEGER},
+      </if>
+      <if test="fDate != null" >
+        F_Date = #{fDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="fAddress != null" >
+        F_Address = #{fAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="fModel != null" >
+        F_Model = #{fModel,jdbcType=VARCHAR},
+      </if>
+      <if test="fToday != null" >
+        F_Today = #{fToday,jdbcType=VARCHAR},
+      </if>
+      <if test="fTomorrow != null" >
+        F_Tomorrow = #{fTomorrow,jdbcType=VARCHAR},
+      </if>
+      <if test="fProduceDate != null" >
+        F_Produce_Date = #{fProduceDate,jdbcType=VARCHAR},
+      </if>
+        F_Update = CONVERT(varchar,GETDATE(),120)
+    </set>
+    where F_Id = #{fId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="me.zhengjie.service.dto.AdmspeechheadDto" >
+    update admspeechhead
+    set F_Use_Id = #{fUseId,jdbcType=INTEGER},
+      F_Date = #{fDate,jdbcType=TIMESTAMP},
+      F_Address = #{fAddress,jdbcType=VARCHAR},
+      F_Model = #{fModel,jdbcType=VARCHAR},
+      F_Today = #{fToday,jdbcType=VARCHAR},
+      F_Tomorrow = #{fTomorrow,jdbcType=VARCHAR},
+      F_Produce_Date = #{fProduceDate,jdbcType=VARCHAR}
+    where F_Id = #{fId,jdbcType=INTEGER}
+  </update>
+  <select id="getAdmspeechhead" resultMap="BaseResultMap" parameterType="me.zhengjie.service.dto.AdmspeechheadQueryCriteria" >
+    select
+    <include refid="Base_Column_List" />
+    from admspeechhead
+    where 1=1
+    <if test="fUseId != null" >
+      and F_Address in (
+      select t1.local_name
+      from sys_user_local t
+      INNER JOIN sys_local t1 on t.local_id = t1.local_id
+      where t.user_id=#{fUseId,jdbcType=VARCHAR})
+    </if>
+    <if test="fProduceDate != null" >
+      and F_Produce_Date = #{fProduceDate,jdbcType=VARCHAR}
+    </if>
+    order by F_Produce_Date desc
+  </select>
+  <select id="getAdmspeechheadByAddress" resultMap="BaseResultMap" parameterType="me.zhengjie.service.dto.AdmspeechheadQueryCriteria" >
+    select
+    <include refid="Base_Column_List" />
+    from admspeechhead
+    where 1=1
+    <if test="fUseId != null" >
+      and F_Use_Id = #{fUseId,jdbcType=VARCHAR}
+    </if>
+    <if test="fAddress != null" >
+      and F_Address =#{fAddress,jdbcType=VARCHAR}
+    </if>
+    <if test="fProduceDate != null" >
+      and F_Produce_Date = #{fProduceDate,jdbcType=VARCHAR}
+    </if>
+    order by F_Produce_Date desc
+  </select>
+</mapper>
