@@ -19,6 +19,7 @@ import io.swagger.annotations.Api;
 import me.zhengjie.annotation.rest.AnonymousGetMapping;
 import me.zhengjie.utils.EnvironmentUtils;
 import me.zhengjie.utils.SpringContextHolder;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
@@ -46,6 +47,7 @@ public class AppRun {
 
     public static void main(String[] args) {
         ApplicationContext applicationContext =  SpringApplication.run(AppRun.class, args);
+        applicationContext.getBean(SqlSessionFactory.class);
         EnvironmentUtils.setApplication(applicationContext);
     }
 
