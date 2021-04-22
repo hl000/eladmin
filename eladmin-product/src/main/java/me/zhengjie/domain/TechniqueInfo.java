@@ -98,6 +98,11 @@ public class TechniqueInfo implements Serializable {
     @ApiModelProperty(value = "用户Id")
     private Long userId;
 
+    /**报工名称**/
+    @Column(name = "manufacture_name")
+    @ApiModelProperty(value = "报工名称")
+    private String manufactureName;
+
     public void copy(TechniqueInfo source){
         BeanUtil.copyProperties(source,this, CopyOptions.create().setIgnoreNullValue(true));
     }

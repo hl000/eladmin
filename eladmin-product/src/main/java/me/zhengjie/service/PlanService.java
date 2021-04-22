@@ -36,6 +36,7 @@ public interface PlanService {
 
     void downloadDailyPlan(HttpServletResponse response, DailyPlanQueryCriteria criteria);
 
-    List<DailyPlan> getDailyPlanByUser(String deptId);
-    List<BatchPlan> getBatchPlanByUser(String deptId);
+    List<DailyPlan> getDailyPlanSelector();
+    List<BatchPlan> getBatchPlanSelector();
+
 }

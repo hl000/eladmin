@@ -24,10 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -49,6 +47,8 @@ public class PlanServiceImpl implements PlanService {
 
     private final ManufactureService manufactureService;
 
+    final SimpleDateFormat SDF = new SimpleDateFormat("yyyyMMddHHmmssS");
+    final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override
     public List<BatchPlanDto> findBatchPlan(BatchPlanQueryCriteria criteria) {
@@ -102,14 +102,11 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public List<DailyPlan> getDailyPlanByUser(String deptId) {
+    public List<DailyPlan> getDailyPlanSelector() {
         List<DailyPlan> dailyPlanList = dailyPlanRepository.findAll();
-        List<DailyPlan> dailyPlans = dailyPlanList.stream().filter(p -> {
-            String deptIds = p.getBatchPlan().getTechniqueInfo().getCategory().getDeptIds();
-            String[] deptIdList = deptIds.split(",");
-            for (int i = 0; i < deptIdList.length; i++) {
-                if (deptIdList[i].equals(deptId))
-                    return true;
+        List<DailyPlan> dailyPlans = dailyPlanList.stream().filter(dailyPlan -> {
+            if (dailyPlan.getDailyPlanQuantity() > dailyPlan.getCompletedQuantity()) {
+                return true;
             }
             return false;
         }).collect(Collectors.toList());
@@ -117,7 +114,33 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
+    public List<BatchPlan> getBatchPlanSelector() {
+//        String date = dateFormat.format(new Date());
+//        BatchPlanQueryCriteria criteria = new BatchPlanQueryCriteria();
+//        criteria.setStartDate(date);
+//        criteria.setEndDate(date);
+//        List<BatchPlan> batchPlanList = batchPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder));
+//        batchPlanList.stream().forEach(batchPlan -> {
+//            DailyPlanQueryCriteria dailyPlanQueryCriteria = new DailyPlanQueryCriteria();
+//            dailyPlanQueryCriteria.setBatchPlanId();
+//            List<DailyPlan> dailyPlanList =  dailyPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder));
+//        });
+        List<BatchPlan> batchPlanList = batchPlanRepository.findAll();
+        List<BatchPlan> batchPlans = batchPlanList.stream().filter(batchPlan -> {
+            if (batchPlan.getBatchPlanQuantity() > batchPlan.getCompletedQuantity() && batchPlan.getDailyPlanRemain() > 0) {
+                return true;
+            }
+            return false;
+        }).collect(Collectors.toList());
+        return batchPlans;
+    }
+
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public BatchPlan createBatchPlan(BatchPlan resources) {
+        resources.setBatchNumber(SDF.format(new Date()));
+        resources.setDailyPlanRemain(resources.getBatchPlanQuantity());
         return batchPlanRepository.save(resources);
     }
 
@@ -136,6 +159,8 @@ public class PlanServiceImpl implements PlanService {
             allDailyPlan.forEach(d -> {
                 manufactureService.summary(d.getPlanNumber());
             });
+
+            updateDailyPlanRemain(resources.getId());
         } else {
             batchPlan.copy(resources);
             batchPlanRepository.save(batchPlan);
@@ -168,8 +193,35 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public DailyPlan createDailyPlan(DailyPlan resources) {
-        return dailyPlanRepository.save(resources);
+        DailyPlanQueryCriteria dailyPlanQueryCriteria = new DailyPlanQueryCriteria();
+        dailyPlanQueryCriteria.setStartDate(resources.getStartDate());
+        dailyPlanQueryCriteria.setBatchPlanId(resources.getBatchPlan().getId());
+        List<DailyPlan> dailyPlanList = dailyPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, dailyPlanQueryCriteria, criteriaBuilder));
+        if (dailyPlanList != null && dailyPlanList.size() > 0)
+            return null;
+
+        resources.setPlanNumber(SDF.format(new Date()));
+        DailyPlan dailyPlan = dailyPlanRepository.save(resources);
+
+        updateDailyPlanRemain(resources.getBatchPlan().getId());
+
+        return dailyPlan;
+    }
+
+
+    private void updateDailyPlanRemain(Integer batchId) {
+        BatchPlan batchPlan = batchPlanRepository.getOne(batchId);
+        DailyPlanQueryCriteria criteria = new DailyPlanQueryCriteria();
+        criteria.setBatchPlanId(batchId);
+        List<DailyPlan> dailyPlans = dailyPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder));
+        Double quantity = dailyPlans.stream().mapToDouble(manufacture -> {
+            return manufacture.getDailyPlanQuantity();
+        }).sum();
+
+        batchPlan.setDailyPlanRemain(batchPlan.getBatchPlanQuantity() - quantity.intValue());
+        batchPlanRepository.save(batchPlan);
     }
 
     @Override
@@ -188,27 +240,12 @@ public class PlanServiceImpl implements PlanService {
             dailyPlan.copy(resources);
             dailyPlanRepository.save(dailyPlan);
             manufactureService.summary(resources.getPlanNumber());
+            updateDailyPlanRemain(resources.getBatchPlan().getId());
         } else {
             dailyPlan.copy(resources);
             dailyPlanRepository.save(dailyPlan);
         }
 
-    }
-
-
-    @Override
-    public List<BatchPlan> getBatchPlanByUser(String deptId) {
-        List<BatchPlan> batchPlanList = batchPlanRepository.findAll();
-        List<BatchPlan> batchPlans = batchPlanList.stream().filter(p -> {
-            String deptIds = p.getTechniqueInfo().getCategory().getDeptIds();
-            String[] deptIdList = deptIds.split(",");
-            for (int i = 0; i < deptIdList.length; i++) {
-                if (deptIdList[i].equals(deptId))
-                    return true;
-            }
-            return false;
-        }).collect(Collectors.toList());
-        return batchPlans;
     }
 
 }

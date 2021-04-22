@@ -25,5 +25,8 @@ public class DailyPlanQueryCriteria {
     private Long userId;
 
     @Query
-    private String productName;
+    private String manufactureName;
+
+    @Query
+    private String startDate;
 }

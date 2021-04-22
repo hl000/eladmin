@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
@@ -42,37 +43,37 @@ public class Manufacture implements Serializable {
     /**意外消耗材料1**/
     @Column(name = "unexpected_Material1")
     @ApiModelProperty(value = "意外消耗材料1")
-    private Double unexpectedMaterial1;
+    private Double unexpectedMaterial1 = 0.0;
 
     /**意外消耗材料2**/
     @Column(name = "unexpected_Material2")
     @ApiModelProperty(value = "意外消耗材料2")
-    private Double unexpectedMaterial2;
+    private Double unexpectedMaterial2 = 0.0;
 
     /**意外消耗材料3**/
     @Column(name = "unexpected_Material3")
     @ApiModelProperty(value = "意外消耗材料3")
-    private Double unexpectedMaterial3;
+    private Double unexpectedMaterial3 = 0.0;
 
     /**班组人员数**/
     @Column(name = "worker_quantity")
     @ApiModelProperty(value = "班组人员数")
-    private Integer workerQuantity;
+    private Integer workerQuantity = 0;
 
     /**工时（含加班）**/
     @Column(name = "working_hours")
     @ApiModelProperty(value = "工时（含加班）")
-    private Double workingHours;
+    private Double workingHours = 0.0;
 
     /**日实际产量（含不良品）**/
     @Column(name = "daily_output")
     @ApiModelProperty(value = "日实际产量（含不良品）")
-    private Integer dailyOutput;
+    private Integer dailyOutput = 0;
 
     /**不良品数量**/
     @Column(name = "rejects_quantity")
     @ApiModelProperty(value = "不良品数量")
-    private Integer rejectsQuantity;
+    private Integer rejectsQuantity = 0;
 
     /**废品原因说明**/
     @Column(name = "reject_reasons")
@@ -87,14 +88,24 @@ public class Manufacture implements Serializable {
     /**填报日期**/
     @Column(name = "fill_date")
     @ApiModelProperty(value = "填报日期")
-    @UpdateTimestamp
+    @CreationTimestamp
     private Timestamp fillDate;
-
 
     /**填报用户Id**/
     @Column(name = "user_id")
     @ApiModelProperty(value = "填报用户Id")
     private Long userId;
+
+    /**报工名称**/
+    @Column(name = "manufacture_name")
+    @ApiModelProperty(value = "报工名称")
+    private String manufactureName;
+
+    /**修改时间**/
+    @Column(name = "update_time")
+    @ApiModelProperty(value = "修改时间")
+    @UpdateTimestamp
+    private Timestamp updateTime;
 
 //    /**生产批次**/
 //    @Column(name = "batch_number")

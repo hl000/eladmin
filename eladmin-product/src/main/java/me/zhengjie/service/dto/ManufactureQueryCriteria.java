@@ -14,4 +14,8 @@ public class ManufactureQueryCriteria {
 
     @Query
     private Long userId;
+
+    @Query
+    private String manufactureName;
+
 }

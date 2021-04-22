@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import me.zhengjie.annotation.Log;
 import me.zhengjie.domain.BatchPlan;
 import me.zhengjie.domain.DailyPlan;
+import me.zhengjie.repository.DailyPlanRepository;
 import me.zhengjie.service.PlanService;
 import me.zhengjie.service.dto.BatchPlanQueryCriteria;
 import me.zhengjie.service.dto.DailyPlanQueryCriteria;
@@ -20,6 +21,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 /**
  * @author HL
@@ -32,6 +34,8 @@ import javax.servlet.http.HttpServletResponse;
 public class PlanController {
 
     private final PlanService planService;
+
+    private final DailyPlanRepository dailyPlanRepository;
 
     @PostMapping("/batchPlanAdd")
     @Log("新增batchPlan")
@@ -94,10 +98,10 @@ public class PlanController {
     @Log("新增dailyPlan")
     @ApiOperation("新增dailyPlan")
     public Object createDailyPlan(@Validated @RequestBody DailyPlan resources){
-        resources.setPlanNumber(IdUtil.simpleUUID());
         UserDetails userDetails = SecurityUtils.getCurrentUser();
         Long userId = (Long) new JSONObject(new JSONObject(userDetails).get("user")).get("id");
         resources.setUserId(userId);
+
         return planService.createDailyPlan(resources)!=null;
     }
 
@@ -131,19 +135,14 @@ public class PlanController {
     @Log("getDailyPlanByUser")
     @ApiOperation("getDailyPlanUser")
     public ResponseEntity<Object> getDailyPlanaByUser(){
-        UserDetails userDetails = SecurityUtils.getCurrentUser();
-        JSONObject deptObject = (JSONObject) new JSONObject(new JSONObject(userDetails).get("user")).get("dept");
-        String deptId = deptObject.get("id", String.class);
-        return new ResponseEntity<>(planService.getDailyPlanByUser(deptId),HttpStatus.OK);
+
+        return new ResponseEntity<>(planService.getDailyPlanSelector(),HttpStatus.OK);
     }
 
     @GetMapping("/getBatchPlanByUser")
     @Log("getBatchPlanByUser")
-    @ApiOperation("getBatchPlanUser")
+    @ApiOperation("getBatchPlanByUser")
     public ResponseEntity<Object> getBatchPlanaByUser(){
-        UserDetails userDetails = SecurityUtils.getCurrentUser();
-        JSONObject deptObject = (JSONObject) new JSONObject(new JSONObject(userDetails).get("user")).get("dept");
-        String deptId = deptObject.get("id", String.class);
-        return new ResponseEntity<>(planService.getBatchPlanByUser(deptId),HttpStatus.OK);
+        return new ResponseEntity<>(planService.getBatchPlanSelector(),HttpStatus.OK);
     }
 }

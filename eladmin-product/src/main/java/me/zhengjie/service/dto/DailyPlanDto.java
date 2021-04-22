@@ -36,7 +36,7 @@ public class DailyPlanDto implements Serializable {
     /**
      * 计划生产日期
      **/
-    private Timestamp startDate;
+    private String startDate;
 
     /**
      * 日计划产量
@@ -55,6 +55,12 @@ public class DailyPlanDto implements Serializable {
 
     private Long userId;
 
+    private Timestamp updateTime;
+
     /**报工名称**/
-    private String productName;
+    private String manufactureName;
+
+    /**已完成数量**/
+    private Integer completedQuantity;
+
 }

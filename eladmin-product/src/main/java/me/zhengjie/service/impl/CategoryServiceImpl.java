@@ -33,20 +33,20 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryDto> queryAll(CategoryQueryCriteria criteria) {
-
-        UserDetails userDetails = SecurityUtils.getCurrentUser();
-        JSONObject deptObject = (JSONObject) new JSONObject(new JSONObject(userDetails).get("user")).get("dept");
-        String deptId = deptObject.get("id", String.class);
-        List<Category> categoryList =categoryRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root,criteria,criteriaBuilder));
-        List<Category> categories = categoryList.stream().filter(p -> {
-            String deptIds = p.getDeptIds();
-            String[] deptIdList = deptIds.split(",");
-            for(int i=0;i<deptIdList.length;i++){
-                if(deptIdList[i].equals(deptId))
-                    return true;
-            }
-            return false;
-        }).collect(Collectors.toList());
+        List<Category> categories =categoryRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root,criteria,criteriaBuilder));
+//        UserDetails userDetails = SecurityUtils.getCurrentUser();
+//        JSONObject deptObject = (JSONObject) new JSONObject(new JSONObject(userDetails).get("user")).get("dept");
+//        String deptId = deptObject.get("id", String.class);
+//        List<Category> categoryList =categoryRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root,criteria,criteriaBuilder));
+//        List<Category> categories = categoryList.stream().filter(p -> {
+//            String deptIds = p.getDeptIds();
+//            String[] deptIdList = deptIds.split(",");
+//            for(int i=0;i<deptIdList.length;i++){
+//                if(deptIdList[i].equals(deptId))
+//                    return true;
+//            }
+//            return false;
+//        }).collect(Collectors.toList());
         return categoryMapper.toDto(categories);
 
 

@@ -71,10 +71,16 @@ public class TechniqueInfoController {
     @GetMapping("/getTechniqueInfoByUser")
     @Log("查询固定项目填报ByUser")
     @ApiOperation("查询固定项目填报ByUser")
-    public ResponseEntity<Object> getTechniqueInfoByUser(TechniqueInfoQueryCriteria criteria, Pageable pageable){
-        UserDetails userDetails = SecurityUtils.getCurrentUser();
-        JSONObject deptObject = (JSONObject) new JSONObject(new JSONObject(userDetails).get("user")).get("dept");
-        String deptId = deptObject.get("id", String.class);
-        return new ResponseEntity<>(techniqueInfoService.getTechniqueInfoByUser(deptId),HttpStatus.OK);
+    public ResponseEntity<Object> getTechniqueInfoByUser(TechniqueInfoQueryCriteria criteria){
+//        UserDetails userDetails = SecurityUtils.getCurrentUser();
+//        Long userId = (Long) new JSONObject(new JSONObject(userDetails).get("user")).get("id");
+//        criteria.setUserId(userId);
+        return new ResponseEntity<>(techniqueInfoService.queryAll(criteria), HttpStatus.OK);
+
+
+//        UserDetails userDetails = SecurityUtils.getCurrentUser();
+//        JSONObject deptObject = (JSONObject) new JSONObject(new JSONObject(userDetails).get("user")).get("dept");
+//        String deptId = deptObject.get("id", String.class);
+//        return new ResponseEntity<>(techniqueInfoService.getTechniqueInfoByUser(deptId),HttpStatus.OK);
     }
 }

@@ -41,46 +41,46 @@ public class ManufactureController {
     @PostMapping("/add")
     @Log("新增manufacture")
     @ApiOperation("新增manufacture")
-    public ResponseEntity<Object> create(@Validated @RequestBody Manufacture resources){
+    public Object create(@Validated @RequestBody Manufacture resources) {
         UserDetails userDetails = SecurityUtils.getCurrentUser();
         Long userId = (Long) new JSONObject(new JSONObject(userDetails).get("user")).get("id");
         resources.setUserId(userId);
-        return new ResponseEntity<>(manufactureService.create(resources), HttpStatus.CREATED);
+        return manufactureService.create(resources) != null;
     }
 
     @GetMapping("/getManufacture")
     @Log("查询getManufacture")
     @ApiOperation("查询getManufacture")
-    public ResponseEntity<Object> queryManufacture(ManufactureQueryCriteria criteria, Pageable pageable){
+    public ResponseEntity<Object> queryManufacture(ManufactureQueryCriteria criteria, Pageable pageable) {
 
         UserDetails userDetails = SecurityUtils.getCurrentUser();
         Long userId = (Long) new JSONObject(new JSONObject(userDetails).get("user")).get("id");
         criteria.setUserId(userId);
-        return new ResponseEntity<>(manufactureService.queryManufacture(criteria,pageable),HttpStatus.OK);
+        return new ResponseEntity<>(manufactureService.queryManufacture(criteria, pageable), HttpStatus.OK);
     }
 
     @GetMapping("/getManufacture/download")
     @Log("导出")
     @ApiOperation("导出")
-    public void downloadManufacture(HttpServletResponse response, ManufactureQueryCriteria criteria){
+    public void downloadManufacture(HttpServletResponse response, ManufactureQueryCriteria criteria) {
 
         UserDetails userDetails = SecurityUtils.getCurrentUser();
         Long userId = (Long) new JSONObject(new JSONObject(userDetails).get("user")).get("id");
         criteria.setUserId(userId);
-        manufactureService.queryManufacture(response,criteria);
+        manufactureService.queryManufacture(response, criteria);
     }
 
     @GetMapping("/getManufactureByUser")
     @Log("查询getManufactureByUser")
     @ApiOperation("查询getManufactureByUser")
-    public ResponseEntity<Object> queryManufactureByUser(ManufactureQueryCriteria criteria, Pageable pageable){
-          return new ResponseEntity<>(manufactureService.queryManufacture(criteria,pageable),HttpStatus.OK);
+    public ResponseEntity<Object> queryManufactureByUser(ManufactureQueryCriteria criteria, Pageable pageable) {
+        return new ResponseEntity<>(manufactureService.queryManufacture(criteria, pageable), HttpStatus.OK);
     }
 
     @PutMapping("/edit")
     @Log("修改manufacture")
     @ApiOperation("修改manufacture")
-    public ResponseEntity<Object> update(@Validated @RequestBody Manufacture resources){
+    public ResponseEntity<Object> update(@Validated @RequestBody Manufacture resources) {
         manufactureService.update(resources);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -88,23 +88,21 @@ public class ManufactureController {
     @GetMapping("/getManufactureSummary")
     @Log("查询getManufactureSummary")
     @ApiOperation("查询getManufactureSummary")
-    public ResponseEntity<Object> queryManufacture(ManufactureSummaryQueryCriteria criteria, Pageable pageable){
+    public ResponseEntity<Object> queryManufacture(ManufactureSummaryQueryCriteria criteria, Pageable pageable) {
 //        Timestamp timestamp = criteria.getUpdateTime();
 //        if(timestamp!=null){
 //
 //        }
-        return new ResponseEntity<>(manufactureService.queryManufactureSummary(criteria,pageable),HttpStatus.OK);
+        return new ResponseEntity<>(manufactureService.queryManufactureSummary(criteria, pageable), HttpStatus.OK);
     }
 
 
     @GetMapping("/getManufactureSummary/download")
     @Log("导出汇总")
     @ApiOperation("导出汇总")
-    public void downloadManufactureSummary(HttpServletResponse response, ManufactureQueryCriteria criteria){
-        manufactureService.queryManufactureSummary(response,criteria);
+    public void downloadManufactureSummary(HttpServletResponse response, ManufactureQueryCriteria criteria) {
+        manufactureService.queryManufactureSummary(response, criteria);
     }
-
-
 
 
 }

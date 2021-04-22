@@ -98,6 +98,13 @@ public class TechniqueInfoDto implements Serializable {
      **/
     private Category category;
 
-    /**用户Id**/
+    /**
+     * 用户Id
+     **/
     private Long userId;
+
+    /**
+     * 报工名称
+     **/
+    private String manufactureName;
 }

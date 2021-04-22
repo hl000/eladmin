@@ -256,6 +256,10 @@ public class ManufactureSummary implements Serializable {
     @UpdateTimestamp
     private Timestamp updateTime;
 
+    /**报工名称**/
+    @Column(name = "manufacture_name")
+    @ApiModelProperty(value = "报工名称")
+    private String manufactureName;
 
     public void copy(ManufactureSummary source){
         BeanUtil.copyProperties(source,this, CopyOptions.create().setIgnoreNullValue(true));

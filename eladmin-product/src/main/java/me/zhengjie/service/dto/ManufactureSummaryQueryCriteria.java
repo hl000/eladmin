@@ -19,6 +19,6 @@ public class ManufactureSummaryQueryCriteria {
     @Query
     private Timestamp updateTime;
 
-    @Query(type = Query.Type.BETWEEN)
-    private List<Timestamp> createdTime;
+    @Query
+    private String manufactureName;
 }

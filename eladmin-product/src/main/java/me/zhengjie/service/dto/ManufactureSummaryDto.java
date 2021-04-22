@@ -1,11 +1,8 @@
 package me.zhengjie.service.dto;
 
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.persistence.Column;
 import java.sql.Timestamp;
-import java.util.Date;
 
 /**
  * @author HL
@@ -168,5 +165,10 @@ public class ManufactureSummaryDto {
     private Integer dailyPlanQuantity;
 
     private Timestamp updateTime;
+
+    /**
+     * 报工名称
+     */
+    private String manufactureName;
 
 }

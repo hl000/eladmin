@@ -3,6 +3,7 @@ package me.zhengjie.service.dto;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.sql.Time;
 import java.sql.Timestamp;
 
 /**
@@ -55,6 +56,12 @@ public class ManufactureDto implements Serializable {
 
    /**用户Id**/
    private Long userId;
+
+   /**报工名称**/
+   private String manufactureName;
+
+   /**修改时间**/
+   private Timestamp updateTime;
 
 //   /**生产批次号**/
 //   private String batch_number;

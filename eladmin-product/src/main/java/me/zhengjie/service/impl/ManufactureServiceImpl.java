@@ -1,10 +1,12 @@
 package me.zhengjie.service.impl;
 
+import cn.hutool.core.date.DateTime;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.domain.*;
 import me.zhengjie.mapper.ManufactureMapper;
 import me.zhengjie.mapper.ManufactureSummaryMapper;
+import me.zhengjie.repository.BatchPlanRepository;
 import me.zhengjie.repository.DailyPlanRepository;
 import me.zhengjie.repository.ManufactureRepository;
 import me.zhengjie.repository.ManufactureSummaryRepository;
@@ -13,10 +15,7 @@ import me.zhengjie.service.dto.DailyPlanQueryCriteria;
 import me.zhengjie.service.dto.ManufactureDto;
 import me.zhengjie.service.dto.ManufactureQueryCriteria;
 import me.zhengjie.service.dto.ManufactureSummaryQueryCriteria;
-import me.zhengjie.utils.FileUtil;
-import me.zhengjie.utils.PageUtil;
-import me.zhengjie.utils.QueryHelp;
-import me.zhengjie.utils.ValidationUtil;
+import me.zhengjie.utils.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,11 +24,11 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.persistence.Column;
 import javax.servlet.http.HttpServletResponse;
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 /**
  * @author HL
@@ -46,15 +45,32 @@ public class ManufactureServiceImpl implements ManufactureService {
 
     private final DailyPlanRepository dailyPlanRepository;
 
+    private final BatchPlanRepository batchPlanRepository;
 
     @Resource(name = "manufactureSummaryMapperImpl")
     private ManufactureSummaryMapper manufactureSummaryMapper;
 
     private final ManufactureSummaryRepository manufactureSummaryRepository;
 
+    final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+
     //制造信息报工
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ManufactureDto create(Manufacture resources) {
+        ManufactureQueryCriteria criteria = new ManufactureQueryCriteria();
+        criteria.setPlanNumber(resources.getPlanNumber());
+
+        String dateTime = dateFormat.format(new Date());
+        List<Manufacture> manufactures = manufactureRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder));
+        if(manufactures!=null && manufactures.size()>0){
+            for(Manufacture manufacture : manufactures){
+                if(dateFormat.format(manufacture.getFillDate()).equals(dateTime))
+                    return null;
+            }
+        }
+
         Manufacture manufacture = manufactureRepository.save(resources);
         summary(resources.getPlanNumber());
 
@@ -104,6 +120,7 @@ public class ManufactureServiceImpl implements ManufactureService {
         }
 
         manufactureSummary.setPlanNumber(planNumber);
+        manufactureSummary.setManufactureName(dailyPlan.getManufactureName());
         manufactureSummary.setConsumeMaterial1(manufactureList.stream().mapToDouble(manufacture -> {
             return manufacture.getDailyOutput() * techniqueInfo.getMaterial1Quota() + manufacture.getUnexpectedMaterial1();
         }).sum());
@@ -173,7 +190,7 @@ public class ManufactureServiceImpl implements ManufactureService {
         manufactureSummary.setWeeklyCapacity(techniqueInfo.getEquipmentMaxCapacity() * 9.5 * 6);
         manufactureSummary.setMonthlyCapacity(techniqueInfo.getEquipmentMaxCapacity() * 9.5 * 26);
         manufactureSummary.setAnnualCapacity(techniqueInfo.getEquipmentMaxCapacity() * 9.5 * 300);
-        manufactureSummary.setMaxAnnualCapacity(techniqueInfo.getCurrentMaxCapacity() * 9.5 * 300);
+        manufactureSummary.setMaxAnnualCapacity(techniqueInfo.getEquipmentMaxCapacity() * 24 * 300);
 
         manufactureSummary.setStack260Quantity((int) Math.floor(manufactureSummary.getAnnualCapacity() / 260));
         manufactureSummary.setStack340Quantity((int) Math.floor(manufactureSummary.getAnnualCapacity() / 340));
@@ -226,6 +243,16 @@ public class ManufactureServiceImpl implements ManufactureService {
         manufactureSummary.setAnnualOutputTotal(0);
 
         manufactureSummaryRepository.save(manufactureSummary);
+
+        a = manufactureList.stream().mapToDouble(manufacture -> {
+            return manufacture.getDailyOutput() - manufacture.getRejectsQuantity();
+        }).sum();
+
+        dailyPlan.setCompletedQuantity(a.intValue());
+        dailyPlanRepository.save(dailyPlan);
+
+        batchPlan.setCompletedQuantity(manufactureSummary.getBatchCompletedQuantity());
+        batchPlanRepository.save(batchPlan);
     }
 
     private Double convertDouble(Double source) {
@@ -249,7 +276,7 @@ public class ManufactureServiceImpl implements ManufactureService {
             }
             Map<String, Object> map = new LinkedHashMap<>();
             map.put("生产计划编号", manufacture.getPlanNumber());
-            map.put("产品名称", dailyPlan.getProductName());
+            map.put("产品名称", dailyPlan.getManufactureName());
             map.put("工序结存数", manufacture.getInventoryBalance());
             map.put("材料1意外消耗", manufacture.getUnexpectedMaterial1());
             map.put("材料2意外消耗", manufacture.getUnexpectedMaterial2());
@@ -274,32 +301,34 @@ public class ManufactureServiceImpl implements ManufactureService {
         List<ManufactureSummary> manufactureSummaryList = manufactureSummaryRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder));
 
         List<Map<String, Object>> list = new ArrayList<>();
-        for (ManufactureSummary manufacture : manufactureSummaryList) {
+        for (ManufactureSummary manufactureSummary : manufactureSummaryList) {
             Map<String, Object> map = new LinkedHashMap<>();
-            map.put("材料 1定额达成率", manufacture.getActualMaterial1Quota());
-            map.put("材料 2定额达成率", manufacture.getActualMaterial2Quota());
-            map.put("材料 3定额达成率", manufacture.getActualMaterial3Quota());
-            map.put("实际人工时", manufacture.getActualHours());
-            map.put("理论工时", manufacture.getTheoryHours());
-            map.put("日计划完成率", manufacture.getDailyCompletionRate());
-            map.put("批次不良总数", manufacture.getRejectsTotal());
-            map.put("日不良率%", manufacture.getDailyCompletionRate());
-            map.put("批次平均不良率%", manufacture.getBatchRejectRate());
+            map.put("报工名称",manufactureSummary.getManufactureName());
+            map.put("材料 1定额达成率", manufactureSummary.getActualMaterial1Quota());
+            map.put("材料 1定额达成率", manufactureSummary.getActualMaterial1Quota());
+            map.put("材料 2定额达成率", manufactureSummary.getActualMaterial2Quota());
+            map.put("材料 3定额达成率", manufactureSummary.getActualMaterial3Quota());
+            map.put("实际人工时", manufactureSummary.getActualHours());
+            map.put("理论工时", manufactureSummary.getTheoryHours());
+            map.put("日计划完成率", manufactureSummary.getDailyCompletionRate());
+            map.put("批次不良总数", manufactureSummary.getRejectsTotal());
+            map.put("日不良率%", manufactureSummary.getDailyCompletionRate());
+            map.put("批次平均不良率%", manufactureSummary.getBatchRejectRate());
 //            map.put("年度平均不良率%", manufacture.getRejectsQuantity());
-            map.put("批次计划累计完成百分比", manufacture.getAccumulativeTotalPercentage());
-            map.put("日计划产量", manufacture.getDailyPlanQuantity());
-            map.put("总计划制造量", manufacture.getTotalPlanQuantity());
-            map.put("批次累计完成数量(合格品）", manufacture.getBatchCompletedQuantity());
-            map.put("产能利用率%", manufacture.getCapacityUtilization());
-            map.put("8小时工作产能（7.5小时）", manufacture.getHour8Capacity());
-            map.put("10小时工作产能（9.）", manufacture.getHour10Capacity());
-            map.put("当前状态最大周产量预测", manufacture.getWeeklyCapacity());
-            map.put("当前状态最大月产量预测", manufacture.getMonthlyCapacity());
-            map.put("当前状态年产能预测", manufacture.getAnnualCapacity());
-            map.put("设备最大年产能", manufacture.getMaxAnnualCapacity());
-            map.put("260节电堆可制造数量 /年", manufacture.getStack260Quantity());
-            map.put("340节电堆可制造数量 /年", manufacture.getStack340Quantity());
-            map.put("450节电堆可制造数量 /年", manufacture.getStack450Quantity());
+            map.put("批次计划累计完成百分比", manufactureSummary.getAccumulativeTotalPercentage());
+            map.put("日计划产量", manufactureSummary.getDailyPlanQuantity());
+            map.put("总计划制造量", manufactureSummary.getTotalPlanQuantity());
+            map.put("批次累计完成数量(合格品）", manufactureSummary.getBatchCompletedQuantity());
+            map.put("产能利用率%", manufactureSummary.getCapacityUtilization());
+            map.put("8小时工作产能（7.5小时）", manufactureSummary.getHour8Capacity());
+            map.put("10小时工作产能（9.）", manufactureSummary.getHour10Capacity());
+            map.put("当前状态最大周产量预测", manufactureSummary.getWeeklyCapacity());
+            map.put("当前状态最大月产量预测", manufactureSummary.getMonthlyCapacity());
+            map.put("当前状态年产能预测", manufactureSummary.getAnnualCapacity());
+            map.put("设备最大年产能", manufactureSummary.getMaxAnnualCapacity());
+            map.put("260节电堆可制造数量 /年", manufactureSummary.getStack260Quantity());
+            map.put("340节电堆可制造数量 /年", manufactureSummary.getStack340Quantity());
+            map.put("450节电堆可制造数量 /年", manufactureSummary.getStack450Quantity());
             list.add(map);
         }
         try {

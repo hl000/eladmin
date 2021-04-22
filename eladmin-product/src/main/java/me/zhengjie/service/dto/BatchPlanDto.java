@@ -1,8 +1,10 @@
 package me.zhengjie.service.dto;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import me.zhengjie.domain.TechniqueInfo;
 
+import javax.persistence.Column;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
@@ -21,9 +23,9 @@ public class BatchPlanDto implements Serializable {
 
 //    private String productCode;
 
-    private Timestamp startDate;
+    private String startDate;
 
-    private Timestamp endDate;
+    private String endDate;
 
     private Integer batchPlanQuantity;
 
@@ -33,4 +35,9 @@ public class BatchPlanDto implements Serializable {
 
     private Long userId;
 
+    /**已完成数量**/
+    private Integer completedQuantity;
+
+    /**还可下达日计划总量**/
+    private Integer dailyPlanRemain;
 }

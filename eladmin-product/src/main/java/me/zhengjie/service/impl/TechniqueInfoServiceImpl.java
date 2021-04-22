@@ -85,6 +85,7 @@ public class TechniqueInfoServiceImpl implements TechniqueInfoService {
             map.put("材料1定额", techniqueInfo.getMaterial1Quota());
             map.put("材料2定额", techniqueInfo.getMaterial2Quota());
             map.put("材料3定额", techniqueInfo.getMaterial3Quota());
+            map.put("报工名称", techniqueInfo.getMaterial3Quota());
             list.add(map);
         }
         try {
