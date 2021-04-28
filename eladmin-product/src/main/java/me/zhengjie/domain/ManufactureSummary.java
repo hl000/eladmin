@@ -18,7 +18,7 @@ import java.util.Date;
 
 @Entity
 @Data
-@Table(name="manufacture_summary")
+@Table(name="report_manufacture_summary")
 public class ManufactureSummary implements Serializable {
 
 

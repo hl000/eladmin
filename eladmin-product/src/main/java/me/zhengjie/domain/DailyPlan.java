@@ -17,7 +17,7 @@ import java.sql.Timestamp;
 
 @Entity
 @Data
-@Table(name="daily_plan")
+@Table(name="report_daily_plan")
 public class DailyPlan  implements Serializable {
 
 
@@ -30,11 +30,6 @@ public class DailyPlan  implements Serializable {
 //    @Column(name="batch_plan_id")
 //    private Integer batchPlanId;
 
-//    /**生产批次号**/
-//    @Column(name = "batch_number")
-//    @ApiModelProperty(value = "生产批次号")
-//    private String batchNumber;
-
     @JoinColumn(name = "batch_plan_id")
     @ManyToOne(fetch=FetchType.EAGER)
     private BatchPlan batchPlan;
@@ -43,10 +38,6 @@ public class DailyPlan  implements Serializable {
     @Column(name = "plan_number")
     @ApiModelProperty(value = "生产计划编号")
     private String planNumber;
-
-//    @Column(name = "product_code")
-//    @ApiModelProperty(value = "产品代码")
-//    private String productCode;
 
     @Column(name = "start_date")
     @ApiModelProperty(value = "计划生产日期")

@@ -17,7 +17,7 @@ import java.sql.Timestamp;
  */
 @Entity
 @Data
-@Table(name="manufacture")
+@Table(name="report_manufacture")
 public class Manufacture implements Serializable {
 
     @Id

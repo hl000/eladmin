@@ -19,7 +19,7 @@ import java.util.Date;
  */
 @Entity
 @Data
-@Table(name="technique_info")
+@Table(name="report_technique_info")
 public class TechniqueInfo implements Serializable {
 
     @Id

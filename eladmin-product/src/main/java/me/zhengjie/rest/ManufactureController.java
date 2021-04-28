@@ -10,10 +10,7 @@ import me.zhengjie.domain.Manufacture;
 import me.zhengjie.domain.ManufactureSummary;
 import me.zhengjie.domain.TechniqueInfo;
 import me.zhengjie.service.ManufactureService;
-import me.zhengjie.service.dto.BatchPlanQueryCriteria;
-import me.zhengjie.service.dto.DailyPlanQueryCriteria;
-import me.zhengjie.service.dto.ManufactureQueryCriteria;
-import me.zhengjie.service.dto.ManufactureSummaryQueryCriteria;
+import me.zhengjie.service.dto.*;
 import me.zhengjie.utils.SecurityUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -25,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.sql.Timestamp;
+import java.text.ParseException;
 
 /**
  * @author HL
@@ -41,7 +39,7 @@ public class ManufactureController {
     @PostMapping("/add")
     @Log("新增manufacture")
     @ApiOperation("新增manufacture")
-    public Object create(@Validated @RequestBody Manufacture resources) {
+    public Object create(@Validated @RequestBody Manufacture resources) throws ParseException {
         UserDetails userDetails = SecurityUtils.getCurrentUser();
         Long userId = (Long) new JSONObject(new JSONObject(userDetails).get("user")).get("id");
         resources.setUserId(userId);
@@ -104,5 +102,17 @@ public class ManufactureController {
         manufactureService.queryManufactureSummary(response, criteria);
     }
 
-
+//    @GetMapping("/getSummaryView")
+//    @Log("查询汇总信息")
+//    @ApiOperation("查询汇总内容")
+//    public ResponseEntity<Object> getSummaryView(SummaryViewQueryCriteria criteria, Pageable pageable) {
+//        return new ResponseEntity<>(manufactureService.getSummaryView(criteria, pageable), HttpStatus.OK);
+//    }
+//
+//    @GetMapping("/getSummaryView/download")
+//    @Log("导出汇总信息")
+//    @ApiOperation("导出汇总信息")
+//    public void downloadSummaryView(HttpServletResponse response, SummaryViewQueryCriteria criteria) {
+//        manufactureService.querySummaryView(response, criteria);
+//    }
 }

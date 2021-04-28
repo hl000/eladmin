@@ -29,15 +29,9 @@ public class BatchPlanDto implements Serializable {
 
     private Integer batchPlanQuantity;
 
-//    private Integer techniqueInfoId;
-
-    private TechniqueInfo techniqueInfo;
-
     private Long userId;
 
-    /**已完成数量**/
-    private Integer completedQuantity;
+    private String productName;
 
-    /**还可下达日计划总量**/
-    private Integer dailyPlanRemain;
+    private String batchPlanName;
 }

@@ -42,4 +42,7 @@ public class TechniqueInfoQueryCriteria {
 
     @Query
     private Long userId;
+
+    @Query
+    private String manufactureName;
 }

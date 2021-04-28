@@ -1,6 +1,5 @@
 package me.zhengjie.rest;
 
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.json.JSONObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -11,6 +10,7 @@ import me.zhengjie.domain.DailyPlan;
 import me.zhengjie.repository.DailyPlanRepository;
 import me.zhengjie.service.PlanService;
 import me.zhengjie.service.dto.BatchPlanQueryCriteria;
+import me.zhengjie.service.dto.DailyPlanBatchDto;
 import me.zhengjie.service.dto.DailyPlanQueryCriteria;
 import me.zhengjie.utils.SecurityUtils;
 import org.springframework.data.domain.Pageable;
@@ -21,7 +21,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
+import java.text.ParseException;
 
 /**
  * @author HL
@@ -105,10 +105,19 @@ public class PlanController {
         return planService.createDailyPlan(resources)!=null;
     }
 
+
+    @PostMapping("/dailyPlanBatchAdd")
+    @Log("批量新增日计划")
+    @ApiOperation("批量新增日计划")
+    public Object createDailyPlanBatch(@Validated @RequestBody DailyPlanBatchDto resources){
+        return planService.createDailyPlanBatch(resources)!=null;
+    }
+
+
     @PutMapping("/dailyPlanEdit")
     @Log("修改dailyPlan")
     @ApiOperation("修改dailyPlan")
-    public ResponseEntity<Object> updateDailyPlan(@Validated @RequestBody DailyPlan resources){
+    public ResponseEntity<Object> updateDailyPlan(@Validated @RequestBody DailyPlan resources) throws ParseException {
         planService.updateDailyPlan(resources);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -135,14 +144,6 @@ public class PlanController {
     @Log("getDailyPlanByUser")
     @ApiOperation("getDailyPlanUser")
     public ResponseEntity<Object> getDailyPlanaByUser(){
-
         return new ResponseEntity<>(planService.getDailyPlanSelector(),HttpStatus.OK);
-    }
-
-    @GetMapping("/getBatchPlanByUser")
-    @Log("getBatchPlanByUser")
-    @ApiOperation("getBatchPlanByUser")
-    public ResponseEntity<Object> getBatchPlanaByUser(){
-        return new ResponseEntity<>(planService.getBatchPlanSelector(),HttpStatus.OK);
     }
 }

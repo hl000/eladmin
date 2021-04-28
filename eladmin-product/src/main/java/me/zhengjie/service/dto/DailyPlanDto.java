@@ -2,6 +2,7 @@ package me.zhengjie.service.dto;
 
 import lombok.Data;
 import me.zhengjie.domain.BatchPlan;
+import me.zhengjie.domain.TechniqueInfo;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -62,5 +63,9 @@ public class DailyPlanDto implements Serializable {
 
     /**已完成数量**/
     private Integer completedQuantity;
+
+    private Integer workerQuantity;
+
+    private Double workHours;
 
 }

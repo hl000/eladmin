@@ -14,7 +14,7 @@ import java.io.Serializable;
  */
 @Entity
 @Data
-@Table(name="category")
+@Table(name="report_category")
 public class Category  implements Serializable {
 
     @Id
@@ -38,6 +38,4 @@ public class Category  implements Serializable {
     public void copy(Category source){
         BeanUtil.copyProperties(source,this, CopyOptions.create().setIgnoreNullValue(true));
     }
-
-
 }

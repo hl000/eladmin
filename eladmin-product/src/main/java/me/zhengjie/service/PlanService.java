@@ -6,6 +6,7 @@ import me.zhengjie.service.dto.*;
 import org.springframework.data.domain.Pageable;
 
 import javax.servlet.http.HttpServletResponse;
+import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
@@ -20,7 +21,7 @@ public interface PlanService {
 
     BatchPlan createBatchPlan(BatchPlan resources);
 
-    void updateDailyPlan(DailyPlan resources);
+    void updateDailyPlan(DailyPlan resources) throws ParseException;
 
     DailyPlan createDailyPlan(DailyPlan resources);
 
@@ -36,7 +37,9 @@ public interface PlanService {
 
     void downloadDailyPlan(HttpServletResponse response, DailyPlanQueryCriteria criteria);
 
-    List<DailyPlan> getDailyPlanSelector();
-    List<BatchPlan> getBatchPlanSelector();
+    List<DailyPlanDto> getDailyPlanSelector();
 
+    List<RemainBatchQuantityDto> getRemainBatchQuantity(ProductParameterQueryCriteria criteria);
+
+    List<DailyPlan> createDailyPlanBatch(DailyPlanBatchDto resources);
 }

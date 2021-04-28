@@ -15,16 +15,18 @@ public class BatchPlanQueryCriteria {
     @Query
     private Long userId;
 
-    @Query(propName = "manufactureName",joinName = "techniqueInfo")
-    private String manufactureName;
+    @Query
+    private String productName;
 
-    @Query(propName = "productCode",joinName = "techniqueInfo")
-    private String productCode;
+    @Query
+    private String batchPlanName;
 
     @Query(type = Query.Type.GREATER_THAN )
     private String startDate;
 
     @Query(type = Query.Type.LESS_THAN )
     private String endDate;
+
+
 
 }
