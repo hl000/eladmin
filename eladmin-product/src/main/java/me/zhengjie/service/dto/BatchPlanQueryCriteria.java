@@ -27,6 +27,7 @@ public class BatchPlanQueryCriteria {
     @Query(type = Query.Type.LESS_THAN )
     private String endDate;
 
-
+    @Query
+    private String manufactureAddress;
 
 }

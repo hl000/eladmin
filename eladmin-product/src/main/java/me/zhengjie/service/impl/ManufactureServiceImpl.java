@@ -58,7 +58,7 @@ public class ManufactureServiceImpl implements ManufactureService {
     //制造信息报工
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ManufactureDto create(Manufacture resources){
+    public ManufactureDto create(Manufacture resources) {
         ManufactureQueryCriteria criteria = new ManufactureQueryCriteria();
         criteria.setPlanNumber(resources.getPlanNumber());
         criteria.setManufactureName(resources.getManufactureName());
@@ -152,25 +152,25 @@ public class ManufactureServiceImpl implements ManufactureService {
 
         //实际工时定额达成率
         manufactureSummary.setActualHourQuota(convertDouble(manufactureList.stream().mapToDouble(manufacture -> {
-            return manufactureSummary.getTheoryHours() == 0 ? 0.0 : manufactureSummary.getActualHours() / manufactureSummary.getTheoryHours();
+            return manufactureSummary.getActualHours() == 0 ? 0.0 : manufactureSummary.getTheoryHours() / manufactureSummary.getActualHours();
         }).sum()));
 
         //材料定额达成率
         Double a = manufactureSummary.getConsumeMaterial1();
         Double b = manufactureList.stream().mapToDouble(manufacture -> {
-            return (manufacture.getDailyOutput() - manufacture.getRejectsQuantity()) * techniqueInfo.getMaterial1Quota();
+            return manufacture.getDailyOutput()  * techniqueInfo.getMaterial1Quota();
         }).sum();
         manufactureSummary.setActualMaterial1Quota(convertDouble(b == 0 ? 0 : a / b));
 
         a = manufactureSummary.getConsumeMaterial2();
         b = manufactureList.stream().mapToDouble(manufacture -> {
-            return (manufacture.getDailyOutput() - manufacture.getRejectsQuantity()) * techniqueInfo.getMaterial2Quota();
+            return manufacture.getDailyOutput()  * techniqueInfo.getMaterial2Quota();
         }).sum();
         manufactureSummary.setActualMaterial2Quota(convertDouble(b == 0 ? 0 : a / b));
 
         a = manufactureSummary.getConsumeMaterial3();
         b = manufactureList.stream().mapToDouble(manufacture -> {
-            return (manufacture.getDailyOutput() - manufacture.getRejectsQuantity()) * techniqueInfo.getMaterial3Quota();
+            return manufacture.getDailyOutput()  * techniqueInfo.getMaterial3Quota();
         }).sum();
         manufactureSummary.setActualMaterial3Quota(convertDouble(b == 0 ? 0 : a / b));
 
@@ -236,8 +236,9 @@ public class ManufactureServiceImpl implements ManufactureService {
         b = productParameter.getUnitsQuantity() == 0 ? 0.0 : batchPlan.getBatchPlanQuantity() * productParameter.getUnitsQuantity();
         //批次不良数需重新计算
         manufactureSummary.setRejectsTotal(a);
+        //总计划制造量
+        manufactureSummary.setTotalPlanQuantity(b.intValue()); //allDailyPlan.stream().mapToInt(d ->{return d.getDailyPlanQuantity();}).sum()
         manufactureSummary.setBatchRejectRate(convertDouble(b == 0 ? 0 : a / b));
-
 
         //批次计划累计完成百分比
         a = allManufacture.stream().mapToDouble(manufacture -> {
@@ -251,8 +252,6 @@ public class ManufactureServiceImpl implements ManufactureService {
 
         //日计划产量
         manufactureSummary.setDailyPlanQuantity(dailyPlan.getDailyPlanQuantity());
-        //总计划制造量
-        manufactureSummary.setTotalPlanQuantity(batchPlan.getBatchPlanQuantity() * productParameter.getUnitsQuantity()); //allDailyPlan.stream().mapToInt(d ->{return d.getDailyPlanQuantity();}).sum()
 
 
         Calendar c = Calendar.getInstance();
@@ -362,6 +361,7 @@ public class ManufactureServiceImpl implements ManufactureService {
             }
             Map<String, Object> map = new LinkedHashMap<>();
             map.put("生产计划编号", manufacture.getPlanNumber());
+            map.put("生产基地",manufacture.getManufactureAddress());
             map.put("报工名称", dailyPlan.getManufactureName());
             map.put("工序结存数", manufacture.getInventoryBalance());
             map.put("材料1意外消耗", manufacture.getUnexpectedMaterial1());
@@ -390,7 +390,7 @@ public class ManufactureServiceImpl implements ManufactureService {
         for (ManufactureSummary manufactureSummary : manufactureSummaryList) {
             Map<String, Object> map = new LinkedHashMap<>();
             map.put("报工名称", manufactureSummary.getManufactureName());
-            map.put("生产批次号",manufactureSummary.getPlanNumber());
+            map.put("生产批次号", manufactureSummary.getPlanNumber());
             map.put("材料 1定额达成率", manufactureSummary.getActualMaterial1Quota());
             map.put("材料 1定额达成率", manufactureSummary.getActualMaterial1Quota());
             map.put("材料 2定额达成率", manufactureSummary.getActualMaterial2Quota());
@@ -402,8 +402,8 @@ public class ManufactureServiceImpl implements ManufactureService {
             map.put("日不良率%", manufactureSummary.getDailyCompletionRate());
             map.put("批次平均不良率%", manufactureSummary.getBatchRejectRate());
             map.put("年度平均不良率%", manufactureSummary.getAnnualRejectRate());
-            map.put("年度不良品总数",manufactureSummary.getAnnualRejectTotal());
-            map.put("年度生产累计总量",manufactureSummary.getAnnualOutputTotal());
+            map.put("年度不良品总数", manufactureSummary.getAnnualRejectTotal());
+            map.put("年度生产累计总量", manufactureSummary.getAnnualOutputTotal());
             map.put("批次计划累计完成百分比", manufactureSummary.getAccumulativeTotalPercentage());
             map.put("日计划产量", manufactureSummary.getDailyPlanQuantity());
             map.put("总计划制造量", manufactureSummary.getTotalPlanQuantity());
@@ -476,7 +476,7 @@ public class ManufactureServiceImpl implements ManufactureService {
     //制造信息修改
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void update(Manufacture resources){
+    public void update(Manufacture resources) {
         Manufacture manufacture = manufactureRepository.findById(resources.getId()).orElseGet(Manufacture::new);
         ValidationUtil.isNull(manufacture.getId(), "manufacture", "id", resources.getId());
 

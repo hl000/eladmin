@@ -72,6 +72,7 @@ public class PlanServiceImpl implements PlanService {
         for (BatchPlan batchPlan : batchPlans) {
             Map<String, Object> map = new LinkedHashMap<>();
             map.put("生产批次号", batchPlan.getBatchNumber());
+            map.put("生产基地",batchPlan.getManufactureAddress());
             map.put("产品名称", batchPlan.getProductName());
             map.put("生产计划开始日期", batchPlan.getStartDate());
             map.put("生产计划结束日期", batchPlan.getEndDate());
@@ -92,6 +93,7 @@ public class PlanServiceImpl implements PlanService {
         for (DailyPlan dailyPlan : dailyPlans) {
             Map<String, Object> map = new LinkedHashMap<>();
             map.put("生产批次号", dailyPlan.getBatchPlan().getBatchNumber());
+            map.put("生产基地",dailyPlan.getManufactureAddress());
             map.put("生产计划编号", dailyPlan.getPlanNumber());
             map.put("部件名称", dailyPlan.getManufactureName());
             map.put("计划生产日期", dailyPlan.getStartDate());
@@ -106,35 +108,41 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public List<DailyPlanDto> getDailyPlanSelector() {
-        List<DailyPlan> dailyPlanList = dailyPlanRepository.findAll();
+        UserDetails userDetails = SecurityUtils.getCurrentUser();
+        String userAddress = (String) new JSONObject(new JSONObject(userDetails).get("user")).get("userAddress");
+        DailyPlanQueryCriteria dailyPlanQueryCriteria = new DailyPlanQueryCriteria();
+        if (userAddress != null && !"".equals(userAddress)) {
+            dailyPlanQueryCriteria.setManufactureAddress(userAddress);
+        }
+        List<DailyPlan> dailyPlanList = dailyPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, dailyPlanQueryCriteria, criteriaBuilder));
+
         List<DailyPlan> dailyPlans = dailyPlanList.stream().filter(dailyPlan -> {
-            if (dailyPlan.getDailyPlanQuantity() > dailyPlan.getCompletedQuantity() && dailyPlan.getDailyPlanQuantity()!=0) {
+            if (dailyPlan.getDailyPlanQuantity() > dailyPlan.getCompletedQuantity() && dailyPlan.getDailyPlanQuantity() != 0) {
                 return true;
             }
             return false;
         }).collect(Collectors.toList());
         List<DailyPlanDto> dailyPlanDtos = dailyPlanMapper.toDto(dailyPlans);
 
-        UserDetails userDetails = SecurityUtils.getCurrentUser();
-        Long userId = (Long)new JSONObject(new JSONObject(userDetails).get("user")).get("id");
-        List<DailyPlanDto>  dailyPlanDtoList = new ArrayList<>();
-         for(DailyPlanDto dailyPlanDto : dailyPlanDtos ){
-             ProductParameterQueryCriteria productParameterQueryCriteria = new ProductParameterQueryCriteria();
-             productParameterQueryCriteria.setProductName(dailyPlanDto.getBatchPlan().getProductName());
-             productParameterQueryCriteria.setManufactureName(dailyPlanDto.getManufactureName());
-             List<ProductParameter>  productParameterList = productParameterRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, productParameterQueryCriteria, criteriaBuilder));
-            if(productParameterList !=null && productParameterList.size()>0){
+        Long userId = (Long) new JSONObject(new JSONObject(userDetails).get("user")).get("id");
+        List<DailyPlanDto> dailyPlanDtoList = new ArrayList<>();
+        for (DailyPlanDto dailyPlanDto : dailyPlanDtos) {
+            ProductParameterQueryCriteria productParameterQueryCriteria = new ProductParameterQueryCriteria();
+            productParameterQueryCriteria.setProductName(dailyPlanDto.getBatchPlan().getProductName());
+            productParameterQueryCriteria.setManufactureName(dailyPlanDto.getManufactureName());
+            List<ProductParameter> productParameterList = productParameterRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, productParameterQueryCriteria, criteriaBuilder));
+            if (productParameterList != null && productParameterList.size() > 0) {
                 ProductParameter productParameter = productParameterList.get(0);
-                if(productParameter.getPermissionUserIds()!=null){
-                   String[] userIds = productParameter.getPermissionUserIds().split(",");
-                   for(int i=0;i<userIds.length;i++){
-                       if(userIds[i].equals(userId.toString())){
-                           dailyPlanDto.setWorkerQuantity(productParameter.getWorkerQuantity());
-                           dailyPlanDto.setWorkHours(productParameter.getWorkHours());
-                           dailyPlanDtoList.add(dailyPlanDto);
-                       }
-                   }
-                }else{
+                if (productParameter.getPermissionUserIds() != null) {
+                    String[] userIds = productParameter.getPermissionUserIds().split(",");
+                    for (int i = 0; i < userIds.length; i++) {
+                        if (userIds[i].equals(userId.toString())) {
+                            dailyPlanDto.setWorkerQuantity(productParameter.getWorkerQuantity());
+                            dailyPlanDto.setWorkHours(productParameter.getWorkHours());
+                            dailyPlanDtoList.add(dailyPlanDto);
+                        }
+                    }
+                } else {
                     dailyPlanDto.setWorkerQuantity(productParameter.getWorkerQuantity());
                     dailyPlanDto.setWorkHours(productParameter.getWorkHours());
                     dailyPlanDtoList.add(dailyPlanDto);
@@ -151,7 +159,7 @@ public class PlanServiceImpl implements PlanService {
         BatchPlanQueryCriteria batchPlanQueryCriteria = new BatchPlanQueryCriteria();
         batchPlanQueryCriteria.setBatchPlanName(resources.getBatchPlanName());
         List<BatchPlan> batchPlans = batchPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, batchPlanQueryCriteria, criteriaBuilder));
-        if(batchPlans!=null && batchPlans.size()>0)
+        if (batchPlans != null && batchPlans.size() > 0)
             return null;
         return batchPlanRepository.save(resources);
     }
@@ -232,46 +240,51 @@ public class PlanServiceImpl implements PlanService {
 
 
     @Override
-    public List<RemainBatchQuantityDto> getRemainBatchQuantity(ProductParameterQueryCriteria criteria) {
+    public List<RemainBatchQuantityDto> getRemainBatchQuantity(BatchPlanQueryCriteria criteria) {
+        UserDetails userDetails = SecurityUtils.getCurrentUser();
+        String userAddress = (String) new JSONObject(new JSONObject(userDetails).get("user")).get("userAddress");
+        if (userAddress != null && !"".equals(userAddress)) {
+            criteria.setManufactureAddress(userAddress);
+        }
         List<BatchPlan> batchPlans = batchPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder));
 
-        if(batchPlans==null || batchPlans.size()==0)
+        if (batchPlans == null || batchPlans.size() == 0)
             return null;
         List<RemainBatchQuantityDto> remainDailyQuantities = new ArrayList<>();
-        List<ProductParameter>  productParameterList = productParameterRepository.findAll();
-        for(int i=0;i<batchPlans.size();i++){
+        List<ProductParameter> productParameterList = productParameterRepository.findAll();
+        for (int i = 0; i < batchPlans.size(); i++) {
             List<RemainInfoDto> remainInfoDtos = new ArrayList<>();
-            for(int j=0;j<productParameterList.size();j++){
+            for (int j = 0; j < productParameterList.size(); j++) {
                 RemainInfoDto remainInfoDto = new RemainInfoDto();
-                if(batchPlans.get(i).getProductName().equals(productParameterList.get(j).getProductName())){
+                if (batchPlans.get(i).getProductName().equals(productParameterList.get(j).getProductName())) {
                     DailyPlanQueryCriteria dailyPlanQueryCriteria = new DailyPlanQueryCriteria();
                     dailyPlanQueryCriteria.setBatchNumber(batchPlans.get(i).getBatchNumber());
                     dailyPlanQueryCriteria.setManufactureName(productParameterList.get(j).getManufactureName());
                     List<DailyPlan> dailyPlanList = dailyPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, dailyPlanQueryCriteria, criteriaBuilder));
 
-                   Integer dailyPlanTotal=  dailyPlanList.stream().mapToInt(dailyPlan -> {
+                    Integer dailyPlanTotal = dailyPlanList.stream().mapToInt(dailyPlan -> {
                         return dailyPlan.getDailyPlanQuantity();
                     }).sum();
 
-                    if(batchPlans.get(i).getBatchPlanQuantity() * productParameterList.get(j).getUnitsQuantity() > dailyPlanTotal){
+                    if (batchPlans.get(i).getBatchPlanQuantity() * productParameterList.get(j).getUnitsQuantity() > dailyPlanTotal) {
                         remainInfoDto.setManufactureName(productParameterList.get(j).getManufactureName());
-                        remainInfoDto.setRemainDailyQuantity(batchPlans.get(i).getBatchPlanQuantity()*productParameterList.get(j).getUnitsQuantity() - dailyPlanTotal);
+                        remainInfoDto.setRemainDailyQuantity(batchPlans.get(i).getBatchPlanQuantity() * productParameterList.get(j).getUnitsQuantity() - dailyPlanTotal);
                         remainInfoDto.setUnitsQuantity(productParameterList.get(j).getUnitsQuantity());
                         remainInfoDtos.add(remainInfoDto);
                     }
                 }
             }
-            if(remainInfoDtos!=null && remainInfoDtos.size()>0){
+            if (remainInfoDtos != null && remainInfoDtos.size() > 0) {
                 RemainBatchQuantityDto remainDailyQuantity = new RemainBatchQuantityDto();
                 remainDailyQuantity.setBatchPlanId(batchPlans.get(i).getId());
                 remainDailyQuantity.setBatchNumber(batchPlans.get(i).getBatchNumber());
                 remainDailyQuantity.setProductName(batchPlans.get(i).getProductName());
                 remainDailyQuantity.setBatchPlanName(batchPlans.get(i).getBatchPlanName());
+                remainDailyQuantity.setManufactureAddress(batchPlans.get(i).getManufactureAddress());
                 remainDailyQuantity.setRemainInfo(remainInfoDtos);
                 remainDailyQuantities.add(remainDailyQuantity);
             }
         }
-
         return remainDailyQuantities;
     }
 
@@ -283,14 +296,15 @@ public class PlanServiceImpl implements PlanService {
 
         List<DailyPlan> dailyPlanList = resources.getDailyPlanList();
         Long planNumber = Long.parseLong(SDF.format(new Date()));
-        for(DailyPlan dailyPlan : dailyPlanList){
+        for (DailyPlan dailyPlan : dailyPlanList) {
             dailyPlan.setPlanNumber(planNumber.toString());
             dailyPlan.setBatchPlan(resources.getBatchPlan());
             dailyPlan.setStartDate(resources.getStartDate());
             dailyPlan.setUserId(userId);
+            dailyPlan.setManufactureAddress(resources.getManufactureAddress());
             planNumber++;
         }
-       return dailyPlanRepository.saveAll(dailyPlanList);
+        return dailyPlanRepository.saveAll(dailyPlanList);
     }
 
 }

@@ -60,6 +60,12 @@ public class BatchPlan implements Serializable {
     private String batchPlanName;
 
 
+    /**报工名称**/
+    @Column(name = "manufacture_address")
+    @ApiModelProperty(value = "生产基地")
+    private String manufactureAddress;
+
+
     public void copy(BatchPlan source){
         BeanUtil.copyProperties(source,this, CopyOptions.create().setIgnoreNullValue(true));
     }

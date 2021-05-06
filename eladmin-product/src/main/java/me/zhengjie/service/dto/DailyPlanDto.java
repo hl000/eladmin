@@ -68,4 +68,6 @@ public class DailyPlanDto implements Serializable {
 
     private Double workHours;
 
+
+    private String manufactureAddress;
 }

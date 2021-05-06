@@ -39,7 +39,7 @@ public interface PlanService {
 
     List<DailyPlanDto> getDailyPlanSelector();
 
-    List<RemainBatchQuantityDto> getRemainBatchQuantity(ProductParameterQueryCriteria criteria);
+    List<RemainBatchQuantityDto> getRemainBatchQuantity(BatchPlanQueryCriteria criteria);
 
     List<DailyPlan> createDailyPlanBatch(DailyPlanBatchDto resources);
 }

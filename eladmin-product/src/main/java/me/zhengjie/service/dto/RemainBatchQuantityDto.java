@@ -20,5 +20,7 @@ public class RemainBatchQuantityDto implements Serializable {
 
     private String batchPlanName;
 
+    private String manufactureAddress;
+
 
 }

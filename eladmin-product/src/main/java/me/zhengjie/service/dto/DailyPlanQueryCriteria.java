@@ -29,4 +29,7 @@ public class DailyPlanQueryCriteria {
 
     @Query
     private String startDate;
+
+    @Query
+    private String manufactureAddress;
 }

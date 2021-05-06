@@ -88,7 +88,6 @@ public class Manufacture implements Serializable {
     /**填报日期**/
     @Column(name = "fill_date")
     @ApiModelProperty(value = "填报日期")
-    @CreationTimestamp
     private Timestamp fillDate;
 
     /**填报用户Id**/
@@ -107,11 +106,11 @@ public class Manufacture implements Serializable {
     @UpdateTimestamp
     private Timestamp updateTime;
 
-//    /**生产批次**/
-//    @Column(name = "batch_number")
-//    @ApiModelProperty(value = "生产批次号")
-//    private String batch_number;
 
+    /**报工名称**/
+    @Column(name = "manufacture_address")
+    @ApiModelProperty(value = "生产基地")
+    private String manufactureAddress;
 
     public void copy(Manufacture source){
         BeanUtil.copyProperties(source,this, CopyOptions.create().setIgnoreNullValue(true));

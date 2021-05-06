@@ -101,6 +101,10 @@ public class SysUser implements Serializable {
     @ApiModelProperty(value = "更新时间")
     private Timestamp updateTime;
 
+    @Column(name = "user_address")
+    @ApiModelProperty(value = "用户地址")
+    private String userAddress;
+
     public void copy(SysUser source){
         BeanUtil.copyProperties(source,this, CopyOptions.create().setIgnoreNullValue(true));
     }

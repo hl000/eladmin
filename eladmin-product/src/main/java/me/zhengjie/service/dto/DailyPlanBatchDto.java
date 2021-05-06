@@ -26,4 +26,6 @@ public class DailyPlanBatchDto implements Serializable {
 
 
     private List<DailyPlan> dailyPlanList;
+
+    private String manufactureAddress;
 }

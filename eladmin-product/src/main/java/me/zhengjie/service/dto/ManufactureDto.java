@@ -65,4 +65,6 @@ public class ManufactureDto implements Serializable {
 
 //   /**生产批次号**/
 //   private String batch_number;
+
+    private String manufactureAddress;
 }

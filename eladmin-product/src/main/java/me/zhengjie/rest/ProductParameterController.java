@@ -1,16 +1,21 @@
 package me.zhengjie.rest;
 
+import cn.hutool.json.JSONObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.annotation.Log;
+import me.zhengjie.domain.BatchPlan;
 import me.zhengjie.domain.ProductParameter;
 import me.zhengjie.service.PlanService;
 import me.zhengjie.service.ProductParameterService;
+import me.zhengjie.service.dto.BatchPlanQueryCriteria;
 import me.zhengjie.service.dto.ProductParameterQueryCriteria;
+import me.zhengjie.utils.SecurityUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,7 +63,12 @@ public class ProductParameterController {
     @GetMapping("/productNameSelector")
     @Log("获取产品名称下拉框")
     @ApiOperation("查询产品名称")
-    public List<String> getProductName(ProductParameterQueryCriteria criteria) {
+    public Map<String,Object> getProductName(ProductParameterQueryCriteria criteria) {
+        Map<String,Object> map = new HashMap<>();
+        UserDetails userDetails = SecurityUtils.getCurrentUser();
+        String userAddress = (String) new JSONObject(new JSONObject(userDetails).get("user")).get("userAddress");
+        map.put("userAddress",userAddress);
+
         List<ProductParameter> productParameterList = productParameterService.queryAll(criteria);
 //        Map <String,List < ProductParameter >> collect = productParameterList.stream().collect(Collectors.groupingBy(ProductParameter::getProductName));
 //        return collet;
@@ -68,7 +78,8 @@ public class ProductParameterController {
             stringStringMap.put(productParameter.getProductName(), productParameter.getProductName());
         });
         List<String> productNames = stringStringMap.entrySet().stream().map(e -> e.getKey()).collect(Collectors.toList());
-        return productNames;
+        map.put("productNames",productNames);
+        return map;
     }
 
     @GetMapping("/productParameterSelector")
@@ -81,7 +92,7 @@ public class ProductParameterController {
     @GetMapping("/getRemainBatchQuantity")
     @Log("获取剩余日计划最大值")
     @ApiOperation("获取剩余日计划最大值")
-    public ResponseEntity<Object> getRemainBatchQuantity(ProductParameterQueryCriteria criteria) {
+    public ResponseEntity<Object> getRemainBatchQuantity(BatchPlanQueryCriteria criteria) {
         return new ResponseEntity<>(planService.getRemainBatchQuantity(criteria), HttpStatus.OK);
     }
 }

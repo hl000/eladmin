@@ -78,4 +78,7 @@ public class SysUserDto implements Serializable {
 
     /** 更新时间 */
     private Timestamp updateTime;
+
+    /**地址**/
+    private String userAddress;
 }

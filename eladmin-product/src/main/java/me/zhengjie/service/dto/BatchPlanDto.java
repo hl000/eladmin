@@ -34,4 +34,6 @@ public class BatchPlanDto implements Serializable {
     private String productName;
 
     private String batchPlanName;
+
+    private String manufactureAddress;
 }

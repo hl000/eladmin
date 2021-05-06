@@ -24,4 +24,7 @@ public class ManufactureQueryCriteria {
     @Query(type = Query.Type.BETWEEN)
     private List<Timestamp> fillDate;
 
+    @Query
+    private String manufactureAddress;
+
 }
