@@ -1,9 +1,11 @@
 package me.zhengjie.service.dto;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import me.zhengjie.domain.BatchPlan;
 import me.zhengjie.domain.TechniqueInfo;
 
+import javax.persistence.Column;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
@@ -68,6 +70,21 @@ public class DailyPlanDto implements Serializable {
 
     private Double workHours;
 
+    private String material1Name;
+
+    private String material2Name;
+
+    private String material3Name;
+
+    private String material4Name;
+
+    private String material1Unit;
+
+    private String material2Unit;
+
+    private String material3Unit;
+
+    private String material4Unit;
 
     private String manufactureAddress;
 }

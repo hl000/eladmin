@@ -29,6 +29,11 @@ public class ManufactureSummaryDto {
     private String consumeMaterial3;
 
     /**
+     * 材料3消耗
+     **/
+    private String consumeMaterial4;
+
+    /**
      * 实际工时定额达成率
      **/
     private Double actualHourQuota;
@@ -170,5 +175,21 @@ public class ManufactureSummaryDto {
      * 报工名称
      */
     private String manufactureName;
+
+    private String material1Name;
+
+    private String material2Name;
+
+    private String material3Name;
+
+    private String material4Name;
+
+    private String material1Unit;
+
+    private String material2Unit;
+
+    private String material3Unit;
+
+    private String material4Unit;
 
 }

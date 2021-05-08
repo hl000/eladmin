@@ -137,19 +137,30 @@ public class PlanServiceImpl implements PlanService {
                     String[] userIds = productParameter.getPermissionUserIds().split(",");
                     for (int i = 0; i < userIds.length; i++) {
                         if (userIds[i].equals(userId.toString())) {
-                            dailyPlanDto.setWorkerQuantity(productParameter.getWorkerQuantity());
-                            dailyPlanDto.setWorkHours(productParameter.getWorkHours());
+                            setDailyPlan(dailyPlanDto, productParameter);
                             dailyPlanDtoList.add(dailyPlanDto);
                         }
                     }
                 } else {
-                    dailyPlanDto.setWorkerQuantity(productParameter.getWorkerQuantity());
-                    dailyPlanDto.setWorkHours(productParameter.getWorkHours());
+                    setDailyPlan(dailyPlanDto, productParameter);
                     dailyPlanDtoList.add(dailyPlanDto);
                 }
             }
         }
         return dailyPlanDtoList;
+    }
+
+    private void setDailyPlan(DailyPlanDto dailyPlanDto, ProductParameter productParameter) {
+        dailyPlanDto.setWorkerQuantity(productParameter.getWorkerQuantity());
+        dailyPlanDto.setWorkHours(productParameter.getWorkHours());
+        dailyPlanDto.setMaterial1Name(productParameter.getTechniqueInfo().getMaterial1Name());
+        dailyPlanDto.setMaterial2Name(productParameter.getTechniqueInfo().getMaterial2Name());
+        dailyPlanDto.setMaterial3Name(productParameter.getTechniqueInfo().getMaterial3Name());
+        dailyPlanDto.setMaterial4Name(productParameter.getTechniqueInfo().getMaterial4Name());
+        dailyPlanDto.setMaterial1Unit(productParameter.getTechniqueInfo().getMaterial1Unit());
+        dailyPlanDto.setMaterial2Unit(productParameter.getTechniqueInfo().getMaterial2Unit());
+        dailyPlanDto.setMaterial3Unit(productParameter.getTechniqueInfo().getMaterial3Unit());
+        dailyPlanDto.setMaterial4Unit(productParameter.getTechniqueInfo().getMaterial4Unit());
     }
 
     @Override

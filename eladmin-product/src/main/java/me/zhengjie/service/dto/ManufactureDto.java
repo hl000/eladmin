@@ -33,6 +33,9 @@ public class ManufactureDto implements Serializable {
     /**意外消耗材料3**/
    private Double unexpectedMaterial3;
 
+    /**意外消耗材料4**/
+    private Double unexpectedMaterial4;
+
    /**班组人员数**/
    private Integer workerQuantity;
 
@@ -62,6 +65,22 @@ public class ManufactureDto implements Serializable {
 
    /**修改时间**/
    private Timestamp updateTime;
+
+    private String material1Name;
+
+    private String material2Name;
+
+    private String material3Name;
+
+    private String material4Name;
+
+    private String material1Unit;
+
+    private String material2Unit;
+
+    private String material3Unit;
+
+    private String material4Unit;
 
 //   /**生产批次号**/
 //   private String batch_number;

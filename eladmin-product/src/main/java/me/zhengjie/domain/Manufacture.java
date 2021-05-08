@@ -41,19 +41,24 @@ public class Manufacture implements Serializable {
     private Integer inventoryBalance;
 
     /**意外消耗材料1**/
-    @Column(name = "unexpected_Material1")
+    @Column(name = "unexpected_material1")
     @ApiModelProperty(value = "意外消耗材料1")
     private Double unexpectedMaterial1 = 0.0;
 
     /**意外消耗材料2**/
-    @Column(name = "unexpected_Material2")
+    @Column(name = "unexpected_material2")
     @ApiModelProperty(value = "意外消耗材料2")
     private Double unexpectedMaterial2 = 0.0;
 
     /**意外消耗材料3**/
-    @Column(name = "unexpected_Material3")
+    @Column(name = "unexpected_material3")
     @ApiModelProperty(value = "意外消耗材料3")
     private Double unexpectedMaterial3 = 0.0;
+
+    /**意外消耗材料4**/
+    @Column(name = "unexpected_material4")
+    @ApiModelProperty(value = "意外消耗材料4")
+    private Double unexpectedMaterial4 = 0.0;
 
     /**班组人员数**/
     @Column(name = "worker_quantity")

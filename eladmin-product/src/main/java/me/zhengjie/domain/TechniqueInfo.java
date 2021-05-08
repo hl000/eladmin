@@ -89,6 +89,42 @@ public class TechniqueInfo implements Serializable {
     @ApiModelProperty(value = "材料3定额")
     private Double material3Quota;
 
+    @Column(name = "material4_quota")
+    @ApiModelProperty(value = "材料4定额")
+    private Double material4Quota;
+
+    @Column(name = "material1_name")
+    @ApiModelProperty(value = "材料1名称")
+    private String material1Name;
+
+    @Column(name = "material2_name")
+    @ApiModelProperty(value = "材料2名称")
+    private String material2Name;
+
+    @Column(name = "material3_name")
+    @ApiModelProperty(value = "材料3名称")
+    private String material3Name;
+
+    @Column(name = "material4_name")
+    @ApiModelProperty(value = "材料4名称")
+    private String material4Name;
+
+    @Column(name = "material1_unit")
+    @ApiModelProperty(value = "材料1单位")
+    private String material1Unit;
+
+    @Column(name = "material2_unit")
+    @ApiModelProperty(value = "材料2单位")
+    private String material2Unit;
+
+    @Column(name = "material3_unit")
+    @ApiModelProperty(value = "材料3单位")
+    private String material3Unit;
+
+    @Column(name = "material4_unit")
+    @ApiModelProperty(value = "材料4单位")
+    private String material4Unit;
+
 //    @Column(name = "change_content")
 //    @ApiModelProperty(value = "工艺变更内容")
 //    private String changeContent;

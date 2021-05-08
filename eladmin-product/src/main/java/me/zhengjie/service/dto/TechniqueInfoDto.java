@@ -93,6 +93,25 @@ public class TechniqueInfoDto implements Serializable {
      **/
     private Double material3Quota;
 
+    private Double material4Quota;
+
+    private String material1Name;
+
+    private String material2Name;
+
+    private String material3Name;
+
+    private String material4Name;
+
+    private String material1Unit;
+
+    private String material2Unit;
+
+    private String material3Unit;
+
+    private String material4Unit;
+
+
     /**
      * 分类
      **/

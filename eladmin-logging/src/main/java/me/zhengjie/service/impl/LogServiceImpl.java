@@ -95,7 +95,7 @@ public class LogServiceImpl implements LogService {
         assert log != null;
         log.setRequestIp(ip);
 
-        log.setAddress(StringUtils.getCityInfo(log.getRequestIp()));
+        log.setAddress(log.getRequestIp());
         log.setMethod(methodName);
         log.setUsername(username);
         log.setParams(getParameter(method, joinPoint.getArgs()));

@@ -41,21 +41,28 @@ public class ManufactureSummary implements Serializable {
     /**
      * 材料1消耗
      **/
-    @Column(name = "consume_Material1")
+    @Column(name = "consume_material1")
     @ApiModelProperty(value = "材料1消耗")
     private Double consumeMaterial1;
     /**
      * 材料2消耗
      **/
-    @Column(name = "consume_Material2")
+    @Column(name = "consume_material2")
     @ApiModelProperty(value = "材料2消耗")
     private Double consumeMaterial2;
     /**
      * 材料3消耗
      **/
-    @Column(name = "consume_Material3")
+    @Column(name = "consume_material3")
     @ApiModelProperty(value = "材料3消耗")
     private Double consumeMaterial3;
+
+    /**
+     * 材料4消耗
+     **/
+    @Column(name = "consume_material4")
+    @ApiModelProperty(value = "材料4消耗")
+    private Double consumeMaterial4;
 
     /**
      * 实际工时定额达成率
@@ -67,23 +74,30 @@ public class ManufactureSummary implements Serializable {
     /**
      * 实际材料1定额达成率
      **/
-    @Column(name = "actual_Material1_quota")
+    @Column(name = "actual_material1_quota")
     @ApiModelProperty(value = "实际材料1定额达成率")
     private Double actualMaterial1Quota;
 
     /**
      * 实际材料2定额达成率
      **/
-    @Column(name = "actual_Material2_quota")
+    @Column(name = "actual_material2_quota")
     @ApiModelProperty(value = "实际材料2定额达成率")
     private Double actualMaterial2Quota;
 
     /**
      * 实际材料3定额达成率
      **/
-    @Column(name = "actual_Material3_quota")
+    @Column(name = "actual_material3_quota")
     @ApiModelProperty(value = "实际材料3定额达成率")
     private Double actualMaterial3Quota;
+
+    /**
+     * 实际材料4定额达成率
+     **/
+    @Column(name = "actual_material4_quota")
+    @ApiModelProperty(value = "实际材料4定额达成率")
+    private Double actualMaterial4Quota;
 
     /**
      * 工时实际
@@ -261,6 +275,37 @@ public class ManufactureSummary implements Serializable {
     @ApiModelProperty(value = "报工名称")
     private String manufactureName;
 
+    @Column(name = "material1_name")
+    @ApiModelProperty(value = "材料1名称")
+    private String material1Name;
+
+    @Column(name = "material2_name")
+    @ApiModelProperty(value = "材料2名称")
+    private String material2Name;
+
+    @Column(name = "material3_name")
+    @ApiModelProperty(value = "材料3名称")
+    private String material3Name;
+
+    @Column(name = "material4_name")
+    @ApiModelProperty(value = "材料4名称")
+    private String material4Name;
+
+    @Column(name = "material1_unit")
+    @ApiModelProperty(value = "材料1单位")
+    private String material1Unit;
+
+    @Column(name = "material2_unit")
+    @ApiModelProperty(value = "材料2单位")
+    private String material2Unit;
+
+    @Column(name = "material3_unit")
+    @ApiModelProperty(value = "材料3单位")
+    private String material3Unit;
+
+    @Column(name = "material4_unit")
+    @ApiModelProperty(value = "材料4单位")
+    private String material4Unit;
     public void copy(ManufactureSummary source){
         BeanUtil.copyProperties(source,this, CopyOptions.create().setIgnoreNullValue(true));
     }
