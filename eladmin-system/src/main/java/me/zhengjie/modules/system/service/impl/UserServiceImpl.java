@@ -132,6 +132,7 @@ public class UserServiceImpl implements UserService {
         user.setPhone(resources.getPhone());
         user.setNickName(resources.getNickName());
         user.setGender(resources.getGender());
+        user.setUserAddress(resources.getUserAddress());
         userRepository.save(user);
         // 清除缓存
         delCaches(user.getId(), user.getUsername());
