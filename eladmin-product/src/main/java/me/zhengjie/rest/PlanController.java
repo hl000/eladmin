@@ -146,4 +146,11 @@ public class PlanController {
     public ResponseEntity<Object> getDailyPlanaByUser(){
         return new ResponseEntity<>(planService.getDailyPlanSelector(),HttpStatus.OK);
     }
+
+
+    @GetMapping("/createDailyPlan")
+    @ApiOperation("createDailyPlan")
+    public void createDailyPlan() throws ParseException {
+        planService.createDailyPlan();
+    }
 }

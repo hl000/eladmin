@@ -21,10 +21,13 @@ public class ManufactureQueryCriteria {
     @Query
     private String manufactureName;
 
-    @Query(type = Query.Type.BETWEEN)
-    private List<Timestamp> fillDate;
+    @Query
+    private String fillDate;
 
     @Query
     private String manufactureAddress;
+
+    @Query
+    private Integer serialNumber;
 
 }

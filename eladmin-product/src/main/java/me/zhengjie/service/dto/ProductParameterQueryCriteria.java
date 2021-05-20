@@ -18,4 +18,7 @@ public class ProductParameterQueryCriteria implements Serializable {
     /**部件名称**/
     @Query(type = Query.Type.RIGHT_LIKE)
     private String manufactureName;
+
+    @Query
+    private Integer serialNumber;
 }

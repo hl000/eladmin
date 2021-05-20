@@ -42,4 +42,6 @@ public interface PlanService {
     List<RemainBatchQuantityDto> getRemainBatchQuantity(BatchPlanQueryCriteria criteria);
 
     List<DailyPlan> createDailyPlanBatch(DailyPlanBatchDto resources);
+
+    void createDailyPlan() throws ParseException;
 }

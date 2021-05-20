@@ -1,28 +1,27 @@
 package me.zhengjie.rest;
 
 import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.models.auth.In;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.annotation.Log;
 import me.zhengjie.domain.Manufacture;
-import me.zhengjie.domain.ManufactureSummary;
-import me.zhengjie.domain.TechniqueInfo;
 import me.zhengjie.service.ManufactureService;
-import me.zhengjie.service.dto.*;
+import me.zhengjie.service.dto.ManufactureQueryCriteria;
+import me.zhengjie.service.dto.ManufactureSummaryQueryCriteria;
+import me.zhengjie.service.dto.Role;
 import me.zhengjie.utils.SecurityUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import java.sql.Timestamp;
 import java.text.ParseException;
+import java.util.List;
 
 /**
  * @author HL
@@ -50,10 +49,6 @@ public class ManufactureController {
     @Log("查询getManufacture")
     @ApiOperation("查询getManufacture")
     public ResponseEntity<Object> queryManufacture(ManufactureQueryCriteria criteria, Pageable pageable) {
-
-        UserDetails userDetails = SecurityUtils.getCurrentUser();
-        Long userId = (Long) new JSONObject(new JSONObject(userDetails).get("user")).get("id");
-        criteria.setUserId(userId);
         return new ResponseEntity<>(manufactureService.queryManufacture(criteria, pageable), HttpStatus.OK);
     }
 
@@ -61,10 +56,23 @@ public class ManufactureController {
     @Log("导出")
     @ApiOperation("导出")
     public void downloadManufacture(HttpServletResponse response, ManufactureQueryCriteria criteria) {
-
         UserDetails userDetails = SecurityUtils.getCurrentUser();
-        Long userId = (Long) new JSONObject(new JSONObject(userDetails).get("user")).get("id");
-        criteria.setUserId(userId);
+        List<JSONObject> roles = (List) new JSONObject(new JSONObject(userDetails).get("user")).get("roles");
+        if (roles != null && roles.size() > 0) {
+            int flag = 0;
+            for (int i = 0; i < roles.size(); i++) {
+                Role role = JSONUtil.toBean(roles.get(0), Role.class);
+                if ("超级管理员".equals(role.getName()) || "测试人员".equals(role.getName()) || "部门主管".equals(role.getName())) {
+                    flag++;
+                    break;
+                }
+            }
+            if (flag == 0) {
+                Long userId = (Long) new JSONObject(new JSONObject(userDetails).get("user")).get("id");
+                criteria.setUserId(userId);
+
+            }
+        }
         manufactureService.queryManufacture(response, criteria);
     }
 
@@ -100,6 +108,13 @@ public class ManufactureController {
     @ApiOperation("导出汇总")
     public void downloadManufactureSummary(HttpServletResponse response, ManufactureQueryCriteria criteria) {
         manufactureService.queryManufactureSummary(response, criteria);
+    }
+
+    @GetMapping("/autoManufacture")
+    @Log("自动生成报工")
+    @ApiOperation("自动生成报工")
+    public void autoManufacture() {
+        manufactureService.createManufacture();
     }
 
 //    @GetMapping("/getSummaryView")

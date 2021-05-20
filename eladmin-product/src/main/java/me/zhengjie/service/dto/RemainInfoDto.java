@@ -14,4 +14,5 @@ public class RemainInfoDto implements Serializable {
         private String manufactureName;
         private Integer remainDailyQuantity;
         private Integer unitsQuantity;
+        private Integer serialNumber;
 }

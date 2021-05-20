@@ -24,6 +24,7 @@ spring:
   redis:
     #数据库索引
     database: ${REDIS_DB:0}
+#    host: ${REDIS_HOST:10.10.100.50}
     host: ${REDIS_HOST:127.0.0.1}
     port: ${REDIS_PORT:6379}
     password: ${REDIS_PWD:}
@@ -57,3 +58,8 @@ rsa:
 mybatis:
   # 扫描 mapper.xml
   mapper-locations: classpath:/mapper/**/*Mapper.xml
+
+
+scheduled:
+  dailyPlan-timer: "${dailyPlan-timer:0 0 10 * * ?}"
+  autoManufacture-timer: "${autoManufacture-timer:0 5 10 * * ?}"

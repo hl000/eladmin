@@ -2,20 +2,23 @@ package me.zhengjie.service.impl;
 
 import cn.hutool.json.JSONObject;
 import lombok.RequiredArgsConstructor;
+import me.zhengjie.Utils.DataChangeUtil;
 import me.zhengjie.domain.BatchPlan;
 import me.zhengjie.domain.DailyPlan;
+import me.zhengjie.domain.Manufacture;
 import me.zhengjie.domain.ProductParameter;
-import me.zhengjie.domain.TechniqueInfo;
 import me.zhengjie.mapper.BatchPlanMapper;
 import me.zhengjie.mapper.DailyPlanMapper;
 import me.zhengjie.repository.BatchPlanRepository;
 import me.zhengjie.repository.DailyPlanRepository;
+import me.zhengjie.repository.ManufactureRepository;
 import me.zhengjie.repository.ProductParameterRepository;
-import me.zhengjie.repository.TechniqueInfoRepository;
 import me.zhengjie.service.ManufactureService;
 import me.zhengjie.service.PlanService;
 import me.zhengjie.service.dto.*;
 import me.zhengjie.utils.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -48,10 +51,19 @@ public class PlanServiceImpl implements PlanService {
 
     private final DailyPlanRepository dailyPlanRepository;
 
+
+    private final ManufactureRepository manufactureRepository;
+
+
     private final ManufactureService manufactureService;
+
+    private static final Logger log = LoggerFactory.getLogger(RedisUtils.class);
+
 
     final SimpleDateFormat SDF = new SimpleDateFormat("yyyyMMddHHmmssS");
     final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+    String str = "http://www.easybots.cn/api/holiday.php?d=20190913";
 
     @Override
     public List<BatchPlanDto> findBatchPlan(BatchPlanQueryCriteria criteria) {
@@ -72,7 +84,7 @@ public class PlanServiceImpl implements PlanService {
         for (BatchPlan batchPlan : batchPlans) {
             Map<String, Object> map = new LinkedHashMap<>();
             map.put("生产批次号", batchPlan.getBatchNumber());
-            map.put("生产基地",batchPlan.getManufactureAddress());
+            map.put("生产基地", batchPlan.getManufactureAddress());
             map.put("产品名称", batchPlan.getProductName());
             map.put("生产计划开始日期", batchPlan.getStartDate());
             map.put("生产计划结束日期", batchPlan.getEndDate());
@@ -93,7 +105,7 @@ public class PlanServiceImpl implements PlanService {
         for (DailyPlan dailyPlan : dailyPlans) {
             Map<String, Object> map = new LinkedHashMap<>();
             map.put("生产批次号", dailyPlan.getBatchPlan().getBatchNumber());
-            map.put("生产基地",dailyPlan.getManufactureAddress());
+            map.put("生产基地", dailyPlan.getManufactureAddress());
             map.put("生产计划编号", dailyPlan.getPlanNumber());
             map.put("部件名称", dailyPlan.getManufactureName());
             map.put("计划生产日期", dailyPlan.getStartDate());
@@ -114,6 +126,7 @@ public class PlanServiceImpl implements PlanService {
         if (userAddress != null && !"".equals(userAddress)) {
             dailyPlanQueryCriteria.setManufactureAddress(userAddress);
         }
+        dailyPlanQueryCriteria.setStartDate(dateFormat.format(new Date()));
         List<DailyPlan> dailyPlanList = dailyPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, dailyPlanQueryCriteria, criteriaBuilder));
 
         List<DailyPlan> dailyPlans = dailyPlanList.stream().filter(dailyPlan -> {
@@ -126,7 +139,12 @@ public class PlanServiceImpl implements PlanService {
 
         Long userId = (Long) new JSONObject(new JSONObject(userDetails).get("user")).get("id");
         List<DailyPlanDto> dailyPlanDtoList = new ArrayList<>();
+        ManufactureQueryCriteria manufactureQueryCriteria = new ManufactureQueryCriteria();
         for (DailyPlanDto dailyPlanDto : dailyPlanDtos) {
+            manufactureQueryCriteria.setPlanNumber(dailyPlanDto.getPlanNumber());
+            List<Manufacture> manufactures = manufactureRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, manufactureQueryCriteria, criteriaBuilder));
+            if (manufactures != null && manufactures.size() > 0)
+                continue;
             ProductParameterQueryCriteria productParameterQueryCriteria = new ProductParameterQueryCriteria();
             productParameterQueryCriteria.setProductName(dailyPlanDto.getBatchPlan().getProductName());
             productParameterQueryCriteria.setManufactureName(dailyPlanDto.getManufactureName());
@@ -281,6 +299,7 @@ public class PlanServiceImpl implements PlanService {
                         remainInfoDto.setManufactureName(productParameterList.get(j).getManufactureName());
                         remainInfoDto.setRemainDailyQuantity(batchPlans.get(i).getBatchPlanQuantity() * productParameterList.get(j).getUnitsQuantity() - dailyPlanTotal);
                         remainInfoDto.setUnitsQuantity(productParameterList.get(j).getUnitsQuantity());
+                        remainInfoDto.setSerialNumber(productParameterList.get(j).getSerialNumber());
                         remainInfoDtos.add(remainInfoDto);
                     }
                 }
@@ -317,5 +336,97 @@ public class PlanServiceImpl implements PlanService {
         }
         return dailyPlanRepository.saveAll(dailyPlanList);
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void createDailyPlan() throws ParseException {
+
+        String today = dateFormat.format(new Date());
+        log.info("today:" + today);
+        BatchPlanQueryCriteria batchPlanQueryCriteria = new BatchPlanQueryCriteria();
+        batchPlanQueryCriteria.setStartDate(today);
+        batchPlanQueryCriteria.setEndDate(today);
+        List<BatchPlan> batchPlans = batchPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, batchPlanQueryCriteria, criteriaBuilder));
+        if (batchPlans != null && batchPlans.size() > 0) {
+            List<ProductParameter> productParameterList = productParameterRepository.findAll();
+            List<DailyPlan> dailyPlans = new ArrayList<>();
+            Long planNumber = Long.parseLong(SDF.format(new Date()));
+            for (int i = 0; i < batchPlans.size(); i++) {
+                int days = getDutyDays(today, batchPlans.get(i).getEndDate());
+                log.info("day and endDate differ:" + days);
+
+                for (int j = 0; j < productParameterList.size(); j++) {
+                    DailyPlan dailyPlan = new DailyPlan();
+                    if (batchPlans.get(i).getProductName().equals(productParameterList.get(j).getProductName())) {
+                        DailyPlanQueryCriteria dailyPlanQueryCriteria = new DailyPlanQueryCriteria();
+                        dailyPlanQueryCriteria.setBatchNumber(batchPlans.get(i).getBatchNumber());
+                        dailyPlanQueryCriteria.setManufactureName(productParameterList.get(j).getManufactureName());
+                        List<DailyPlan> dailyPlanList = dailyPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, dailyPlanQueryCriteria, criteriaBuilder));
+
+                        Integer dailyCompletedTotal = dailyPlanList.stream().mapToInt(plan -> {
+                            return plan.getCompletedQuantity();
+                        }).sum();
+                        log.info("batch plan:" + batchPlans.get(i).getBatchNumber() + "plan quantity:" + batchPlans.get(i).getBatchPlanQuantity() + ",completedQuantity:" + dailyCompletedTotal);
+
+                        Integer remainQuantity = batchPlans.get(i).getBatchPlanQuantity() * productParameterList.get(j).getUnitsQuantity() - dailyCompletedTotal;
+
+                        if (remainQuantity > 0) {
+                            dailyPlan.setDailyPlanQuantity(Double.valueOf(Math.ceil(remainQuantity * 1.0 / days)).intValue());
+                            dailyPlan.setBatchPlan(batchPlans.get(i));
+                            dailyPlan.setPlanNumber(planNumber.toString());
+                            dailyPlan.setStartDate(dateFormat.format(new Date()));
+                            dailyPlan.setManufactureAddress(batchPlans.get(i).getManufactureAddress());
+                            dailyPlan.setManufactureName(productParameterList.get(j).getManufactureName());
+                            dailyPlan.setUserId(batchPlans.get(i).getUserId());
+                            dailyPlan.setSerialNumber(productParameterList.get(j).getSerialNumber());
+                            DailyPlanQueryCriteria dailyPlanQueryCriteria1 = new DailyPlanQueryCriteria();
+                            dailyPlanQueryCriteria1.setBatchPlanId(batchPlans.get(i).getId());
+                            dailyPlanQueryCriteria1.setManufactureName(dailyPlan.getManufactureName());
+                            dailyPlanQueryCriteria1.setStartDate(dailyPlan.getStartDate());
+
+                            List<DailyPlan> dailyPlanList1 = dailyPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, dailyPlanQueryCriteria1, criteriaBuilder));
+                            if (dailyPlanList1 == null || dailyPlanList1.size() == 0) {
+                                dailyPlans.add(dailyPlan);
+                                planNumber++;
+                            }
+                        }
+                    }
+                }
+            }
+            dailyPlanRepository.saveAll(dailyPlans);
+        }
+
+
+    }
+
+    @SuppressWarnings("deprecation")
+    public int getDutyDays(String strStartDate, String strEndDate) throws ParseException {
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+        Date startDate = null;
+        Date endDate = null;
+
+        Object dataList = DateUtil.getHolidayJson(format.format(df.parse(strStartDate)) + "," + format.format(df.parse(strEndDate))).get("data");
+        List<String> list = DataChangeUtil.castList(dataList, String.class);
+
+        try {
+            startDate = df.parse(strStartDate);
+            endDate = df.parse(strEndDate);
+        } catch (ParseException e) {
+            System.out.println("非法的日期格式,无法进行转换");
+            e.printStackTrace();
+        }
+        int result = 0;
+        while (startDate.compareTo(endDate) <= 0) {
+            if (startDate.getDay() != 0)
+                result++;
+            startDate.setDate(startDate.getDate() + 1);
+        }
+        if (list != null && list.size() > 0) {
+            result = result - list.size();
+        }
+        return result > 0 ? result : 1;
+    }
+
 
 }

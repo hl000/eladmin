@@ -58,6 +58,10 @@ public class ProductParameter implements Serializable {
     @ManyToOne(fetch=FetchType.EAGER)
     private TechniqueInfo techniqueInfo;
 
+    @Column(name = "serial_number")
+    @ApiModelProperty(value = "工序号")
+    private Integer serialNumber;
+
     public void copy(ProductParameter source){
         BeanUtil.copyProperties(source,this, CopyOptions.create().setIgnoreNullValue(true));
     }

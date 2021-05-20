@@ -21,10 +21,10 @@ public class BatchPlanQueryCriteria {
     @Query
     private String batchPlanName;
 
-    @Query(type = Query.Type.GREATER_THAN )
+    @Query(type = Query.Type.LESS_THAN )
     private String startDate;
 
-    @Query(type = Query.Type.LESS_THAN )
+    @Query(type = Query.Type.GREATER_THAN )
     private String endDate;
 
     @Query

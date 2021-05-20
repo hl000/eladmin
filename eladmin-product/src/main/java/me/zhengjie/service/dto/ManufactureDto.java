@@ -1,7 +1,9 @@
 package me.zhengjie.service.dto;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.persistence.Column;
 import java.io.Serializable;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -86,4 +88,17 @@ public class ManufactureDto implements Serializable {
 //   private String batch_number;
 
     private String manufactureAddress;
+
+    private Integer serialNumber;
+
+    private Integer dailyPlanQuantity;
+
+    private Double dailyCompletionRate;
+
+    private String userName;
+
+    private Integer transferQuantity;
+
+    private Boolean isSame;
+
 }

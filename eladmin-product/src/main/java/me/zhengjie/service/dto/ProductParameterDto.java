@@ -35,4 +35,6 @@ public class ProductParameterDto implements Serializable {
 
     private TechniqueInfo techniqueInfo;
 
+    private Integer serialNumber;
+
 }

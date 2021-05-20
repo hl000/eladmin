@@ -3,23 +3,17 @@ package me.zhengjie.service.dto;
 import lombok.Data;
 import me.zhengjie.annotation.Query;
 
+import java.sql.Timestamp;
+import java.util.List;
+
 /**
  * @author HL
- * @create 2021/4/13 15:09
+ * @create 2021/4/20 14:16
  */
 @Data
-public class DailyPlanQueryCriteria {
-//    @Query
-//    private String batchNumber;
-
+public class ManufactureDtoQueryCriteria {
     @Query
     private String planNumber;
-
-    @Query(propName = "id",joinName = "batchPlan")
-    private Integer batchPlanId;
-
-    @Query(propName = "batchNumber",joinName = "batchPlan")
-    private String batchNumber;
 
     @Query
     private Long userId;
@@ -27,12 +21,13 @@ public class DailyPlanQueryCriteria {
     @Query
     private String manufactureName;
 
-    @Query
-    private String startDate;
-
+    @Query(type = Query.Type.BETWEEN)
+    private List<Timestamp> fillDate;
+    
     @Query
     private String manufactureAddress;
 
     @Query
     private Integer serialNumber;
+
 }

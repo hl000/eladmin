@@ -1,5 +1,7 @@
 package me.zhengjie.service.impl;
 
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.domain.*;
 import me.zhengjie.mapper.ManufactureMapper;
@@ -8,10 +10,14 @@ import me.zhengjie.mapper.SummaryViewMapper;
 import me.zhengjie.repository.*;
 import me.zhengjie.service.ManufactureService;
 import me.zhengjie.service.ProductParameterService;
+import me.zhengjie.service.StockService;
 import me.zhengjie.service.dto.*;
 import me.zhengjie.utils.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,7 +53,11 @@ public class ManufactureServiceImpl implements ManufactureService {
 
     private final ProductParameterService productParameterService;
 
+    private final StockService stockService;
+
     private final SummaryViewRepository summaryViewRepository;
+
+    private final SysUserRepository sysUserRepository;
 
     @Resource(name = "summaryViewMapperImpl")
     private SummaryViewMapper summaryViewMapper;
@@ -75,17 +85,7 @@ public class ManufactureServiceImpl implements ManufactureService {
         Manufacture manufacture = manufactureRepository.save(resources);
         updateDailyCompletedQuantity(resources.getPlanNumber());
         summary(resources.getPlanNumber());
-//        //新增后将对应的日计划effect改成true
-//        DailyPlanQueryCriteria dailyPlanQueryCriteria = new DailyPlanQueryCriteria();
-//        dailyPlanQueryCriteria.setPlanNumber(resources.getPlanNumber());
-//        List<DailyPlan> dailyPlanList = dailyPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, dailyPlanQueryCriteria, criteriaBuilder));
-//
-//        if (dailyPlanList != null && dailyPlanList.size() > 0) {
-//            dailyPlanList.forEach(dailyPlan -> {
-//                dailyPlan.setEffect(true);
-//                dailyPlanRepository.save(dailyPlan);
-//            });
-//        }
+        stockService.updateStock(manufacture);
         return manufactureMapper.toDto(manufacture);
     }
 
@@ -194,8 +194,11 @@ public class ManufactureServiceImpl implements ManufactureService {
 
 
         //日计划完成率
+//        a = manufactureList.stream().mapToDouble(manufacture -> {
+//            return manufacture.getDailyOutput() - manufacture.getRejectsQuantity();
+//        }).sum();
         a = manufactureList.stream().mapToDouble(manufacture -> {
-            return manufacture.getDailyOutput() - manufacture.getRejectsQuantity();
+            return manufacture.getDailyOutput();
         }).sum();
         b = dailyPlan.getDailyPlanQuantity() * 1.0;
         manufactureSummary.setDailyCompletionRate(convertDouble(b == 0 ? 0 : a / b));
@@ -295,12 +298,12 @@ public class ManufactureServiceImpl implements ManufactureService {
         List<Timestamp> timestampList = new ArrayList<>();
         timestampList.add(start);
         timestampList.add(end);
-        ManufactureQueryCriteria manufactureQueryCriteria1 = new ManufactureQueryCriteria();
-        manufactureQueryCriteria1.setManufactureName(dailyPlan.getManufactureName());
-        manufactureQueryCriteria1.setFillDate(timestampList);
+        ManufactureDtoQueryCriteria manufactureDtoQueryCriteria = new ManufactureDtoQueryCriteria();
+        manufactureDtoQueryCriteria.setManufactureName(dailyPlan.getManufactureName());
+        manufactureDtoQueryCriteria.setFillDate(timestampList);
 
         //获取该工序一年的报工
-        List<Manufacture> manufactureList1 = manufactureRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, manufactureQueryCriteria1, criteriaBuilder));
+        List<Manufacture> manufactureList1 = manufactureRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, manufactureDtoQueryCriteria, criteriaBuilder));
         if (manufactureList == null || manufactureList.size() <= 0) { //如果没有报工，则不产生汇总数据
             return;
         }
@@ -372,40 +375,48 @@ public class ManufactureServiceImpl implements ManufactureService {
         for (Manufacture manufacture : manufactures) {
             Map<String, Object> map = new LinkedHashMap<>();
 
-
-            map.put("生产计划编号", manufacture.getPlanNumber());
             map.put("生产基地", manufacture.getManufactureAddress());
             map.put("报工名称", manufacture.getManufactureName());
-            map.put("工序结存数", manufacture.getInventoryBalance());
+            map.put("生产计划编号", manufacture.getPlanNumber());
+            map.put("日实际产量(含不良）", manufacture.getDailyOutput());
 
-            map.put("材料1意外消耗", "");
-            map.put("材料2意外消耗", "");
-            map.put("材料3意外消耗", "");
+//            map.put("材料1意外消耗", "");
+//            map.put("材料2意外消耗", "");
+//            map.put("材料3意外消耗", "");
+//            map.put("材料4意外消耗", "");
             DailyPlanQueryCriteria dailyPlanQueryCriteria = new DailyPlanQueryCriteria();
             dailyPlanQueryCriteria.setPlanNumber(manufacture.getPlanNumber());
             dailyPlanQueryCriteria.setManufactureName(manufacture.getManufactureName());
             List<DailyPlan> dailyPlanList = dailyPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, dailyPlanQueryCriteria, criteriaBuilder));
             if (dailyPlanList != null && dailyPlanList.size() > 0) {
                 DailyPlan dailyPlan = dailyPlanList.get(0);
+                map.put("日计划产量", dailyPlan.getDailyPlanQuantity());
+                map.put("日计划达成率", convertDouble(manufacture.getDailyOutput() * 1.0 / dailyPlan.getDailyPlanQuantity()));
+                map.put("日产能不达标原因", manufacture.getIncompleteReasons());
+                map.put("不良品数量", manufacture.getRejectsQuantity());
+                map.put("废品率异常原因说明", manufacture.getRejectReasons());
+                map.put("工序结存数", manufacture.getInventoryBalance());
+                map.put("班组人员数", manufacture.getWorkerQuantity());
+                map.put("工时（含加班）", manufacture.getWorkingHours());
+
                 ProductParameterQueryCriteria productParameterQueryCriteria = new ProductParameterQueryCriteria();
                 productParameterQueryCriteria.setProductName(dailyPlan.getBatchPlan().getProductName());
                 productParameterQueryCriteria.setManufactureName(manufacture.getManufactureName());
                 List<ProductParameter> productParameterList = productParameterRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, productParameterQueryCriteria, criteriaBuilder));
                 if (productParameterList != null && productParameterList.size() > 0) {
                     ProductParameter productParameter = productParameterList.get(0);
-                    map.put("材料1意外消耗", productParameter.getTechniqueInfo().getMaterial1Name() + manufacture.getUnexpectedMaterial1() + productParameter.getTechniqueInfo().getMaterial1Unit());
-                    map.put("材料2意外消耗", productParameter.getTechniqueInfo().getMaterial2Name() + manufacture.getUnexpectedMaterial2() + productParameter.getTechniqueInfo().getMaterial2Unit());
-                    map.put("材料3意外消耗", productParameter.getTechniqueInfo().getMaterial3Name() + manufacture.getUnexpectedMaterial3() + productParameter.getTechniqueInfo().getMaterial3Unit());
+                    TechniqueInfo techniqueInfo = productParameter.getTechniqueInfo();
+                    map.put("材料1意外消耗", (techniqueInfo.getMaterial1Name() == null || "".equals(techniqueInfo.getMaterial1Name())) ? "" : techniqueInfo.getMaterial1Name() + manufacture.getUnexpectedMaterial1() + (techniqueInfo.getMaterial1Unit() == null || "".equals(techniqueInfo.getMaterial1Unit()) ? "" : techniqueInfo.getMaterial1Unit()));
+                    map.put("材料2意外消耗", (techniqueInfo.getMaterial2Name() == null || "".equals(techniqueInfo.getMaterial2Name())) ? "" : techniqueInfo.getMaterial2Name() + manufacture.getUnexpectedMaterial2() + (techniqueInfo.getMaterial2Unit() == null || "".equals(techniqueInfo.getMaterial2Unit()) ? "" : techniqueInfo.getMaterial2Unit()));
+                    map.put("材料3意外消耗", (techniqueInfo.getMaterial3Name() == null || "".equals(techniqueInfo.getMaterial3Name())) ? "" : techniqueInfo.getMaterial3Name() + manufacture.getUnexpectedMaterial3() + (techniqueInfo.getMaterial3Unit() == null || "".equals(techniqueInfo.getMaterial3Unit()) ? "" : techniqueInfo.getMaterial3Unit()));
+                    map.put("材料4意外消耗", (techniqueInfo.getMaterial4Name() == null || "".equals(techniqueInfo.getMaterial4Name())) ? "" : techniqueInfo.getMaterial4Name() + manufacture.getUnexpectedMaterial4() + (techniqueInfo.getMaterial4Unit() == null || "".equals(techniqueInfo.getMaterial4Unit()) ? "" : techniqueInfo.getMaterial4Unit()));
                 }
             }
 
-            map.put("班组人员数", manufacture.getWorkerQuantity());
-            map.put("工时（含加班）", manufacture.getWorkingHours());
-            map.put("日实际产量(含不良）", manufacture.getDailyOutput());
-            map.put("不良品数量", manufacture.getRejectsQuantity());
-            map.put("废品率异常原因说明", manufacture.getRejectReasons());
-            map.put("日产能不达标原因", manufacture.getIncompleteReasons());
-            map.put("填报日期", manufacture.getFillDate());
+            SysUser sysUser = sysUserRepository.findById(manufacture.getUserId()).orElseGet(SysUser::new);
+            map.put("报工人", sysUser.getUsername());
+
+            map.put("填报日期", dateFormat.format(manufacture.getFillDate()));
             list.add(map);
         }
         try {
@@ -423,28 +434,28 @@ public class ManufactureServiceImpl implements ManufactureService {
             Map<String, Object> map = new LinkedHashMap<>();
             map.put("报工名称", manufactureSummary.getManufactureName());
             map.put("生产批次号", manufactureSummary.getPlanNumber());
-            map.put("材料1消耗", manufactureSummary.getMaterial1Name()+manufactureSummary.getConsumeMaterial1()+manufactureSummary.getMaterial1Unit());
-            map.put("材料2消耗", manufactureSummary.getMaterial2Name()+manufactureSummary.getConsumeMaterial2()+manufactureSummary.getMaterial2Unit());
-            map.put("材料3消耗", manufactureSummary.getMaterial3Name()+manufactureSummary.getConsumeMaterial3()+manufactureSummary.getMaterial3Unit());
-            map.put("材料4消耗", manufactureSummary.getMaterial4Name()+manufactureSummary.getConsumeMaterial4()+manufactureSummary.getMaterial4Unit());
+            map.put("材料1消耗", manufactureSummary.getMaterial1Name() == null || "".equals(manufactureSummary.getMaterial1Name()) ? "" : manufactureSummary.getMaterial1Name() + manufactureSummary.getConsumeMaterial1() + manufactureSummary.getMaterial1Unit());
+            map.put("材料2消耗", manufactureSummary.getMaterial2Name() == null || "".equals(manufactureSummary.getMaterial2Name()) ? "" : manufactureSummary.getMaterial2Name() + manufactureSummary.getConsumeMaterial2() + manufactureSummary.getMaterial2Unit());
+            map.put("材料3消耗", manufactureSummary.getMaterial3Name() == null || "".equals(manufactureSummary.getMaterial3Name()) ? "" : manufactureSummary.getMaterial3Name() + manufactureSummary.getConsumeMaterial3() + manufactureSummary.getMaterial3Unit());
+            map.put("材料4消耗", manufactureSummary.getMaterial4Name() == null || "".equals(manufactureSummary.getMaterial4Name()) ? "" : manufactureSummary.getMaterial4Name() + manufactureSummary.getConsumeMaterial4() + manufactureSummary.getMaterial4Unit());
 
-            map.put("材料1定额达成率", manufactureSummary.getMaterial1Name() + manufactureSummary.getActualMaterial1Quota() * 100 + "%");
-            map.put("材料2定额达成率", manufactureSummary.getMaterial2Name() + manufactureSummary.getActualMaterial2Quota() * 100 + "%");
-            map.put("材料3定额达成率", manufactureSummary.getMaterial3Name() + manufactureSummary.getActualMaterial3Quota() * 100 + "%");
-            map.put("材料4定额达成率", manufactureSummary.getMaterial4Name() + manufactureSummary.getActualMaterial4Quota() * 100 + "%");
+            map.put("材料1定额达成率", manufactureSummary.getMaterial1Name() == null || "".equals(manufactureSummary.getMaterial1Name()) ? "" : manufactureSummary.getMaterial1Name() + manufactureSummary.getActualMaterial1Quota() * 100 + "%");
+            map.put("材料2定额达成率", manufactureSummary.getMaterial2Name() == null || "".equals(manufactureSummary.getMaterial2Name()) ? "" : manufactureSummary.getMaterial2Name() + manufactureSummary.getActualMaterial2Quota() * 100 + "%");
+            map.put("材料3定额达成率", manufactureSummary.getMaterial3Name() == null || "".equals(manufactureSummary.getMaterial3Name()) ? "" : manufactureSummary.getMaterial3Name() + manufactureSummary.getActualMaterial3Quota() * 100 + "%");
+            map.put("材料4定额达成率", manufactureSummary.getMaterial4Name() == null || "".equals(manufactureSummary.getMaterial4Name()) ? "" : manufactureSummary.getMaterial4Name() + manufactureSummary.getActualMaterial4Quota() * 100 + "%");
             map.put("实际人工时", manufactureSummary.getActualHours());
             map.put("理论工时", manufactureSummary.getTheoryHours());
+            map.put("日计划产量", manufactureSummary.getDailyPlanQuantity());
             map.put("日计划完成率", manufactureSummary.getDailyCompletionRate());
-            map.put("批次不良总数", manufactureSummary.getRejectsTotal());
             map.put("日不良率%", manufactureSummary.getDailyCompletionRate());
+            map.put("批次累计完成数量(合格品）", manufactureSummary.getBatchCompletedQuantity());
+            map.put("批次计划累计完成百分比", manufactureSummary.getAccumulativeTotalPercentage());
+            map.put("批次不良总数", manufactureSummary.getRejectsTotal());
             map.put("批次平均不良率%", manufactureSummary.getBatchRejectRate());
             map.put("年度平均不良率%", manufactureSummary.getAnnualRejectRate());
             map.put("年度不良品总数", manufactureSummary.getAnnualRejectTotal());
             map.put("年度生产累计总量", manufactureSummary.getAnnualOutputTotal());
-            map.put("批次计划累计完成百分比", manufactureSummary.getAccumulativeTotalPercentage());
-            map.put("日计划产量", manufactureSummary.getDailyPlanQuantity());
             map.put("总计划制造量", manufactureSummary.getTotalPlanQuantity());
-            map.put("批次累计完成数量(合格品）", manufactureSummary.getBatchCompletedQuantity());
             map.put("产能利用率%", manufactureSummary.getCapacityUtilization());
             map.put("8小时工作产能（7.5小时）", manufactureSummary.getHour8Capacity());
             map.put("10小时工作产能（9.）", manufactureSummary.getHour10Capacity());
@@ -463,32 +474,121 @@ public class ManufactureServiceImpl implements ManufactureService {
         }
     }
 
+    @Override
+    @Transactional
+    public void createManufacture() {
+        String today = dateFormat.format(new Date());
+        DailyPlanQueryCriteria dailyPlanQueryCriteria = new DailyPlanQueryCriteria();
+        dailyPlanQueryCriteria.setStartDate(today);
+        List<DailyPlan> dailyPlanList = dailyPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, dailyPlanQueryCriteria, criteriaBuilder));
+
+        if (dailyPlanList != null && dailyPlanList.size() > 0) {
+
+            List<Manufacture> manufactures = new ArrayList<>();
+            dailyPlanList.forEach(dailyPlan -> {
+                ManufactureQueryCriteria manufactureQueryCriteria = new ManufactureQueryCriteria();
+                manufactureQueryCriteria.setPlanNumber(dailyPlan.getPlanNumber());
+                manufactureQueryCriteria.setManufactureAddress(dailyPlan.getManufactureAddress());
+                manufactureQueryCriteria.setManufactureName(dailyPlan.getManufactureName());
+                List<Manufacture> manufactureList = manufactureRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, manufactureQueryCriteria, criteriaBuilder));
+
+                if (manufactureList == null || manufactureList.size() == 0) {
+                    Manufacture manufacture = new Manufacture();
+                    manufacture.setPlanNumber(dailyPlan.getPlanNumber());
+                    manufacture.setManufactureName(dailyPlan.getManufactureName());
+                    manufacture.setManufactureAddress(dailyPlan.getManufactureAddress());
+                    try {
+                        manufacture.setFillDate(new Timestamp(dateFormat.parse(today).getTime()));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+
+                    ProductParameterQueryCriteria productParameterQueryCriteria = new ProductParameterQueryCriteria();
+                    productParameterQueryCriteria.setProductName(dailyPlan.getBatchPlan().getProductName());
+                    productParameterQueryCriteria.setManufactureName(dailyPlan.getManufactureName());
+                    List<ProductParameter> productParameterList = productParameterRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, productParameterQueryCriteria, criteriaBuilder));
+                    if (productParameterList != null && productParameterList.size() > 0) {
+                        ProductParameter productParameter = productParameterList.get(0);
+                        manufacture.setSerialNumber(productParameter.getSerialNumber());
+                        String[] userIds = productParameter.getPermissionUserIds().split(",");
+                        for (int i = 0; i < userIds.length; i++) {
+                            SysUser user = sysUserRepository.findById(Long.valueOf(userIds[i])).orElseGet(SysUser::new);
+                            if (dailyPlan.getManufactureAddress().equals(user.getUserAddress())) {
+                                manufacture.setUserId(user.getUserId());
+                                break;
+                            }
+                        }
+                    }
+                    manufacture.setIncompleteReasons("无人报工");
+                    manufactures.add(manufacture);
+                }
+            });
+
+            if(manufactures!=null && manufactures.size()>0){
+                manufactureRepository.saveAll(manufactures);
+            }
+        }
+
+
+    }
+
     //制造信息修改
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(Manufacture resources) {
         Manufacture manufacture = manufactureRepository.findById(resources.getId()).orElseGet(Manufacture::new);
         ValidationUtil.isNull(manufacture.getId(), "manufacture", "id", resources.getId());
+        Manufacture manufacture1 = manufacture;
 
         manufacture.copy(resources);
         manufactureRepository.save(manufacture);
         updateDailyCompletedQuantity(manufacture.getPlanNumber());
         summary(manufacture.getPlanNumber());
+
+        if ((resources.getDailyOutput() != null && resources.getDailyOutput() != manufacture1.getDailyOutput()) || (resources.getRejectsQuantity() != null && resources.getRejectsQuantity() != manufacture1.getRejectsQuantity()) || (resources.getTransferQuantity() != null && resources.getTransferQuantity() != manufacture1.getTransferQuantity())) {
+            manufacture1.setDailyOutput(resources.getDailyOutput() - manufacture1.getDailyOutput());
+            manufacture1.setRejectsQuantity(resources.getRejectsQuantity() - manufacture1.getRejectsQuantity());
+            manufacture1.setTransferQuantity(resources.getTransferQuantity() - manufacture1.getTransferQuantity());
+            stockService.updateStock(manufacture);
+        }
     }
 
     @Override
     public Map<String, Object> queryManufacture(ManufactureQueryCriteria criteria, Pageable pageable) {
+        UserDetails userDetails = SecurityUtils.getCurrentUser();
+        List<JSONObject> roles = (List) new JSONObject(new JSONObject(userDetails).get("user")).get("roles");
+        if (roles == null || roles.size() == 0)
+            return null;
+        int flag = 0;
+        for (int i = 0; i < roles.size(); i++) {
+            Role role = JSONUtil.toBean(roles.get(0), Role.class);
+            if ("超级管理员".equals(role.getName()) || "测试人员".equals(role.getName()) || "部门主管".equals(role.getName())) {
+                flag++;
+                break;
+            }
+        }
+
+        Long userId = (Long) new JSONObject(new JSONObject(userDetails).get("user")).get("id");
+        if (flag == 0) {
+            criteria.setUserId(userId);
+        }
         Page<Manufacture> page = manufactureRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder), pageable);
 
         Page<ManufactureDto> rst = page.map(manufactureMapper::toDto);
 
         rst.forEach(manufactureDto -> {
+            manufactureDto.setIsSame(manufactureDto.getUserId() == userId);
+            SysUser sysUser = sysUserRepository.findById(manufactureDto.getUserId()).orElseGet(SysUser::new);
+            manufactureDto.setUserName(sysUser.getUsername());
             DailyPlanQueryCriteria dailyPlanQueryCriteria = new DailyPlanQueryCriteria();
             dailyPlanQueryCriteria.setPlanNumber(manufactureDto.getPlanNumber());
             dailyPlanQueryCriteria.setManufactureName(manufactureDto.getManufactureName());
             List<DailyPlan> dailyPlanList = dailyPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, dailyPlanQueryCriteria, criteriaBuilder));
             if (dailyPlanList != null && dailyPlanList.size() > 0) {
                 DailyPlan dailyPlan = dailyPlanList.get(0);
+
+                manufactureDto.setDailyPlanQuantity(dailyPlan.getDailyPlanQuantity());
+                manufactureDto.setDailyCompletionRate(convertDouble(manufactureDto.getDailyOutput() * 1.0 / dailyPlan.getDailyPlanQuantity()));
                 ProductParameterQueryCriteria productParameterQueryCriteria = new ProductParameterQueryCriteria();
                 productParameterQueryCriteria.setProductName(dailyPlan.getBatchPlan().getProductName());
                 productParameterQueryCriteria.setManufactureName(manufactureDto.getManufactureName());

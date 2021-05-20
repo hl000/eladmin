@@ -44,7 +44,7 @@ public class DailyPlanDto implements Serializable {
     /**
      * 日计划产量
      **/
-    private int dailyPlanQuantity;
+    private Integer dailyPlanQuantity;
 
     /**
      * 批量计划
@@ -87,4 +87,6 @@ public class DailyPlanDto implements Serializable {
     private String material4Unit;
 
     private String manufactureAddress;
+
+    private Integer serialNumber;
 }

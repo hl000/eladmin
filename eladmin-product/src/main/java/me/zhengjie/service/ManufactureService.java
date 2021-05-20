@@ -40,6 +40,8 @@ public interface ManufactureService {
 
     void queryManufactureSummary(HttpServletResponse response, ManufactureQueryCriteria criteria);
 
+    void createManufacture();
+
 //    Map<String,Object> getSummaryView(SummaryViewQueryCriteria criteria, Pageable pageable);
 
 //    void querySummaryView(HttpServletResponse response, SummaryViewQueryCriteria criteria);

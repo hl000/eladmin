@@ -16,6 +16,17 @@
 
 package me.zhengjie.utils;
 
+import net.sf.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -26,9 +37,10 @@ import java.util.Date;
  * @apiNote: JDK 8  新日期类 格式化与字符串转换 工具类
  */
 public class DateUtil {
-
+    private static final Logger log = LoggerFactory.getLogger(RedisUtils.class);
     public static final DateTimeFormatter DFY_MD_HMS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     public static final DateTimeFormatter DFY_MD = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     /**
      * LocalDateTime 转时间戳
@@ -156,5 +168,45 @@ public class DateUtil {
      */
     public static LocalDateTime parseLocalDateTimeFormatyMdHms(String localDateTime) {
         return LocalDateTime.from(DFY_MD_HMS.parse(localDateTime));
+    }
+
+    public long dayDiff(String date1, String date2) {
+        long diff = 0l;
+        try {
+            long d1 = dateFormat.parse(date1).getTime();
+            long d2 = dateFormat.parse(date2).getTime();
+            diff = (Math.abs(d1 - d2) / (1000 * 60 * 60 * 24));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return diff;
+    }
+
+    public static JSONObject getHolidayJson(String httpArg){
+        String httpUrl="http://tool2.bitefu.net/jiari/vip.php/?apikey=123456&type=6&backtype=2&d=";
+        BufferedReader reader = null;
+        String result = null;
+        StringBuffer sbf = new StringBuffer();
+        httpUrl = httpUrl + httpArg;
+        try {
+            URL url = new URL(httpUrl);
+            HttpURLConnection connection = (HttpURLConnection) url
+                    .openConnection();
+            connection.setRequestMethod("GET");
+            connection.connect();
+            InputStream is = connection.getInputStream();
+            reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+            String strRead = null;
+            while ((strRead = reader.readLine()) != null) {
+                sbf.append(strRead);
+                sbf.append("\r\n");
+            }
+            reader.close();
+            result = sbf.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        log.info(result);
+        return  JSONObject.fromObject(result);
     }
 }

@@ -76,6 +76,10 @@ public class DailyPlan  implements Serializable {
     @ApiModelProperty(value = "生产基地")
     private String manufactureAddress;
 
+    @Column(name = "serial_number")
+    @ApiModelProperty(value = "工序号")
+    private Integer serialNumber;
+
     public void copy(DailyPlan source){
         BeanUtil.copyProperties(source,this, CopyOptions.create().setIgnoreNullValue(true));
     }

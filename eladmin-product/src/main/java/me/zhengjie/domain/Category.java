@@ -35,6 +35,10 @@ public class Category  implements Serializable {
     @ApiModelProperty(value = "二级分类")
     private String secondaryType;
 
+    @Column(name = "process_sequence")
+    @ApiModelProperty(value = "下一步工序")
+    private Integer processSequence;
+
     public void copy(Category source){
         BeanUtil.copyProperties(source,this, CopyOptions.create().setIgnoreNullValue(true));
     }

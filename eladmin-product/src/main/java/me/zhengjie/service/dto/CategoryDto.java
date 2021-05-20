@@ -26,5 +26,7 @@ public class CategoryDto implements Serializable {
 
     private String secondaryType;
 
+    private Integer processSequence;
+
 
 }
