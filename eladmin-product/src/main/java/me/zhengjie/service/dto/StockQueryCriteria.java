@@ -16,5 +16,9 @@ public class StockQueryCriteria {
     private String processName;
     @Query
     private String manufactureName;
+    @Query
+    private Integer processNumber;
+    @Query
+    private Integer serialNumber;
 }
 

@@ -54,6 +54,11 @@ public class ManufactureSummaryDto {
     private String actualMaterial3Quota;
 
     /**
+     * 实际材料4定额达成率
+     **/
+    private String actualMaterial4Quota;
+
+    /**
      * 工时实际
      **/
     private Double actualHours;

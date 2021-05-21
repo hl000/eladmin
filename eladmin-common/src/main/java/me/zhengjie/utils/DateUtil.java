@@ -100,7 +100,7 @@ public class DateUtil {
      * 日期 格式化
      *
      * @param localDateTime /
-     * @param patten /
+     * @param patten        /
      * @return /
      */
     public static String localDateTimeFormat(LocalDateTime localDateTime, String patten) {
@@ -112,7 +112,7 @@ public class DateUtil {
      * 日期 格式化
      *
      * @param localDateTime /
-     * @param df /
+     * @param df            /
      * @return /
      */
     public static String localDateTimeFormat(LocalDateTime localDateTime, DateTimeFormatter df) {
@@ -182,8 +182,8 @@ public class DateUtil {
         return diff;
     }
 
-    public static JSONObject getHolidayJson(String httpArg){
-        String httpUrl="http://tool2.bitefu.net/jiari/vip.php/?apikey=123456&type=6&backtype=2&d=";
+    public static JSONObject getHolidayJson(String httpArg) {
+        String httpUrl = "http://tool2.bitefu.net/jiari/vip.php/?apikey=123456&type=6&backtype=2&d=";
         BufferedReader reader = null;
         String result = null;
         StringBuffer sbf = new StringBuffer();
@@ -206,7 +206,7 @@ public class DateUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        log.info(result);
-        return  JSONObject.fromObject(result);
+        log.info("-----result:" + result);
+        return JSONObject.fromObject(result);
     }
 }

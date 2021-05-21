@@ -15,4 +15,5 @@ public interface CategoryService {
 
     Category create(Category resources);
 
+    List<String> getProcessName();
 }

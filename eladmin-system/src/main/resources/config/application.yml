@@ -61,5 +61,5 @@ mybatis:
 
 
 scheduled:
-  dailyPlan-timer: "${dailyPlan-timer:0 0 10 * * ?}"
-  autoManufacture-timer: "${autoManufacture-timer:0 5 10 * * ?}"
+  dailyPlan-timer: "${dailyPlan-timer:0 0 3 * * ?}"
+  autoManufacture-timer: "${autoManufacture-timer:0 45 23 * * ?}"

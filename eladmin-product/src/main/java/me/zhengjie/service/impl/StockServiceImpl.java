@@ -83,6 +83,8 @@ public class StockServiceImpl implements StockService {
                     stock.setProcessName(productParameter.getTechniqueInfo().getCategory().getSecondaryType());
                     stock.setManufactureAddress(dailyPlan.getManufactureAddress());
                     stock.setManufactureName(dailyPlan.getManufactureName());
+                    stock.setSerialNumber(productParameter.getSerialNumber());
+                    stock.setProcessNumber(productParameter.getTechniqueInfo().getCategory().getId());
                 }
                 Integer dailyTotal = manufacture.getDailyOutput() - manufacture.getRejectsQuantity() - manufacture.getTransferQuantity();
                 stock.setQuantity(stock.getQuantity() == null ? dailyTotal : stock.getQuantity() + dailyTotal);
@@ -110,6 +112,8 @@ public class StockServiceImpl implements StockService {
                         stock2.setManufactureAddress(dailyPlan.getManufactureAddress());
                         stock2.setManufactureName(manufacture.getManufactureName());
                         stock2.setQuantity(manufacture.getTransferQuantity());
+                        stock.setSerialNumber(productParameter.getSerialNumber());
+                        stock2.setProcessNumber(category.getId());
                     }
                     stockRepository.save(stock2);
                 }

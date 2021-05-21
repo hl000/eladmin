@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 @RestController
 @RequiredArgsConstructor
-@Api(tags = "制造计划管理")
+@Api(tags = "存结管理")
 @RequestMapping("/api/stock")
 public class StockController {
     private final StockService stockService;

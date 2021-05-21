@@ -20,6 +20,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * @author HL
  * @create 2021/4/13 14:56
@@ -32,11 +34,18 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-    @GetMapping("/getTechniqueInfo")
-    @Log("查询techniqueInfo")
-    @ApiOperation("查询techniqueInfo")
+    @GetMapping("/getCategory")
+    @Log("查询分类")
+    @ApiOperation("查询分类")
     public ResponseEntity<Object> query(CategoryQueryCriteria criteria) {
         return new ResponseEntity<>(categoryService.queryAll(criteria), HttpStatus.OK);
+    }
+
+    @GetMapping("/getProcessName")
+    @Log("查询分类")
+    @ApiOperation("查询分类")
+    public List<String> getProcessName() {
+        return categoryService.getProcessName();
     }
 
     @PostMapping("/add")

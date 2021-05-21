@@ -476,8 +476,8 @@ public class ManufactureServiceImpl implements ManufactureService {
 
     @Override
     @Transactional
-    public void createManufacture() {
-        String today = dateFormat.format(new Date());
+    public void createManufacture(String today) {
+//        String today = dateFormat.format(new Date());
         DailyPlanQueryCriteria dailyPlanQueryCriteria = new DailyPlanQueryCriteria();
         dailyPlanQueryCriteria.setStartDate(today);
         List<DailyPlan> dailyPlanList = dailyPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, dailyPlanQueryCriteria, criteriaBuilder));
@@ -524,7 +524,7 @@ public class ManufactureServiceImpl implements ManufactureService {
                 }
             });
 
-            if(manufactures!=null && manufactures.size()>0){
+            if (manufactures != null && manufactures.size() > 0) {
                 manufactureRepository.saveAll(manufactures);
             }
         }
@@ -555,16 +555,22 @@ public class ManufactureServiceImpl implements ManufactureService {
 
     @Override
     public Map<String, Object> queryManufacture(ManufactureQueryCriteria criteria, Pageable pageable) {
+
         UserDetails userDetails = SecurityUtils.getCurrentUser();
         List<JSONObject> roles = (List) new JSONObject(new JSONObject(userDetails).get("user")).get("roles");
+
         if (roles == null || roles.size() == 0)
             return null;
         int flag = 0;
+        Boolean isAdmin = false;
         for (int i = 0; i < roles.size(); i++) {
             Role role = JSONUtil.toBean(roles.get(0), Role.class);
-            if ("超级管理员".equals(role.getName()) || "测试人员".equals(role.getName()) || "部门主管".equals(role.getName())) {
+            if ("超级管理员".equals(role.getName())) {
                 flag++;
+                isAdmin = true;
                 break;
+            } else if ("测试人员".equals(role.getName()) || "部门主管".equals(role.getName())) {
+                flag++;
             }
         }
 
@@ -576,8 +582,17 @@ public class ManufactureServiceImpl implements ManufactureService {
 
         Page<ManufactureDto> rst = page.map(manufactureMapper::toDto);
 
+        Boolean finalIsAdmin = isAdmin;
         rst.forEach(manufactureDto -> {
-            manufactureDto.setIsSame(manufactureDto.getUserId() == userId);
+            Long c = new Date().getTime() - manufactureDto.getFillDate().getTime();
+            long d = c / 1000 / 60 / 60 / 24;
+
+            if ((manufactureDto.getUserId() == userId && d < 2) || finalIsAdmin) {
+                manufactureDto.setIsSame(true);
+            } else {
+                manufactureDto.setIsSame(false);
+            }
+
             SysUser sysUser = sysUserRepository.findById(manufactureDto.getUserId()).orElseGet(SysUser::new);
             manufactureDto.setUserName(sysUser.getUsername());
             DailyPlanQueryCriteria dailyPlanQueryCriteria = new DailyPlanQueryCriteria();

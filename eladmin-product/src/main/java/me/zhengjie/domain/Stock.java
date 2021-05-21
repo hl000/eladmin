@@ -54,6 +54,13 @@ public class Stock implements Serializable {
     @UpdateTimestamp
     private Timestamp updateTime;
 
+    @Column(name = "process_number")
+    @ApiModelProperty(value = "工序号")
+    private Integer processNumber;
+
+    @Column(name = "serial_number")
+    @ApiModelProperty(value = "半成品序号")
+    private Integer serialNumber;
 
     public void copy(Stock source){
         BeanUtil.copyProperties(source,this, CopyOptions.create().setIgnoreNullValue(true));

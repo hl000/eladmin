@@ -22,6 +22,8 @@ public class StockDto implements Serializable {
     private Integer quantity;
     private Timestamp createTime;
     private Timestamp updateTime;
+    private Integer processNumber;
+    private Integer serialNumber;
 }
 
 

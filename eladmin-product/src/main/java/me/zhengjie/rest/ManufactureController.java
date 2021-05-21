@@ -113,21 +113,7 @@ public class ManufactureController {
     @GetMapping("/autoManufacture")
     @Log("自动生成报工")
     @ApiOperation("自动生成报工")
-    public void autoManufacture() {
-        manufactureService.createManufacture();
+    public void autoManufacture( @RequestParam String date) {
+        manufactureService.createManufacture(date);
     }
-
-//    @GetMapping("/getSummaryView")
-//    @Log("查询汇总信息")
-//    @ApiOperation("查询汇总内容")
-//    public ResponseEntity<Object> getSummaryView(SummaryViewQueryCriteria criteria, Pageable pageable) {
-//        return new ResponseEntity<>(manufactureService.getSummaryView(criteria, pageable), HttpStatus.OK);
-//    }
-//
-//    @GetMapping("/getSummaryView/download")
-//    @Log("导出汇总信息")
-//    @ApiOperation("导出汇总信息")
-//    public void downloadSummaryView(HttpServletResponse response, SummaryViewQueryCriteria criteria) {
-//        manufactureService.querySummaryView(response, criteria);
-//    }
 }

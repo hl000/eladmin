@@ -63,8 +63,6 @@ public class PlanServiceImpl implements PlanService {
     final SimpleDateFormat SDF = new SimpleDateFormat("yyyyMMddHHmmssS");
     final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-    String str = "http://www.easybots.cn/api/holiday.php?d=20190913";
-
     @Override
     public List<BatchPlanDto> findBatchPlan(BatchPlanQueryCriteria criteria) {
         return batchPlanMapper.toDto(batchPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder)));
@@ -406,8 +404,8 @@ public class PlanServiceImpl implements PlanService {
         Date startDate = null;
         Date endDate = null;
 
-        Object dataList = DateUtil.getHolidayJson(format.format(df.parse(strStartDate)) + "," + format.format(df.parse(strEndDate))).get("data");
-        List<String> list = DataChangeUtil.castList(dataList, String.class);
+        log.info("strStartDate:" + strStartDate + ",strEndDate:" + strEndDate);
+        net.sf.json.JSONObject jsonObject = DateUtil.getHolidayJson(format.format(df.parse(strStartDate)) + "," + format.format(df.parse(strEndDate)));
 
         try {
             startDate = df.parse(strStartDate);
@@ -422,9 +420,17 @@ public class PlanServiceImpl implements PlanService {
                 result++;
             startDate.setDate(startDate.getDate() + 1);
         }
-        if (list != null && list.size() > 0) {
-            result = result - list.size();
+
+        if (jsonObject != null && !"".equals(jsonObject)) {
+            Object dataList = jsonObject.get("data");
+            if (dataList != null && !"".equals(dataList)) {
+                List<String> list = DataChangeUtil.castList(dataList, String.class);
+                if (list != null && list.size() > 0) {
+                    result = result - list.size();
+                }
+            }
         }
+
         return result > 0 ? result : 1;
     }
 

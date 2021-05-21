@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,15 +26,15 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
-    @Resource(name="categoryMapperImpl")
+    @Resource(name = "categoryMapperImpl")
     private final CategoryMapper categoryMapper;
 
-//    @Resource
+    //    @Resource
     private final CategoryRepository categoryRepository;
 
     @Override
     public List<CategoryDto> queryAll(CategoryQueryCriteria criteria) {
-        List<Category> categories =categoryRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root,criteria,criteriaBuilder));
+        List<Category> categories = categoryRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder));
 //        UserDetails userDetails = SecurityUtils.getCurrentUser();
 //        JSONObject deptObject = (JSONObject) new JSONObject(new JSONObject(userDetails).get("user")).get("dept");
 //        String deptId = deptObject.get("id", String.class);
@@ -57,5 +58,16 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryRepository.save(resources);
     }
 
+    @Override
+    public List<String> getProcessName() {
+        List<Category> categories = categoryRepository.findAll();
+        List<String> processNames = new ArrayList<>();
+        for (Category category : categories) {
+            if (!processNames.contains(category.getSecondaryType())) {
+                processNames.add(category.getSecondaryType());
+            }
+        }
+        return processNames;
+    }
 
 }
