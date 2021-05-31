@@ -1,10 +1,8 @@
 package me.zhengjie.mapper;
 
 import me.zhengjie.base.BaseMapper;
-import me.zhengjie.domain.Manufacture;
-import me.zhengjie.domain.Stock;
-import me.zhengjie.service.dto.ManufactureDto;
-import me.zhengjie.service.dto.StockDto;
+import me.zhengjie.domain.Balance;
+import me.zhengjie.service.dto.BalanceDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
@@ -13,5 +11,5 @@ import org.mapstruct.ReportingPolicy;
  * @create 2021/4/13 18:32
  */
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public interface StockMapper extends BaseMapper<StockDto, Stock> {
+public interface BalanceMapper extends BaseMapper<BalanceDto, Balance> {
 }

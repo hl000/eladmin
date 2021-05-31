@@ -95,4 +95,11 @@ public class ProductParameterController {
     public ResponseEntity<Object> getRemainBatchQuantity(BatchPlanQueryCriteria criteria) {
         return new ResponseEntity<>(planService.getRemainBatchQuantity(criteria), HttpStatus.OK);
     }
+
+    @GetMapping("/getManufactureName")
+    @Log("获取计划外报工名称")
+    @ApiOperation("获取计划外报工名称")
+    public ResponseEntity<Object> getManufactureName() {
+        return new ResponseEntity<>(productParameterService.getManufactureName(), HttpStatus.OK);
+    }
 }

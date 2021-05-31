@@ -215,6 +215,7 @@ public class ApiController {
         JSONObject deptObject = (JSONObject) new JSONObject(new JSONObject(userDetails).get("user")).get("dept");
         userInfo.setDeptId(deptObject.get("id", Integer.class));
         userInfo.setDeptName(deptObject.get("name", String.class));
+        userInfo.setUserAddress((String) new JSONObject(new JSONObject(userDetails).get("user")).get("userAddress"));
         return userInfo;
     }
 
@@ -327,32 +328,32 @@ public class ApiController {
 
                     if (productName.contains("组装") && productName.contains("260")) {
                         productNum_260.setModelName("260节电堆");
-                        productNum_260.setAssemblyNum(productNum_260.getAssemblyNum()+speechentry.getFOutputquantity().intValue());
-                        productNum_260.setAssemblyBalance(productNum_260.getAssemblyBalance()+speechentry.getFBalancequantity().intValue());
+                        productNum_260.setAssemblyNum(productNum_260.getAssemblyNum() + speechentry.getFOutputquantity().intValue());
+                        productNum_260.setAssemblyBalance(productNum_260.getAssemblyBalance() + speechentry.getFBalancequantity().intValue());
                     } else if (productName.contains("组装") && productName.contains("340")) {
                         productNum_340.setModelName("340节电堆");
-                        productNum_340.setAssemblyNum(productNum_340.getAssemblyNum()+speechentry.getFOutputquantity().intValue());
-                        productNum_340.setAssemblyBalance(productNum_340.getAssemblyBalance()+speechentry.getFBalancequantity().intValue());
+                        productNum_340.setAssemblyNum(productNum_340.getAssemblyNum() + speechentry.getFOutputquantity().intValue());
+                        productNum_340.setAssemblyBalance(productNum_340.getAssemblyBalance() + speechentry.getFBalancequantity().intValue());
 
                     } else if (productName.contains("活化") && productName.contains("260")) {
                         productNum_260.setModelName("260节电堆");
-                        productNum_260.setActivationNum(productNum_260.getActivationNum()+speechentry.getFOutputquantity().intValue());
-                        productNum_260.setActivationBalance(productNum_260.getActivationBalance()+speechentry.getFBalancequantity().intValue());
+                        productNum_260.setActivationNum(productNum_260.getActivationNum() + speechentry.getFOutputquantity().intValue());
+                        productNum_260.setActivationBalance(productNum_260.getActivationBalance() + speechentry.getFBalancequantity().intValue());
 
                     } else if (productName.contains("活化") && productName.contains("340")) {
                         productNum_340.setModelName("340节电堆");
-                        productNum_340.setActivationNum(productNum_340.getActivationNum()+speechentry.getFOutputquantity().intValue());
-                        productNum_340.setActivationBalance(productNum_340.getActivationBalance()+speechentry.getFBalancequantity().intValue());
+                        productNum_340.setActivationNum(productNum_340.getActivationNum() + speechentry.getFOutputquantity().intValue());
+                        productNum_340.setActivationBalance(productNum_340.getActivationBalance() + speechentry.getFBalancequantity().intValue());
                     } else if (productName.contains("活化") && productName.contains("370")) {
                         productNum_370.setModelName("370节电堆");
-                        productNum_370.setActivationNum(productNum_370.getActivationNum()+speechentry.getFOutputquantity().intValue());
-                        productNum_370.setActivationBalance(productNum_370.getActivationBalance()+speechentry.getFBalancequantity().intValue());
+                        productNum_370.setActivationNum(productNum_370.getActivationNum() + speechentry.getFOutputquantity().intValue());
+                        productNum_370.setActivationBalance(productNum_370.getActivationBalance() + speechentry.getFBalancequantity().intValue());
 
 
                     } else if (productName.contains("组装") && productName.contains("370")) {
                         productNum_370.setModelName("370节电堆");
-                        productNum_370.setAssemblyNum(productNum_370.getAssemblyNum()+speechentry.getFOutputquantity().intValue());
-                        productNum_370.setAssemblyBalance(productNum_370.getAssemblyBalance()+speechentry.getFBalancequantity().intValue());
+                        productNum_370.setAssemblyNum(productNum_370.getAssemblyNum() + speechentry.getFOutputquantity().intValue());
+                        productNum_370.setAssemblyBalance(productNum_370.getAssemblyBalance() + speechentry.getFBalancequantity().intValue());
                     }
                 }
 
@@ -381,7 +382,7 @@ public class ApiController {
         }
 
 
-        if(assemblyNumTotal260>0 || assemblyBalanceTotal260>0 || activationNumTotal260>0 || activationBalanceTotal260>0){
+        if (assemblyNumTotal260 > 0 || assemblyBalanceTotal260 > 0 || activationNumTotal260 > 0 || activationBalanceTotal260 > 0) {
             productNumTotal_260.setModelName("260节电堆总量");
             productNumTotal_260.setAssemblyNum(assemblyNumTotal260);
             productNumTotal_260.setAssemblyBalance(assemblyBalanceTotal260);
@@ -389,7 +390,7 @@ public class ApiController {
             productNumTotal_260.setActivationBalance(activationBalanceTotal260);
         }
 
-        if(assemblyNumTotal340>0 || assemblyBalanceTotal340>0 || activationNumTotal340>0 || activationBalanceTotal340>0) {
+        if (assemblyNumTotal340 > 0 || assemblyBalanceTotal340 > 0 || activationNumTotal340 > 0 || activationBalanceTotal340 > 0) {
             productNumTotal_340.setModelName("340节电堆总量");
             productNumTotal_340.setAssemblyNum(assemblyNumTotal340);
             productNumTotal_340.setAssemblyBalance(assemblyBalanceTotal340);
@@ -397,7 +398,7 @@ public class ApiController {
             productNumTotal_340.setActivationBalance(activationBalanceTotal340);
         }
 
-        if(assemblyNumTotal370>0 || assemblyBalanceTotal370>0 || activationNumTotal370>0 || activationBalanceTotal370>0) {
+        if (assemblyNumTotal370 > 0 || assemblyBalanceTotal370 > 0 || activationNumTotal370 > 0 || activationBalanceTotal370 > 0) {
             productNumTotal_370.setModelName("370节电堆总量");
             productNumTotal_370.setAssemblyNum(assemblyNumTotal370);
             productNumTotal_370.setAssemblyBalance(assemblyBalanceTotal370);
@@ -405,12 +406,12 @@ public class ApiController {
             productNumTotal_370.setActivationBalance(activationBalanceTotal370);
         }
 
-        if(productNumTotal_260.getModelName()!=null || productNumTotal_340.getModelName()!=null || productNumTotal_370.getModelName()!=null){
+        if (productNumTotal_260.getModelName() != null || productNumTotal_340.getModelName() != null || productNumTotal_370.getModelName() != null) {
             productNumTotal.setModelName("电堆总量");
-            productNumTotal.setAssemblyNum(assemblyNumTotal260+assemblyNumTotal340+assemblyNumTotal370);
-            productNumTotal.setAssemblyBalance(assemblyBalanceTotal260+assemblyBalanceTotal340+assemblyBalanceTotal370);
-            productNumTotal.setActivationNum(activationNumTotal260+activationNumTotal340+activationNumTotal370);
-            productNumTotal.setActivationBalance(activationBalanceTotal260+activationBalanceTotal340+activationBalanceTotal370);
+            productNumTotal.setAssemblyNum(assemblyNumTotal260 + assemblyNumTotal340 + assemblyNumTotal370);
+            productNumTotal.setAssemblyBalance(assemblyBalanceTotal260 + assemblyBalanceTotal340 + assemblyBalanceTotal370);
+            productNumTotal.setActivationNum(activationNumTotal260 + activationNumTotal340 + activationNumTotal370);
+            productNumTotal.setActivationBalance(activationBalanceTotal260 + activationBalanceTotal340 + activationBalanceTotal370);
         }
         productList.add(productNumTotal_260);
         productList.add(productNumTotal_340);

@@ -6,11 +6,11 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.annotation.Log;
+import me.zhengjie.base.MergeResult;
 import me.zhengjie.domain.Manufacture;
 import me.zhengjie.service.ManufactureService;
-import me.zhengjie.service.dto.ManufactureQueryCriteria;
-import me.zhengjie.service.dto.ManufactureSummaryQueryCriteria;
-import me.zhengjie.service.dto.Role;
+import me.zhengjie.service.dto.*;
+import me.zhengjie.utils.PageUtil;
 import me.zhengjie.utils.SecurityUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -45,17 +45,24 @@ public class ManufactureController {
         return manufactureService.create(resources) != null;
     }
 
+    @PostMapping("/addUnplanned")
+    @Log("新增计划外报工")
+    @ApiOperation("新增计划外报工")
+    public Object addUnplanned(@Validated @RequestBody UnPlannedManufactureDto resources) {
+        return manufactureService.unplannedManufacture(resources) != null;
+    }
+
     @GetMapping("/getManufacture")
     @Log("查询getManufacture")
     @ApiOperation("查询getManufacture")
-    public ResponseEntity<Object> queryManufacture(ManufactureQueryCriteria criteria, Pageable pageable) {
-        return new ResponseEntity<>(manufactureService.queryManufacture(criteria, pageable), HttpStatus.OK);
+    public Object queryManufacture(ManufactureQueryCriteria criteria, Pageable pageable, Boolean isPlan) {
+        return getObject(criteria, pageable, isPlan);
     }
 
     @GetMapping("/getManufacture/download")
     @Log("导出")
     @ApiOperation("导出")
-    public void downloadManufacture(HttpServletResponse response, ManufactureQueryCriteria criteria) {
+    public void downloadManufacture(HttpServletResponse response, ManufactureQueryCriteria criteria, Boolean isPlan) {
         UserDetails userDetails = SecurityUtils.getCurrentUser();
         List<JSONObject> roles = (List) new JSONObject(new JSONObject(userDetails).get("user")).get("roles");
         if (roles != null && roles.size() > 0) {
@@ -70,17 +77,27 @@ public class ManufactureController {
             if (flag == 0) {
                 Long userId = (Long) new JSONObject(new JSONObject(userDetails).get("user")).get("id");
                 criteria.setUserId(userId);
-
             }
         }
-        manufactureService.queryManufacture(response, criteria);
+        manufactureService.queryManufacture(response, criteria, isPlan);
     }
 
     @GetMapping("/getManufactureByUser")
     @Log("查询getManufactureByUser")
     @ApiOperation("查询getManufactureByUser")
-    public ResponseEntity<Object> queryManufactureByUser(ManufactureQueryCriteria criteria, Pageable pageable) {
-        return new ResponseEntity<>(manufactureService.queryManufacture(criteria, pageable), HttpStatus.OK);
+    public Object queryManufactureByUser(ManufactureQueryCriteria criteria, Pageable pageable, Boolean isPlan) {
+        return getObject(criteria, pageable, isPlan);
+    }
+
+    private Object getObject(ManufactureQueryCriteria criteria, Pageable pageable, Boolean isPlan) {
+        List<ManufactureDto> manufactureDtoList=manufactureService.queryManufacture(criteria, isPlan);
+        MergeResult mergeResult = new MergeResult();
+        mergeResult.totalElements = manufactureDtoList.size();
+        mergeResult.totalPages = manufactureDtoList.size() % pageable.getPageSize() == 0 ? manufactureDtoList.size() / pageable.getPageSize() : manufactureDtoList.size() / pageable.getPageSize() + 1;
+        mergeResult.currentPage = pageable.getPageNumber();
+        mergeResult.size = pageable.getPageSize();
+        mergeResult.content = PageUtil.toPage(pageable.getPageNumber(), pageable.getPageSize(), manufactureDtoList);
+        return mergeResult;
     }
 
     @PutMapping("/edit")
@@ -95,10 +112,6 @@ public class ManufactureController {
     @Log("查询getManufactureSummary")
     @ApiOperation("查询getManufactureSummary")
     public ResponseEntity<Object> queryManufacture(ManufactureSummaryQueryCriteria criteria, Pageable pageable) {
-//        Timestamp timestamp = criteria.getUpdateTime();
-//        if(timestamp!=null){
-//
-//        }
         return new ResponseEntity<>(manufactureService.queryManufactureSummary(criteria, pageable), HttpStatus.OK);
     }
 
@@ -113,7 +126,7 @@ public class ManufactureController {
     @GetMapping("/autoManufacture")
     @Log("自动生成报工")
     @ApiOperation("自动生成报工")
-    public void autoManufacture( @RequestParam String date) {
+    public void autoManufacture(@RequestParam String date) {
         manufactureService.createManufacture(date);
     }
 }

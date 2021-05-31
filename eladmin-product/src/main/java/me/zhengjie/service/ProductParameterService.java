@@ -24,4 +24,6 @@ public interface ProductParameterService {
 
 
     List<ProductParameter> getProductParameterByDailyPlan(DailyPlan dailyPlan);
+
+    Object getManufactureName();
 }

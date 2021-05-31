@@ -101,4 +101,7 @@ public class ManufactureDto implements Serializable {
 
     private Boolean isSame;
 
+    private String processName;
+
+    private String note ;
 }

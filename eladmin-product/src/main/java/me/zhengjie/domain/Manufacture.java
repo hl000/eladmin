@@ -158,6 +158,10 @@ public class Manufacture implements Serializable {
     @ApiModelProperty(value = "移交数量")
     private Integer transferQuantity = 0;
 
+    @Column(name = "note")
+    @ApiModelProperty(value = "备注")
+    private String note ;
+
     public void copy(Manufacture source) {
         BeanUtil.copyProperties(source, this, CopyOptions.create().setIgnoreNullValue(true));
     }

@@ -1,13 +1,11 @@
 package me.zhengjie.service;
 
+import me.zhengjie.domain.Balance;
 import me.zhengjie.domain.Manufacture;
-import me.zhengjie.service.dto.StockDto;
-import me.zhengjie.service.dto.StockQueryCriteria;
-import org.springframework.data.domain.Pageable;
+import me.zhengjie.service.dto.BalanceQueryCriteria;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author HL
@@ -15,11 +13,8 @@ import java.util.Map;
  */
 public interface StockService {
 
-    Map<String, Object> queryAll(StockQueryCriteria criteria, Pageable pageable);
+    void download(HttpServletResponse response, BalanceQueryCriteria criteria);
 
-    List<StockDto> queryAll(StockQueryCriteria criteria);
-
-    void updateStock(Manufacture manufacture);
-
-    void download(HttpServletResponse response, StockQueryCriteria criteria);
+    void updateBalance(Manufacture manufacture);
+    List<Balance> queryBalance(BalanceQueryCriteria criteria);
 }

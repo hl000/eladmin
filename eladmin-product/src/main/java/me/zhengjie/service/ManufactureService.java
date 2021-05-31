@@ -1,14 +1,12 @@
 package me.zhengjie.service;
 
 import me.zhengjie.domain.Manufacture;
-import me.zhengjie.service.dto.ManufactureDto;
-import me.zhengjie.service.dto.ManufactureQueryCriteria;
-import me.zhengjie.service.dto.ManufactureSummaryQueryCriteria;
-import me.zhengjie.service.dto.SummaryViewQueryCriteria;
+import me.zhengjie.service.dto.*;
 import org.springframework.data.domain.Pageable;
 
 import javax.servlet.http.HttpServletResponse;
 import java.text.ParseException;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,17 +28,19 @@ public interface ManufactureService {
      */
     void update(Manufacture resources);
 
-    Map<String,Object> queryManufacture(ManufactureQueryCriteria criteria, Pageable pageable);
+    List<ManufactureDto> queryManufacture(ManufactureQueryCriteria criteria, Boolean isPlan);
 
     Map<String,Object> queryManufactureSummary(ManufactureSummaryQueryCriteria criteria, Pageable pageable);
 
     void summary(String planNumber) throws ParseException;
 
-    void queryManufacture(HttpServletResponse response, ManufactureQueryCriteria criteria);
+    void queryManufacture(HttpServletResponse response, ManufactureQueryCriteria criteria,Boolean isPlan);
 
     void queryManufactureSummary(HttpServletResponse response, ManufactureQueryCriteria criteria);
 
     void createManufacture(String date);
+
+    List<Manufacture> unplannedManufacture(UnPlannedManufactureDto unPlannedManufactureDto);
 
 //    Map<String,Object> getSummaryView(SummaryViewQueryCriteria criteria, Pageable pageable);
 
