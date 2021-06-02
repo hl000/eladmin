@@ -72,11 +72,10 @@ public class ManufactureServiceImpl implements ManufactureService {
         criteria.setPlanNumber(resources.getPlanNumber());
         criteria.setManufactureName(resources.getManufactureName());
 
-        String dateTime = dateFormat.format(new Date());
         List<Manufacture> manufactures = manufactureRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder));
         if (manufactures != null && manufactures.size() > 0) {
             for (Manufacture manufacture : manufactures) {
-                if (dateFormat.format(manufacture.getFillDate()).equals(dateTime))
+                if (dateFormat.format(manufacture.getFillDate()).equals(resources.getFillDate()))
                     return null;
             }
         }
@@ -116,15 +115,24 @@ public class ManufactureServiceImpl implements ManufactureService {
                     manufactures.add(manufacture);
                     stockService.updateBalance(manufacture);
                 } else {
-                    Manufacture manufacture1 = manufactureList1.get(0);
-
-                    if ((manufacture.getDailyOutput() != null && manufacture.getDailyOutput() != manufacture1.getDailyOutput()) || (manufacture.getRejectsQuantity() != null && manufacture.getRejectsQuantity() != manufacture1.getRejectsQuantity()) || (manufacture.getTransferQuantity() != null && manufacture.getTransferQuantity() != manufacture1.getTransferQuantity())) {
-                        manufacture1.setDailyOutput(manufacture.getDailyOutput() - manufacture1.getDailyOutput());
-                        manufacture1.setRejectsQuantity(manufacture.getRejectsQuantity() - manufacture1.getRejectsQuantity());
-                        manufacture1.setTransferQuantity(manufacture.getTransferQuantity() - manufacture1.getTransferQuantity());
-                        stockService.updateBalance(manufacture1);
-                        manufacture1.copy(manufacture);
-                        manufactures.add(manufacture1);
+                    int i = 0;
+                    for (Manufacture manufacture1 : manufactureList1) {
+                        if (manufacture1.getPlanNumber() == null || "".equals(manufacture1.getPlanNumber())) {
+                            if ((manufacture.getDailyOutput() != null && manufacture.getDailyOutput() != manufacture1.getDailyOutput()) || (manufacture.getRejectsQuantity() != null && manufacture.getRejectsQuantity() != manufacture1.getRejectsQuantity()) || (manufacture.getTransferQuantity() != null && manufacture.getTransferQuantity() != manufacture1.getTransferQuantity())) {
+                                manufacture1.setDailyOutput(manufacture.getDailyOutput() - manufacture1.getDailyOutput());
+                                manufacture1.setRejectsQuantity(manufacture.getRejectsQuantity() - manufacture1.getRejectsQuantity());
+                                manufacture1.setTransferQuantity(manufacture.getTransferQuantity() - manufacture1.getTransferQuantity());
+                                stockService.updateBalance(manufacture1);
+                                manufacture1.copy(manufacture);
+                                manufactures.add(manufacture1);
+                            }
+                            i++;
+                            break;
+                        }
+                    }
+                    if (i == 0) {
+                        manufactures.add(manufacture);
+                        stockService.updateBalance(manufacture);
                     }
 
                 }
@@ -133,6 +141,13 @@ public class ManufactureServiceImpl implements ManufactureService {
         return manufactureRepository.saveAll(manufactures);
     }
 
+    private void updateBalanceLog(Manufacture now,Manufacture original){
+        if(original==null){
+
+        }
+
+
+    }
 
     public void summary(String planNumber) {
         ManufactureQueryCriteria manufactureQueryCriteria = new ManufactureQueryCriteria();
@@ -430,6 +445,7 @@ public class ManufactureServiceImpl implements ManufactureService {
             }).collect(Collectors.toList());
         }
 
+        manufactures = manufactures.stream().sorted(Comparator.comparing(Manufacture::getFillDate, Comparator.reverseOrder()).thenComparing(Manufacture::getManufactureAddress, Comparator.reverseOrder()).thenComparing(Manufacture::getSerialNumber)).collect(Collectors.toList());
 
         List<Map<String, Object>> list = new ArrayList<>();
         for (Manufacture manufacture : manufactures) {
@@ -655,6 +671,7 @@ public class ManufactureServiceImpl implements ManufactureService {
 
         List<ManufactureDto> manufactureDtoList = manufactureMapper.toDto(manufactureList);
 
+
         Boolean finalIsAdmin = isAdmin;
         manufactureDtoList.forEach(manufactureDto -> {
             Long c = new Date().getTime() - manufactureDto.getFillDate().getTime();
@@ -678,6 +695,10 @@ public class ManufactureServiceImpl implements ManufactureService {
             manufactureDtoList = manufactureDtoList.stream().filter(a -> {
                 return a.getPlanNumber() != null && !"".equals(a.getPlanNumber());
             }).collect(Collectors.toList());
+
+
+            manufactureDtoList = manufactureDtoList.stream().sorted(Comparator.comparing(ManufactureDto::getFillDate, Comparator.reverseOrder()).thenComparing(ManufactureDto::getManufactureAddress, Comparator.reverseOrder()).thenComparing(ManufactureDto::getSerialNumber)).collect(Collectors.toList());
+
 
             manufactureDtoList.forEach(manufactureDto -> {
 
@@ -710,6 +731,9 @@ public class ManufactureServiceImpl implements ManufactureService {
             manufactureDtoList = manufactureDtoList.stream().filter(a -> {
                 return a.getPlanNumber() == null || "".equals(a.getPlanNumber());
             }).collect(Collectors.toList());
+
+
+            manufactureDtoList = manufactureDtoList.stream().sorted(Comparator.comparing(ManufactureDto::getFillDate, Comparator.reverseOrder()).thenComparing(ManufactureDto::getManufactureAddress, Comparator.reverseOrder()).thenComparing(ManufactureDto::getSerialNumber)).collect(Collectors.toList());
 
         }
         return manufactureDtoList;

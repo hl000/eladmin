@@ -62,7 +62,7 @@ public class StockServiceImpl implements StockService {
         }).collect(Collectors.toList());
 
         rst = rst.stream()
-                .sorted(Comparator.comparing(Balance::getManufactureAddress).reversed())
+                .sorted(Comparator.comparing(Balance::getManufactureAddress))
                 .collect(Collectors.toList());
         return rst;
     }
