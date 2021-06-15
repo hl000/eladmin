@@ -1,12 +1,10 @@
 package me.zhengjie.service.impl;
 
+import cn.hutool.json.JSONObject;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.domain.*;
 import me.zhengjie.mapper.BalanceMapper;
-import me.zhengjie.repository.BalanceRepository;
-import me.zhengjie.repository.MaterialRatioRepository;
-import me.zhengjie.repository.ProcessRelationRepository;
-import me.zhengjie.repository.ProductParameterRepository;
+import me.zhengjie.repository.*;
 import me.zhengjie.service.StockService;
 import me.zhengjie.service.dto.BalanceQueryCriteria;
 import me.zhengjie.service.dto.MaterialRatioQueryCriteria;
@@ -14,6 +12,8 @@ import me.zhengjie.service.dto.ProcessRelationQueryCriteria;
 import me.zhengjie.service.dto.ProductParameterQueryCriteria;
 import me.zhengjie.utils.FileUtil;
 import me.zhengjie.utils.QueryHelp;
+import me.zhengjie.utils.SecurityUtils;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +38,8 @@ public class StockServiceImpl implements StockService {
 
     private final MaterialRatioRepository materialRatioRepository;
 
+    private final BalanceLogRepository balanceLogRepository;
+
     @Resource(name = "balanceMapperImpl")
     private BalanceMapper balanceMapper;
 
@@ -45,9 +47,12 @@ public class StockServiceImpl implements StockService {
     public List<Balance> queryBalance(BalanceQueryCriteria criteria) {
 
         List<Balance> balances = balanceRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder));
+        if (balances == null && balances.size() == 0)
+            return null;
         balances = balances.stream().filter(a -> {
             return a.getRemainQuantity() > 0;
         }).collect(Collectors.toList());
+
 
         List<Balance> rst = balances.stream().sorted((a, b) -> {
             if (a.getCategory() == null || b.getCategory() == null || a.getProductParameter() == null || b.getProductParameter() == null ||
@@ -69,7 +74,10 @@ public class StockServiceImpl implements StockService {
 
     @Override
     @Transactional
-    public void updateBalance(Manufacture manufacture) {
+    public void updateBalance(Manufacture manufacture, String operate, Manufacture manufacture2) {
+
+        UserDetails userDetails = SecurityUtils.getCurrentUser();
+        Long userId = (Long) new JSONObject(new JSONObject(userDetails).get("user")).get("id");
 
         //查询报工名称，工序名称
         ProductParameterQueryCriteria productParameterQueryCriteria = new ProductParameterQueryCriteria();
@@ -88,15 +96,37 @@ public class StockServiceImpl implements StockService {
         List<Balance> balances2 = balanceRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, balanceQueryCriteria2, criteriaBuilder));
         if (balances2 != null && balances2.size() > 0) {
             Balance balance = balances2.get(0);
+
+            BalanceLog balanceLog = new BalanceLog();
+            balanceLog.setOriginalQuantity(balance.getRemainQuantity());
+
             balance.setRemainQuantity(balance.getRemainQuantity() + manufacture.getDailyOutput() - manufacture.getTransferQuantity());
             balanceRepository.save(balance);
+
+            balanceLog.setBalance(balance);
+            balanceLog.setManufacture(net.sf.json.JSONObject.fromObject(manufacture2).toString());
+            balanceLog.setBalanceQuantity(balance.getRemainQuantity());
+            balanceLog.setOperate(operate);
+            balanceLog.setUserId(userId);
+            balanceLogRepository.save(balanceLog);
+
+
         } else {
             Balance balance = new Balance();
             balance.setManufactureAddress(manufacture.getManufactureAddress());
             balance.setProductParameter(productParameter);
             balance.setCategory(productParameter.getTechniqueInfo().getCategory());
             balance.setRemainQuantity(manufacture.getDailyOutput() - manufacture.getTransferQuantity());
-            balanceRepository.save(balance);
+            Balance balance1 = balanceRepository.save(balance);
+
+            BalanceLog balanceLog = new BalanceLog();
+            balanceLog.setBalance(balance1);
+            balanceLog.setOriginalQuantity(0);
+            balanceLog.setManufacture(net.sf.json.JSONObject.fromObject(manufacture2).toString());
+            balanceLog.setBalanceQuantity(balance.getRemainQuantity());
+            balanceLog.setOperate(operate);
+            balanceLog.setUserId(userId);
+            balanceLogRepository.save(balanceLog);
         }
 
 
@@ -134,15 +164,34 @@ public class StockServiceImpl implements StockService {
                             List<Balance> balances = balanceRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, balanceQueryCriteria, criteriaBuilder));
                             if (balances != null && balances.size() > 0) {
                                 Balance balance = balances.get(0);
+                                BalanceLog balanceLog = new BalanceLog();
+
+                                balanceLog.setOriginalQuantity(balance.getRemainQuantity());
                                 balance.setRemainQuantity(balance.getRemainQuantity() - manufacture.getDailyOutput() * materialRatio.getConsumedQuantity());
                                 balanceRepository.save(balance);
+
+                                balanceLog.setBalance(balance);
+                                balanceLog.setManufacture(net.sf.json.JSONObject.fromObject(manufacture2).toString());
+                                balanceLog.setBalanceQuantity(balance.getRemainQuantity());
+                                balanceLog.setOperate(operate);
+                                balanceLog.setUserId(userId);
+                                balanceLogRepository.save(balanceLog);
                             } else {
                                 Balance balance3 = new Balance();
                                 balance3.setManufactureAddress(manufacture.getManufactureAddress());
                                 balance3.setCategory(processRelation.getCategory());
                                 balance3.setProductParameter(processRelation1.getProductParameter());
                                 balance3.setRemainQuantity(0 - manufacture.getDailyOutput() * materialRatio.getConsumedQuantity());
-                                balanceRepository.save(balance3);
+                                Balance balance4 = balanceRepository.save(balance3);
+
+                                BalanceLog balanceLog = new BalanceLog();
+                                balanceLog.setOriginalQuantity(0);
+                                balanceLog.setBalance(balance4);
+                                balanceLog.setManufacture(net.sf.json.JSONObject.fromObject(manufacture2).toString());
+                                balanceLog.setBalanceQuantity(balance4.getRemainQuantity());
+                                balanceLog.setOperate(operate);
+                                balanceLog.setUserId(userId);
+                                balanceLogRepository.save(balanceLog);
                             }
                         }
                     }
@@ -165,15 +214,35 @@ public class StockServiceImpl implements StockService {
 
                     if (balances != null && balances.size() > 0) {
                         Balance balance = balances.get(0);
+
+                        BalanceLog balanceLog = new BalanceLog();
+                        balanceLog.setOriginalQuantity(balance.getRemainQuantity());
+
                         balance.setRemainQuantity(balance.getRemainQuantity() + manufacture.getTransferQuantity());
                         balanceRepository.save(balance);
+
+                        balanceLog.setBalance(balance);
+                        balanceLog.setManufacture(net.sf.json.JSONObject.fromObject(manufacture2).toString());
+                        balanceLog.setBalanceQuantity(balance.getRemainQuantity());
+                        balanceLog.setOperate(operate);
+                        balanceLog.setUserId(userId);
+                        balanceLogRepository.save(balanceLog);
                     } else {
                         Balance balance = new Balance();
                         balance.setManufactureAddress(manufacture.getManufactureAddress());
                         balance.setCategory(processRelation1.getCategory());
                         balance.setProductParameter(productParameter);
                         balance.setRemainQuantity(manufacture.getTransferQuantity());
-                        balanceRepository.save(balance);
+                        Balance balance1 = balanceRepository.save(balance);
+
+                        BalanceLog balanceLog = new BalanceLog();
+                        balanceLog.setBalance(balance1);
+                        balanceLog.setOriginalQuantity(0);
+                        balanceLog.setManufacture(net.sf.json.JSONObject.fromObject(manufacture2).toString());
+                        balanceLog.setBalanceQuantity(balance1.getRemainQuantity());
+                        balanceLog.setOperate(operate);
+                        balanceLog.setUserId(userId);
+                        balanceLogRepository.save(balanceLog);
                     }
                 }
             });
@@ -204,7 +273,7 @@ public class StockServiceImpl implements StockService {
             map.put("工序名称", balance.getCategory().getSecondaryType());
             map.put("工序半成品名称", balance.getProductParameter().getManufactureName());
             map.put("工序半成品数量", balance.getRemainQuantity());
-            map.put("更新", balance.getUpdateTime());
+            map.put("更新时间", balance.getUpdateTime());
             list.add(map);
         }
         try {

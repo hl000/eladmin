@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import me.zhengjie.annotation.Log;
 import me.zhengjie.base.MergeResult;
 import me.zhengjie.domain.Manufacture;
+import me.zhengjie.domain.Reasons;
 import me.zhengjie.service.ManufactureService;
 import me.zhengjie.service.dto.*;
 import me.zhengjie.utils.PageUtil;
@@ -90,7 +91,7 @@ public class ManufactureController {
     }
 
     private Object getObject(ManufactureQueryCriteria criteria, Pageable pageable, Boolean isPlan) {
-        List<ManufactureDto> manufactureDtoList=manufactureService.queryManufacture(criteria, isPlan);
+        List<ManufactureDto> manufactureDtoList = manufactureService.queryManufacture(criteria, isPlan);
         MergeResult mergeResult = new MergeResult();
         mergeResult.totalElements = manufactureDtoList.size();
         mergeResult.totalPages = manufactureDtoList.size() % pageable.getPageSize() == 0 ? manufactureDtoList.size() / pageable.getPageSize() : manufactureDtoList.size() / pageable.getPageSize() + 1;
@@ -128,5 +129,12 @@ public class ManufactureController {
     @ApiOperation("自动生成报工")
     public void autoManufacture(@RequestParam String date) {
         manufactureService.createManufacture(date);
+    }
+
+    @GetMapping("/reasons")
+    @Log("获取日计划未达标原因")
+    @ApiOperation("获取日计划未达标原因")
+    public List<Reasons> getReasons() {
+        return manufactureService.getReasons();
     }
 }

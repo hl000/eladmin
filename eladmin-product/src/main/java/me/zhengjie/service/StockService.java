@@ -15,6 +15,6 @@ public interface StockService {
 
     void download(HttpServletResponse response, BalanceQueryCriteria criteria);
 
-    void updateBalance(Manufacture manufacture);
+    void updateBalance(Manufacture manufacture2, String create, Manufacture manufacture);
     List<Balance> queryBalance(BalanceQueryCriteria criteria);
 }

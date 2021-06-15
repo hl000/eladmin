@@ -1,6 +1,7 @@
 package me.zhengjie.service;
 
 import me.zhengjie.domain.Manufacture;
+import me.zhengjie.domain.Reasons;
 import me.zhengjie.service.dto.*;
 import org.springframework.data.domain.Pageable;
 
@@ -41,6 +42,8 @@ public interface ManufactureService {
     void createManufacture(String date);
 
     List<Manufacture> unplannedManufacture(UnPlannedManufactureDto unPlannedManufactureDto);
+
+    List<Reasons> getReasons();
 
 //    Map<String,Object> getSummaryView(SummaryViewQueryCriteria criteria, Pageable pageable);
 

@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import me.zhengjie.domain.*;
 import me.zhengjie.mapper.ManufactureMapper;
 import me.zhengjie.mapper.ManufactureSummaryMapper;
-import me.zhengjie.mapper.SummaryViewMapper;
 import me.zhengjie.repository.*;
 import me.zhengjie.service.ManufactureService;
 import me.zhengjie.service.ProductParameterService;
@@ -54,12 +53,10 @@ public class ManufactureServiceImpl implements ManufactureService {
 
     private final StockService stockService;
 
-    private final SummaryViewRepository summaryViewRepository;
 
     private final SysUserRepository sysUserRepository;
 
-    @Resource(name = "summaryViewMapperImpl")
-    private SummaryViewMapper summaryViewMapper;
+    private final ReasonRepository reasonRepository;
 
     final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -74,16 +71,13 @@ public class ManufactureServiceImpl implements ManufactureService {
 
         List<Manufacture> manufactures = manufactureRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder));
         if (manufactures != null && manufactures.size() > 0) {
-            for (Manufacture manufacture : manufactures) {
-                if (dateFormat.format(manufacture.getFillDate()).equals(resources.getFillDate()))
-                    return null;
-            }
+            return null;
         }
 
         Manufacture manufacture = manufactureRepository.save(resources);
         updateDailyCompletedQuantity(resources.getPlanNumber());
         summary(resources.getPlanNumber());
-        stockService.updateBalance(manufacture);
+        stockService.updateBalance(manufacture, "CREATE", manufacture);
         return manufactureMapper.toDto(manufacture);
     }
 
@@ -91,8 +85,8 @@ public class ManufactureServiceImpl implements ManufactureService {
     @Transactional(rollbackFor = Exception.class)
     public List<Manufacture> unplannedManufacture(UnPlannedManufactureDto unPlannedManufactureDto) {
         List<Manufacture> manufactureList = unPlannedManufactureDto.getManufactureList();
+        List<Manufacture> manufactureLists = new ArrayList<>();
 
-        List<Manufacture> manufactures = new ArrayList<>();
         for (Manufacture manufacture : manufactureList) {
             manufacture.setFillDate(unPlannedManufactureDto.getFDate());
             manufacture.setManufactureAddress(unPlannedManufactureDto.getFAddress());
@@ -112,42 +106,42 @@ public class ManufactureServiceImpl implements ManufactureService {
                 criteria.setFillDate(dateFormat.format(manufacture.getFillDate()));
                 List<Manufacture> manufactureList1 = manufactureRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder));
                 if (manufactureList1 == null || manufactureList1.size() == 0) {
-                    manufactures.add(manufacture);
-                    stockService.updateBalance(manufacture);
+                    Manufacture manufacture2 = manufactureRepository.save(manufacture);
+                    stockService.updateBalance(manufacture2, "CREATE", manufacture2);
+                    manufactureLists.add(manufacture2);
                 } else {
                     int i = 0;
                     for (Manufacture manufacture1 : manufactureList1) {
                         if (manufacture1.getPlanNumber() == null || "".equals(manufacture1.getPlanNumber())) {
                             if ((manufacture.getDailyOutput() != null && manufacture.getDailyOutput() != manufacture1.getDailyOutput()) || (manufacture.getRejectsQuantity() != null && manufacture.getRejectsQuantity() != manufacture1.getRejectsQuantity()) || (manufacture.getTransferQuantity() != null && manufacture.getTransferQuantity() != manufacture1.getTransferQuantity())) {
-                                manufacture1.setDailyOutput(manufacture.getDailyOutput() - manufacture1.getDailyOutput());
-                                manufacture1.setRejectsQuantity(manufacture.getRejectsQuantity() - manufacture1.getRejectsQuantity());
-                                manufacture1.setTransferQuantity(manufacture.getTransferQuantity() - manufacture1.getTransferQuantity());
-                                stockService.updateBalance(manufacture1);
+                                Manufacture manufacture3 = new Manufacture();
+                                manufacture3.copy(manufacture1);
+                                manufacture3.setDailyOutput(manufacture.getDailyOutput() - manufacture1.getDailyOutput());
+                                manufacture3.setRejectsQuantity(manufacture.getRejectsQuantity() - manufacture1.getRejectsQuantity());
+                                manufacture3.setTransferQuantity(manufacture.getTransferQuantity() - manufacture1.getTransferQuantity());
+
                                 manufacture1.copy(manufacture);
-                                manufactures.add(manufacture1);
+
+                                Manufacture manufacture2 = manufactureRepository.save(manufacture1);
+                                stockService.updateBalance(manufacture3, "UPDATE", manufacture1);
+                                manufactureLists.add(manufacture2);
                             }
                             i++;
                             break;
                         }
                     }
                     if (i == 0) {
-                        manufactures.add(manufacture);
-                        stockService.updateBalance(manufacture);
+                        Manufacture manufacture2 = manufactureRepository.save(manufacture);
+                        stockService.updateBalance(manufacture2, "CREATE", manufacture2);
+                        manufactureLists.add(manufacture2);
                     }
 
                 }
             }
         }
-        return manufactureRepository.saveAll(manufactures);
+        return manufactureLists;
     }
 
-    private void updateBalanceLog(Manufacture now,Manufacture original){
-        if(original==null){
-
-        }
-
-
-    }
 
     public void summary(String planNumber) {
         ManufactureQueryCriteria manufactureQueryCriteria = new ManufactureQueryCriteria();
@@ -637,7 +631,7 @@ public class ManufactureServiceImpl implements ManufactureService {
             manufacture1.setDailyOutput(resources.getDailyOutput() - manufacture1.getDailyOutput());
             manufacture1.setRejectsQuantity(resources.getRejectsQuantity() - manufacture1.getRejectsQuantity());
             manufacture1.setTransferQuantity(resources.getTransferQuantity() - manufacture1.getTransferQuantity());
-            stockService.updateBalance(manufacture1);
+            stockService.updateBalance(manufacture1, "UPDATE", manufacture);
         }
     }
 
@@ -744,4 +738,10 @@ public class ManufactureServiceImpl implements ManufactureService {
         Page<ManufactureSummary> page = manufactureSummaryRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder), pageable);
         return PageUtil.toPage(page.map(manufactureSummaryMapper::toDto));
     }
+
+    @Override
+    public List<Reasons> getReasons() {
+        return reasonRepository.findAll();
+    }
+
 }
