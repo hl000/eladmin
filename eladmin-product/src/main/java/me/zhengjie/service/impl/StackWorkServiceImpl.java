@@ -95,10 +95,12 @@ public class StackWorkServiceImpl implements StackWorkService {
                 } else if (stackSummary.getManufactureName().contains("电堆组装") && stackSummary.getDailyOutput() != null) {
                     productNum.setAssemblyNum(productNum.getAssemblyNum() + stackSummary.getDailyOutput());
                 } else if (stackSummary.getManufactureName().contains("电堆组装") && stackSummary.getRemainQuantity() != null) {
-                    productNum.setAssemblyBalance(productNum.getAssemblyNum() + stackSummary.getRemainQuantity());
+                    productNum.setAssemblyBalance(productNum.getAssemblyBalance() + stackSummary.getRemainQuantity());
                 }
             }
-            productNums.add(productNum);
+            if (productNum.getActivationNum() != 0 || productNum.getActivationBalance() != 0 || productNum.getAssemblyNum() != 0 || productNum.getAssemblyBalance() != 0) {
+                productNums.add(productNum);
+            }
         }
         productNums.stream().sorted(Comparator.comparing(ProductNum::getModelName));
         return productNums;

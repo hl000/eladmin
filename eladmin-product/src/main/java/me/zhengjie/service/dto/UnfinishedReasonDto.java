@@ -1,4 +1,4 @@
-package me.zhengjie.domain;
+package me.zhengjie.service.dto;
 
 import lombok.Data;
 
@@ -14,6 +14,8 @@ public class UnfinishedReasonDto {
     private String fillDate;
 
     private String manufactureAddress;
+
+    private String secondaryType;
 
     private String manufactureName;
 

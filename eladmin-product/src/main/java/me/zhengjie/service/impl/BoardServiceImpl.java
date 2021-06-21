@@ -7,10 +7,7 @@ import me.zhengjie.repository.DailyPlanRepository;
 import me.zhengjie.repository.ManufactureRepository;
 import me.zhengjie.repository.ProductParameterRepository;
 import me.zhengjie.service.BoardService;
-import me.zhengjie.service.dto.BatchPlanQueryCriteria;
-import me.zhengjie.service.dto.DailyPlanQueryCriteria;
-import me.zhengjie.service.dto.ManufactureQueryCriteria;
-import me.zhengjie.service.dto.ProductParameterQueryCriteria;
+import me.zhengjie.service.dto.*;
 import me.zhengjie.utils.QueryHelp;
 import org.springframework.stereotype.Service;
 
@@ -37,11 +34,14 @@ public class BoardServiceImpl implements BoardService {
     final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override
-    public List<PlanBoardDto> getPlanBoard() {
+    public List<PlanBoardDto> getPlanBoard(BoardQueryCriteria boardQueryCriteria) {
         String today = dateFormat.format(new Date());
         BatchPlanQueryCriteria batchPlanQueryCriteria = new BatchPlanQueryCriteria();
         batchPlanQueryCriteria.setStartDate(today);
         batchPlanQueryCriteria.setEndDate(today);
+        if (boardQueryCriteria.getManufactureAddress() != null) {
+            batchPlanQueryCriteria.setManufactureAddress(boardQueryCriteria.getManufactureAddress());
+        }
         List<BatchPlan> batchPlanList = batchPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, batchPlanQueryCriteria, criteriaBuilder));
 
         batchPlanList.stream().sorted(Comparator.comparing(BatchPlan::getId, Comparator.reverseOrder())).collect(Collectors.toList());
@@ -67,9 +67,10 @@ public class BoardServiceImpl implements BoardService {
                     planBoardDto.setEndDate(batchPlan.getEndDate());
                     planBoardDto.setManufactureAddress(batchPlan.getManufactureAddress());
                     planBoardDto.setManufactureName(entry.getKey());
+
                     ProductParameter productParameter = productParameterList.stream().filter(a -> a.getManufactureName().equals(entry.getKey())).collect(Collectors.toList()).get(0);
                     planBoardDto.setPlanQuantity(batchPlan.getBatchPlanQuantity() * productParameter.getUnitsQuantity());
-
+                    planBoardDto.setSecondaryType(productParameter.getTechniqueInfo().getCategory().getSecondaryType());
 
                     Integer count = entry.getValue().stream().mapToInt(a -> {
                         return a.getCompletedQuantity();
@@ -91,15 +92,34 @@ public class BoardServiceImpl implements BoardService {
                 }
             }
         }
+
+        if (boardQueryCriteria.getSecondaryType() != null) {
+            planBoardDtoList = planBoardDtoList.stream().filter(a -> {
+                return boardQueryCriteria.getSecondaryType().equals(a.getSecondaryType());
+            }).collect(Collectors.toList());
+        }
+        if (boardQueryCriteria.getManufactureName() != null) {
+            planBoardDtoList = planBoardDtoList.stream().filter(a -> {
+                return boardQueryCriteria.getManufactureName().equals(a.getManufactureName());
+            }).collect(Collectors.toList());
+        }
         return planBoardDtoList;
     }
 
     @Override
-    public List<UnfinishedReasonDto> getUnfinishedReasons() {
+    public List<UnfinishedReasonDto> getUnfinishedReasons(BoardQueryCriteria boardQueryCriteria) {
 
         List<UnfinishedReasonDto> unfinishedReasonDtos = new ArrayList<>();
-        List<DailyPlan> dailyPlanList = dailyPlanRepository.findAll();
-        dailyPlanList.stream().filter(a -> {
+        DailyPlanQueryCriteria dailyPlanQueryCriteria = new DailyPlanQueryCriteria();
+        if (boardQueryCriteria.getManufactureAddress() != null) {
+            dailyPlanQueryCriteria.setManufactureAddress(boardQueryCriteria.getManufactureAddress());
+        } else if (boardQueryCriteria.getManufactureName() != null) {
+            dailyPlanQueryCriteria.setManufactureName(boardQueryCriteria.getManufactureName());
+        }
+
+        List<DailyPlan> dailyPlanList = dailyPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, dailyPlanQueryCriteria, criteriaBuilder));
+
+        dailyPlanList = dailyPlanList.stream().filter(a -> {
             return a.getDailyPlanQuantity() > a.getCompletedQuantity();
         }).collect(Collectors.toList());
 
@@ -120,9 +140,27 @@ public class BoardServiceImpl implements BoardService {
                 unfinishedReasonDto.setIncompleteReasons(manufactures.get(0).getIncompleteReasons());
             }
 
+            ProductParameterQueryCriteria productParameterQueryCriteria = new ProductParameterQueryCriteria();
+            productParameterQueryCriteria.setManufactureName(dailyPlan.getManufactureName());
+            List<ProductParameter> productParameterList = productParameterRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, productParameterQueryCriteria, criteriaBuilder));
+            if (productParameterList != null && productParameterList.size() > 0) {
+                TechniqueInfo techniqueInfo = productParameterList.get(0).getTechniqueInfo();
+                if (techniqueInfo != null && techniqueInfo.getCategory() != null) {
+                    unfinishedReasonDto.setSecondaryType(techniqueInfo.getCategory().getSecondaryType());
+                }
+            }
             unfinishedReasonDtos.add(unfinishedReasonDto);
         }
 
+        unfinishedReasonDtos = unfinishedReasonDtos.stream().filter(a -> {
+            return !("无人报工".equals(a.getIncompleteReasons()) && a.getActualQuantity() == 0);
+        }).collect(Collectors.toList());
+
+        if (boardQueryCriteria.getSecondaryType() != null) {
+            unfinishedReasonDtos = unfinishedReasonDtos.stream().filter(a -> {
+                return boardQueryCriteria.getSecondaryType().equals(a.getSecondaryType());
+            }).collect(Collectors.toList());
+        }
         return unfinishedReasonDtos;
     }
 }

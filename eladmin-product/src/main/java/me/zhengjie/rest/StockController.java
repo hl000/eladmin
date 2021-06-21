@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import me.zhengjie.annotation.Log;
 import me.zhengjie.base.MergeResult;
 import me.zhengjie.domain.Balance;
+import me.zhengjie.domain.BalanceView;
 import me.zhengjie.service.StockService;
 import me.zhengjie.service.dto.BalanceQueryCriteria;
 import me.zhengjie.utils.PageUtil;
@@ -41,7 +42,7 @@ public class StockController {
     @ApiOperation("查看结存信息")
     public Object getBalance(BalanceQueryCriteria criteria, Pageable pageable) {
 
-        List<Balance> balanceList = stockService.queryBalance(criteria);
+        List<BalanceView> balanceList = stockService.queryBalance(criteria);
         if (balanceList == null || balanceList.size() == 0)
             return null;
         MergeResult mergeResult = new MergeResult();

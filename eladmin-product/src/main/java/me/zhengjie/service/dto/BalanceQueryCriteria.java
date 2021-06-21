@@ -24,7 +24,6 @@ import me.zhengjie.annotation.Query;
  **/
 @Data
 public class BalanceQueryCriteria {
-
     @Query(propName = "manufactureName",joinName = "productParameter")
     private String manufactureName;
 
@@ -36,7 +35,5 @@ public class BalanceQueryCriteria {
 
     @Query(propName = "serialNumber",joinName = "productParameter")
     private String serialNumber;
-
-
 
 }

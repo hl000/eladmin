@@ -1,4 +1,4 @@
-package me.zhengjie.domain;
+package me.zhengjie.service.dto;
 
 import lombok.Data;
 
@@ -16,6 +16,8 @@ public class PlanBoardDto {
 //    private Integer batchPlanQuantity;
 
     private String batchPlanName;
+
+    private String secondaryType;
 
     private String manufactureAddress;
 

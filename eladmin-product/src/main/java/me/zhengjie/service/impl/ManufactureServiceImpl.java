@@ -58,7 +58,7 @@ public class ManufactureServiceImpl implements ManufactureService {
 
     private final ReasonRepository reasonRepository;
 
-    final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
 
     //制造信息报工

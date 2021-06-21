@@ -1,7 +1,8 @@
 package me.zhengjie.service;
 
-import me.zhengjie.domain.PlanBoardDto;
-import me.zhengjie.domain.UnfinishedReasonDto;
+import me.zhengjie.service.dto.BoardQueryCriteria;
+import me.zhengjie.service.dto.PlanBoardDto;
+import me.zhengjie.service.dto.UnfinishedReasonDto;
 
 import java.util.List;
 
@@ -10,7 +11,7 @@ import java.util.List;
  * @create 2021/6/15 8:23
  */
 public interface BoardService {
-    List<PlanBoardDto> getPlanBoard();
+    List<PlanBoardDto> getPlanBoard(BoardQueryCriteria boardQueryCriteria);
 
-    List<UnfinishedReasonDto> getUnfinishedReasons();
+    List<UnfinishedReasonDto> getUnfinishedReasons(BoardQueryCriteria boardQueryCriteria);
 }

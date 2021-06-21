@@ -5,6 +5,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.annotation.Log;
+import me.zhengjie.annotation.rest.AnonymousGetMapping;
 import me.zhengjie.domain.Category;
 import me.zhengjie.domain.Manufacture;
 import me.zhengjie.service.CategoryService;
@@ -41,7 +42,7 @@ public class CategoryController {
         return new ResponseEntity<>(categoryService.queryAll(criteria), HttpStatus.OK);
     }
 
-    @GetMapping("/getProcessName")
+    @AnonymousGetMapping("/getProcessName")
     @Log("查询分类")
     @ApiOperation("查询分类")
     public List<String> getProcessName() {

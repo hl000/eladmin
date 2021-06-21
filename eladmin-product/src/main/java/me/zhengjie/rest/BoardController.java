@@ -5,10 +5,10 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.annotation.Log;
 import me.zhengjie.base.MergeResult;
-import me.zhengjie.domain.PlanBoardDto;
-import me.zhengjie.domain.UnfinishedReasonDto;
+import me.zhengjie.service.dto.BoardQueryCriteria;
+import me.zhengjie.service.dto.PlanBoardDto;
+import me.zhengjie.service.dto.UnfinishedReasonDto;
 import me.zhengjie.service.BoardService;
-import me.zhengjie.service.dto.ManufactureDto;
 import me.zhengjie.utils.PageUtil;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,8 +32,8 @@ public class BoardController {
     @GetMapping("/getPlanBoard")
     @Log("planBoard")
     @ApiOperation("getPlanBoard")
-    public Object getPlanBoard(Pageable pageable) {
-        List<PlanBoardDto> planBoardDtoList = boardService.getPlanBoard();
+    public Object getPlanBoard(BoardQueryCriteria boardQueryCriteria, Pageable pageable) {
+        List<PlanBoardDto> planBoardDtoList = boardService.getPlanBoard(boardQueryCriteria);
         MergeResult mergeResult = new MergeResult();
         mergeResult.totalElements = planBoardDtoList.size();
         mergeResult.totalPages = planBoardDtoList.size() % pageable.getPageSize() == 0 ? planBoardDtoList.size() / pageable.getPageSize() : planBoardDtoList.size() / pageable.getPageSize() + 1;
@@ -47,8 +47,8 @@ public class BoardController {
     @GetMapping("/getUnfinishedReasons")
     @Log("getUnfinishedReasons")
     @ApiOperation("getUnfinishedReasons")
-    public Object getUnfinishedReasons(Pageable pageable) {
-        List<UnfinishedReasonDto> unfinishedReasonDtos = boardService.getUnfinishedReasons();
+    public Object getUnfinishedReasons(BoardQueryCriteria boardQueryCriteria, Pageable pageable) {
+        List<UnfinishedReasonDto> unfinishedReasonDtos = boardService.getUnfinishedReasons(boardQueryCriteria);
         MergeResult mergeResult = new MergeResult();
         mergeResult.totalElements = unfinishedReasonDtos.size();
         mergeResult.totalPages = unfinishedReasonDtos.size() % pageable.getPageSize() == 0 ? unfinishedReasonDtos.size() / pageable.getPageSize() : unfinishedReasonDtos.size() / pageable.getPageSize() + 1;

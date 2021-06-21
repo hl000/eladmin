@@ -1,6 +1,7 @@
 package me.zhengjie.service;
 
 import me.zhengjie.domain.Balance;
+import me.zhengjie.domain.BalanceView;
 import me.zhengjie.domain.Manufacture;
 import me.zhengjie.service.dto.BalanceQueryCriteria;
 
@@ -16,5 +17,5 @@ public interface StockService {
     void download(HttpServletResponse response, BalanceQueryCriteria criteria);
 
     void updateBalance(Manufacture manufacture2, String create, Manufacture manufacture);
-    List<Balance> queryBalance(BalanceQueryCriteria criteria);
+    List<BalanceView> queryBalance(BalanceQueryCriteria criteria);
 }

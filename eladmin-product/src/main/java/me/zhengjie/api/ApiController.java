@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.zhengjie.annotation.Log;
+import me.zhengjie.annotation.rest.AnonymousGetMapping;
 import me.zhengjie.base.PageRequest;
 import me.zhengjie.base.PageResult;
 import me.zhengjie.domain.*;
@@ -231,7 +232,7 @@ public class ApiController {
         return productResult;
     }
 
-    @GetMapping("/getLocal")
+    @AnonymousGetMapping("/getLocal")
     public ResponseEntity<Object> getLocal() {
         List<SysLocalDto> local = sysLocalService.getLocal();
         return new ResponseEntity<>(local, HttpStatus.OK);
