@@ -19,9 +19,13 @@ public class PlanBoardDto {
 
     private String secondaryType;
 
+    private Integer processSequence;
+
     private String manufactureAddress;
 
     private String manufactureName;
+
+    private Integer serialNumber;
 
     private Integer completedQuantity;
 

@@ -38,6 +38,15 @@
         ORDER  by FSubmitDate desc, FNumber asc
     </select>
 
+    <select id="queryExpStacks" resultType="me.zhengjie.domain.ExpStackInfo">
+
+        select * from ${table}
+        where
+        FDate BETWEEN #{start} AND #{end}
+          AND FBase = #{base}
+        ORDER  by FSubmitDate desc, FNumber asc
+    </select>
+
     <select id="queryByFid" resultType="me.zhengjie.domain.ExpStackInfo">
 
         select  * from ${table}

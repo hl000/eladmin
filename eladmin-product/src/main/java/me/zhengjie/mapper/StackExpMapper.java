@@ -23,4 +23,5 @@ public interface StackExpMapper {
 
     List<CommonStatistics> getStatistics(@Param("table")String table, @Param("start")String start, @Param("end")String end);
 
+    List<ExpStackInfo> queryExpStacks(@Param("table")String table,  @Param("start")String start,  @Param("end")String end, @Param("base")String base);
 }

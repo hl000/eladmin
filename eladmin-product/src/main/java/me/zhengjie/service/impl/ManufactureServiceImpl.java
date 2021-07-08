@@ -58,7 +58,7 @@ public class ManufactureServiceImpl implements ManufactureService {
 
     private final ReasonRepository reasonRepository;
 
-        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
 
     //制造信息报工
@@ -693,21 +693,35 @@ public class ManufactureServiceImpl implements ManufactureService {
 
             manufactureDtoList = manufactureDtoList.stream().sorted(Comparator.comparing(ManufactureDto::getFillDate, Comparator.reverseOrder()).thenComparing(ManufactureDto::getManufactureAddress, Comparator.reverseOrder()).thenComparing(ManufactureDto::getSerialNumber)).collect(Collectors.toList());
 
+            List<DailyPlan> dailyPlanList1 = dailyPlanRepository.findAll();
+            Map<String, List<DailyPlan>> dailyPlanMap = dailyPlanList1.stream().collect(Collectors.groupingBy(a -> {
+                return a.getPlanNumber() + "_" + a.getManufactureName();
+            }));
+
+            List<ProductParameter> productParameterList1 = productParameterRepository.findAll();
+            Map<String, List<ProductParameter>> productParameterMap = productParameterList1.stream().collect(Collectors.groupingBy(a -> {
+                return a.getProductName() + "_" + a.getManufactureName();
+            }));
+
 
             manufactureDtoList.forEach(manufactureDto -> {
 
-                DailyPlanQueryCriteria dailyPlanQueryCriteria = new DailyPlanQueryCriteria();
-                dailyPlanQueryCriteria.setPlanNumber(manufactureDto.getPlanNumber());
-                dailyPlanQueryCriteria.setManufactureName(manufactureDto.getManufactureName());
-                List<DailyPlan> dailyPlanList = dailyPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, dailyPlanQueryCriteria, criteriaBuilder));
+
+//                DailyPlanQueryCriteria dailyPlanQueryCriteria = new DailyPlanQueryCriteria();
+//                dailyPlanQueryCriteria.setPlanNumber(manufactureDto.getPlanNumber());
+//                dailyPlanQueryCriteria.setManufactureName(manufactureDto.getManufactureName());
+//                List<DailyPlan> dailyPlanList = dailyPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, dailyPlanQueryCriteria, criteriaBuilder));
+                List<DailyPlan> dailyPlanList = dailyPlanMap.get(manufactureDto.getPlanNumber() + "_" + manufactureDto.getManufactureName());
                 if (dailyPlanList != null && dailyPlanList.size() > 0) {
                     DailyPlan dailyPlan = dailyPlanList.get(0);
                     manufactureDto.setDailyPlanQuantity(dailyPlan.getDailyPlanQuantity());
                     manufactureDto.setDailyCompletionRate(convertDouble(dailyPlan.getDailyPlanQuantity() == 0 ? 1 : manufactureDto.getDailyOutput() * 1.0 / dailyPlan.getDailyPlanQuantity()));
-                    ProductParameterQueryCriteria productParameterQueryCriteria = new ProductParameterQueryCriteria();
-                    productParameterQueryCriteria.setProductName(dailyPlan.getBatchPlan().getProductName());
-                    productParameterQueryCriteria.setManufactureName(manufactureDto.getManufactureName());
-                    List<ProductParameter> productParameterList = productParameterRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, productParameterQueryCriteria, criteriaBuilder));
+//                    ProductParameterQueryCriteria productParameterQueryCriteria = new ProductParameterQueryCriteria();
+//                    productParameterQueryCriteria.setProductName(dailyPlan.getBatchPlan().getProductName());
+//                    productParameterQueryCriteria.setManufactureName(manufactureDto.getManufactureName());
+//                    List<ProductParameter> productParameterList = productParameterRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, productParameterQueryCriteria, criteriaBuilder));
+                    List<ProductParameter> productParameterList = productParameterMap.get(dailyPlan.getBatchPlan().getProductName() + "_" + manufactureDto.getManufactureName());
+
                     if (productParameterList != null && productParameterList.size() > 0) {
                         ProductParameter productParameter = productParameterList.get(0);
                         manufactureDto.setMaterial1Name(productParameter.getTechniqueInfo().getMaterial1Name());

@@ -16,6 +16,7 @@
 package me.zhengjie.service;
 
 import me.zhengjie.domain.ExpStackInfo;
+import me.zhengjie.service.dto.ExpStackAvg;
 import me.zhengjie.statistics.CommonStatistics;
 
 import javax.servlet.http.HttpServletResponse;
@@ -38,6 +39,8 @@ public interface StackExpService {
     List<ExpStackInfo> queryOne (String code, String base);
 
     List<ExpStackInfo> queryAll (long start, long end,String base);
+
+    List<ExpStackAvg> getExpStackAvg(String start, String end, String base);
 
     ExpStackInfo queryByFid (long Fid);
 

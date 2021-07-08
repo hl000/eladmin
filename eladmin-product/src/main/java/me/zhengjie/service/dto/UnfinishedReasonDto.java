@@ -17,11 +17,17 @@ public class UnfinishedReasonDto {
 
     private String secondaryType;
 
+    private Integer processSequence;
+
     private String manufactureName;
+
+    private Integer serialNumber;
 
     private Integer dailyPlanQuantity;
 
     private Integer actualQuantity;
+
+    private Integer unfinishedQuantity;
 
     private String incompleteReasons;
 }

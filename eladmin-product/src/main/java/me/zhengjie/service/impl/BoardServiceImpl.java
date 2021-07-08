@@ -44,19 +44,22 @@ public class BoardServiceImpl implements BoardService {
         }
         List<BatchPlan> batchPlanList = batchPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, batchPlanQueryCriteria, criteriaBuilder));
 
-        batchPlanList.stream().sorted(Comparator.comparing(BatchPlan::getId, Comparator.reverseOrder())).collect(Collectors.toList());
+//        batchPlanList.stream().sorted(Comparator.comparing(BatchPlan::getId, Comparator.reverseOrder())).collect(Collectors.toList());
+
+        List<ProductParameter> productParameterList1 = productParameterRepository.findAll();
+        if (productParameterList1 == null || productParameterList1.size() == 0) {
+            return null;
+        }
+        Map<String, List<ProductParameter>> productParameterMap = productParameterList1.stream().collect(Collectors.groupingBy(a -> {
+            return a.getProductName() + "_" + a.getManufactureName();
+        }));
+
+
         List<PlanBoardDto> planBoardDtoList = new ArrayList<>();
         for (BatchPlan batchPlan : batchPlanList) {
             DailyPlanQueryCriteria dailyPlanQueryCriteria = new DailyPlanQueryCriteria();
             dailyPlanQueryCriteria.setBatchPlanId(batchPlan.getId());
             List<DailyPlan> dailyPlanList = dailyPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, dailyPlanQueryCriteria, criteriaBuilder));
-
-            ProductParameterQueryCriteria productParameterQueryCriteria = new ProductParameterQueryCriteria();
-            productParameterQueryCriteria.setProductName(batchPlan.getProductName());
-            List<ProductParameter> productParameterList = productParameterRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, productParameterQueryCriteria, criteriaBuilder));
-            if (productParameterList == null || productParameterList.size() == 0) {
-                return null;
-            }
 
             if (dailyPlanList != null && dailyPlanList.size() > 0) {
                 Map<String, List<DailyPlan>> groupByMap = dailyPlanList.stream().collect(Collectors.groupingBy(DailyPlan::getManufactureName));
@@ -68,10 +71,15 @@ public class BoardServiceImpl implements BoardService {
                     planBoardDto.setManufactureAddress(batchPlan.getManufactureAddress());
                     planBoardDto.setManufactureName(entry.getKey());
 
-                    ProductParameter productParameter = productParameterList.stream().filter(a -> a.getManufactureName().equals(entry.getKey())).collect(Collectors.toList()).get(0);
+                    List<ProductParameter> productParameterList = productParameterMap.get(batchPlan.getProductName() + "_" + entry.getKey());
+                    if (productParameterList == null || productParameterList.size() == 0) {
+                        continue;
+                    }
+                    ProductParameter productParameter = productParameterList.get(0);
+                    planBoardDto.setSerialNumber(productParameter.getSerialNumber() == null ? 1000 : productParameter.getSerialNumber());
                     planBoardDto.setPlanQuantity(batchPlan.getBatchPlanQuantity() * productParameter.getUnitsQuantity());
                     planBoardDto.setSecondaryType(productParameter.getTechniqueInfo().getCategory().getSecondaryType());
-
+                    planBoardDto.setProcessSequence(productParameter.getTechniqueInfo().getCategory().getProcessSequence() == null ? 1000 : productParameter.getTechniqueInfo().getCategory().getProcessSequence());
                     Integer count = entry.getValue().stream().mapToInt(a -> {
                         return a.getCompletedQuantity();
                     }).sum();
@@ -103,12 +111,24 @@ public class BoardServiceImpl implements BoardService {
                 return boardQueryCriteria.getManufactureName().equals(a.getManufactureName());
             }).collect(Collectors.toList());
         }
+
+        planBoardDtoList = planBoardDtoList.stream().sorted(Comparator.comparing(PlanBoardDto::getManufactureAddress, Comparator.reverseOrder()).thenComparing(PlanBoardDto::getProcessSequence).thenComparing(PlanBoardDto::getSerialNumber)).collect(Collectors.toList());
+
         return planBoardDtoList;
+    }
+
+    public String getYesterdayByCalendar() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DATE, -1);
+        Date time = calendar.getTime();
+        String yesterday = dateFormat.format(time);
+        return yesterday;
     }
 
     @Override
     public List<UnfinishedReasonDto> getUnfinishedReasons(BoardQueryCriteria boardQueryCriteria) {
 
+        String today = dateFormat.format(new Date());
         List<UnfinishedReasonDto> unfinishedReasonDtos = new ArrayList<>();
         DailyPlanQueryCriteria dailyPlanQueryCriteria = new DailyPlanQueryCriteria();
         if (boardQueryCriteria.getManufactureAddress() != null) {
@@ -116,51 +136,92 @@ public class BoardServiceImpl implements BoardService {
         } else if (boardQueryCriteria.getManufactureName() != null) {
             dailyPlanQueryCriteria.setManufactureName(boardQueryCriteria.getManufactureName());
         }
-
         List<DailyPlan> dailyPlanList = dailyPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, dailyPlanQueryCriteria, criteriaBuilder));
 
         dailyPlanList = dailyPlanList.stream().filter(a -> {
             return a.getDailyPlanQuantity() > a.getCompletedQuantity();
         }).collect(Collectors.toList());
 
-        dailyPlanList.stream().sorted(Comparator.comparing(DailyPlan::getId, Comparator.reverseOrder())).collect(Collectors.toList());
-        for (DailyPlan dailyPlan : dailyPlanList) {
-            UnfinishedReasonDto unfinishedReasonDto = new UnfinishedReasonDto();
-            ManufactureQueryCriteria manufactureQueryCriteria = new ManufactureQueryCriteria();
-            manufactureQueryCriteria.setPlanNumber(dailyPlan.getPlanNumber());
+        Map<String, List<DailyPlan>> dailyPlanMap = dailyPlanList.stream().collect(Collectors.groupingBy(a -> {
+            return a.getStartDate();
+        }));
 
-            unfinishedReasonDto.setDailyPlanQuantity(dailyPlan.getDailyPlanQuantity());
-            unfinishedReasonDto.setFillDate(dailyPlan.getStartDate());
-            unfinishedReasonDto.setManufactureAddress(dailyPlan.getManufactureAddress());
-            unfinishedReasonDto.setManufactureName(dailyPlan.getManufactureName());
-            unfinishedReasonDto.setActualQuantity(dailyPlan.getCompletedQuantity());
+        List<DailyPlanGroupDto> dailyPlanGroupDtos = dailyPlanMap.entrySet().stream().map(e -> new DailyPlanGroupDto(e.getKey(), e.getValue())).collect(Collectors.toList());
 
-            List<Manufacture> manufactures = manufactureRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, manufactureQueryCriteria, criteriaBuilder));
-            if (manufactures != null && manufactures.size() > 0) {
-                unfinishedReasonDto.setIncompleteReasons(manufactures.get(0).getIncompleteReasons());
+        dailyPlanGroupDtos = dailyPlanGroupDtos.stream().sorted(Comparator.comparing(DailyPlanGroupDto::getStartDate, Comparator.reverseOrder())).collect(Collectors.toList());
+
+        List<ProductParameter> productParameterList1 = productParameterRepository.findAll();
+        if (productParameterList1 == null || productParameterList1.size() == 0) {
+            return null;
+        }
+        Map<String, List<ProductParameter>> productParameterMap = productParameterList1.stream().collect(Collectors.groupingBy(a -> {
+            return a.getProductName() + "_" + a.getManufactureName();
+        }));
+
+        List<Manufacture> manufactureList = manufactureRepository.findAll();
+        manufactureList = manufactureList.stream().filter(a -> {
+            return a.getPlanNumber() != null;
+        }).collect(Collectors.toList());
+        if (manufactureList == null || manufactureList.size() == 0) {
+            return null;
+        }
+        Map<String, List<Manufacture>> manufactureMap = manufactureList.stream().collect(Collectors.groupingBy(a -> {
+            return a.getPlanNumber();
+        }));
+
+        boolean flag = false;
+        for (int i = 0; i < dailyPlanGroupDtos.size(); i++) {
+            if (flag) {
+                break;
             }
+            List<DailyPlan> dailyPlanList1 = dailyPlanGroupDtos.get(i).getDailyPlanList();
+            for (DailyPlan dailyPlan : dailyPlanList1) {
+                UnfinishedReasonDto unfinishedReasonDto = new UnfinishedReasonDto();
+                unfinishedReasonDto.setDailyPlanQuantity(dailyPlan.getDailyPlanQuantity());
+                unfinishedReasonDto.setFillDate(dailyPlan.getStartDate());
+                unfinishedReasonDto.setManufactureAddress(dailyPlan.getManufactureAddress());
+                unfinishedReasonDto.setManufactureName(dailyPlan.getManufactureName());
+                unfinishedReasonDto.setActualQuantity(dailyPlan.getCompletedQuantity());
+                unfinishedReasonDto.setUnfinishedQuantity(unfinishedReasonDto.getDailyPlanQuantity() - unfinishedReasonDto.getActualQuantity());
+                List<Manufacture> manufactures = manufactureMap.get(dailyPlan.getPlanNumber());
+                if (manufactures == null || manufactures.size() == 0) {
+                    continue;
+                }
 
-            ProductParameterQueryCriteria productParameterQueryCriteria = new ProductParameterQueryCriteria();
-            productParameterQueryCriteria.setManufactureName(dailyPlan.getManufactureName());
-            List<ProductParameter> productParameterList = productParameterRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, productParameterQueryCriteria, criteriaBuilder));
-            if (productParameterList != null && productParameterList.size() > 0) {
-                TechniqueInfo techniqueInfo = productParameterList.get(0).getTechniqueInfo();
-                if (techniqueInfo != null && techniqueInfo.getCategory() != null) {
-                    unfinishedReasonDto.setSecondaryType(techniqueInfo.getCategory().getSecondaryType());
+                Manufacture manufacture = manufactures.get(0);
+                if ("无人报工".equals(manufacture.getIncompleteReasons()) && manufacture.getDailyOutput() == 0) {
+                    continue;
+                }
+                unfinishedReasonDto.setIncompleteReasons(manufactures.get(0).getIncompleteReasons());
+                List<ProductParameter> productParameterList = productParameterMap.get(dailyPlan.getBatchPlan().getProductName() + "_" + dailyPlan.getManufactureName());
+                if (productParameterList != null && productParameterList.size() > 0) {
+                    TechniqueInfo techniqueInfo = productParameterList.get(0).getTechniqueInfo();
+                    unfinishedReasonDto.setSerialNumber(productParameterList.get(0).getSerialNumber() == null ? 10000 : productParameterList.get(0).getSerialNumber());
+                    if (techniqueInfo != null && techniqueInfo.getCategory() != null) {
+                        unfinishedReasonDto.setSecondaryType(techniqueInfo.getCategory().getSecondaryType());
+                        unfinishedReasonDto.setProcessSequence(techniqueInfo.getCategory().getProcessSequence() == null ? 1000 : techniqueInfo.getCategory().getProcessSequence());
+                    }
+                }
+                unfinishedReasonDtos.add(unfinishedReasonDto);
+
+                if (i > 0 || today.compareTo(dailyPlanGroupDtos.get(i).getStartDate()) > 0) {
+                    flag = true;
                 }
             }
-            unfinishedReasonDtos.add(unfinishedReasonDto);
         }
 
-        unfinishedReasonDtos = unfinishedReasonDtos.stream().filter(a -> {
-            return !("无人报工".equals(a.getIncompleteReasons()) && a.getActualQuantity() == 0);
-        }).collect(Collectors.toList());
+//        unfinishedReasonDtos = unfinishedReasonDtos.stream().filter(a -> {
+//            return !("无人报工".equals(a.getIncompleteReasons()) && a.getActualQuantity() == 0);
+//        }).collect(Collectors.toList());
 
         if (boardQueryCriteria.getSecondaryType() != null) {
             unfinishedReasonDtos = unfinishedReasonDtos.stream().filter(a -> {
                 return boardQueryCriteria.getSecondaryType().equals(a.getSecondaryType());
             }).collect(Collectors.toList());
         }
+
+        unfinishedReasonDtos = unfinishedReasonDtos.stream().sorted(Comparator.comparing(UnfinishedReasonDto::getFillDate, Comparator.reverseOrder()).thenComparing(UnfinishedReasonDto::getManufactureAddress).thenComparing(UnfinishedReasonDto::getProcessSequence).thenComparing(UnfinishedReasonDto::getSerialNumber)).collect(Collectors.toList());
+
         return unfinishedReasonDtos;
     }
 }
