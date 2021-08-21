@@ -47,7 +47,7 @@ spring:
     mybatis:
       type: com.alibaba.druid.pool.DruidDataSource
       driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
-      url: jdbc:log4jdbc:sqlserver://192.168.1.253:1433;DatabaseName=eladminTEST
+      url: jdbc:log4jdbc:sqlserver://10.10.100.149:1433;DatabaseName=eladminTEST
       username: ${DB_USER:sa}
       password: ${DB_PWD:As123123}
       filters: stat

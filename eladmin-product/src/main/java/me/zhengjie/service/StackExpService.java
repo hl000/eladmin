@@ -40,11 +40,13 @@ public interface StackExpService {
 
     List<ExpStackInfo> queryAll (long start, long end,String base);
 
-    List<ExpStackAvg> getExpStackAvg(String start, String end, String base);
+    List<ExpStackAvg> getExpStackAvg(String start, String end, String base,String FBIP);
 
     ExpStackInfo queryByFid (long Fid);
 
     int updateRecord(ExpStackInfo stackInfo);
 
     public List<CommonStatistics> getStatistics(final String start, final String end);
+
+    Object getType();
 }

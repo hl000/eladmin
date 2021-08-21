@@ -15,13 +15,20 @@
  */
 package me.zhengjie.service.impl;
 
+import cn.hutool.json.JSONObject;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.domain.*;
 import me.zhengjie.mapper.StackExpMapper;
+import me.zhengjie.repository.DailyPlanRepository;
+import me.zhengjie.repository.TypeRepository;
 import me.zhengjie.service.StackExpService;
+import me.zhengjie.service.dto.DailyPlanQueryCriteria;
 import me.zhengjie.service.dto.ExpStackAvg;
+import me.zhengjie.service.dto.ManufactureDto;
+import me.zhengjie.service.dto.StackSummary;
 import me.zhengjie.statistics.CommonStatistics;
 import me.zhengjie.utils.*;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -42,6 +49,9 @@ import static me.zhengjie.utils.DateTraUtil.getDayStr;
 public class StackExpServiceImpl implements StackExpService {
     @Resource
     private StackExpMapper stackExpMapper;
+
+    private final TypeRepository typeRepository;
+
 
     @Override
     public void download(HttpServletResponse response, List<ExpStackInfo> result) {
@@ -136,12 +146,12 @@ public class StackExpServiceImpl implements StackExpService {
     }
 
     public List<ExpStackInfo> queryExpStacks(final String start,
-                                             final String end, final String base) {
+                                             final String end, final String base, String FBIP) {
         try {
             return new RetryT<List<ExpStackInfo>>() {
                 @Override
                 protected List<ExpStackInfo> doAction() throws Exception {
-                    return stackExpMapper.queryExpStacks(getTable(), start, end, base);
+                    return stackExpMapper.queryExpStacks(getTable(), start, end, base, FBIP);
                 }
             }.execute();
         } catch (Exception e) {
@@ -151,10 +161,14 @@ public class StackExpServiceImpl implements StackExpService {
 
     @Override
     public List<ExpStackAvg> getExpStackAvg(final String start,
-                                            String end, final String base) {
-        List<ExpStackInfo> stackInfoList = queryExpStacks(start, end, base);
+                                            String end, final String base, String FBIP) {
+        List<ExpStackInfo> stackInfoList = queryExpStacks(start, end, base, FBIP);
+
 
         List<ExpStackAvg> expStackAvgList = new ArrayList<>();
+        if (stackInfoList == null && stackInfoList.size() == 0) {
+            return expStackAvgList;
+        }
         for (ExpStackInfo expStackInfo : stackInfoList) {
             int pitchNumber = Integer.valueOf(expStackInfo.getFjieshu()) == 0 ? 1 : Integer.valueOf(expStackInfo.getFjieshu());
             if (pitchNumber > 100) {
@@ -302,6 +316,27 @@ public class StackExpServiceImpl implements StackExpService {
         }
     }
 
+    @Override
+    public Object getType() {
+        UserDetails userDetails = SecurityUtils.getCurrentUser();
+        String userAddress = (String) new JSONObject(new JSONObject(userDetails).get("user")).get("userAddress");
+
+        List<TypeInfo> typeInfos = typeRepository.findAll();
+        Map<String, List<TypeInfo>> groupByMap = typeInfos.stream().collect(Collectors.groupingBy(TypeInfo::getName));
+
+        Map<String, List<TypeInfo>> map = new HashMap<>();
+        for (Map.Entry<String, List<TypeInfo>> entry : groupByMap.entrySet()) {
+            List<TypeInfo> typeInfoList = entry.getValue();
+            if (userAddress != null && !"".equals(userAddress)) {
+                typeInfoList = typeInfoList.stream().filter(a -> {
+                    return a.getAddress().contains(userAddress);
+                }).collect(Collectors.toList());
+            }
+            typeInfoList = typeInfoList.stream().sorted(Comparator.comparing(TypeInfo::getValue)).collect(Collectors.toList());
+            map.put(entry.getKey(), typeInfoList);
+        }
+        return map;
+    }
 
     public String getTable() {
         return EnvironmentUtils.isProd() ? "[CEMT]..[ADMhuohua]" : "[CEMT_TEST]..[ADMhuohua]";

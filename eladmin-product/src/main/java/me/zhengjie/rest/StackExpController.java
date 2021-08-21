@@ -15,6 +15,7 @@
  */
 package me.zhengjie.rest;
 
+import com.sun.org.apache.bcel.internal.generic.BIPUSH;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -87,17 +88,25 @@ public class StackExpController {
     @Log("查询实验记录汇总")
     @ApiOperation("查询实验记录汇总")
     public Object getExpSummary(@RequestParam(defaultValue = "嘉善") String base,
-                                 String start,
-                                 String end) {
+                                String start,
+                                String end,
+                                @RequestParam(defaultValue = "C04-2") String FBIP) {
         if (start == null) {
             start = "1970-01-01";
         }
         if (end == null) {
             end = dateFormat.format(new Date());
         }
-        List<ExpStackAvg> result = stackExpService.getExpStackAvg(start, end, base);
+        List<ExpStackAvg> result = stackExpService.getExpStackAvg(start, end, base, FBIP);
 
         return result;
+    }
+
+    @GetMapping("/getType")
+    @Log("查询类型下拉框")
+    @ApiOperation("查询类型下拉框")
+    public Object getType() {
+        return stackExpService.getType();
     }
 
     @GetMapping("/getRecord")
@@ -119,8 +128,8 @@ public class StackExpController {
             result = stackExpService.queryAll(start, end, base);
         }
         MergeResult mergeResult = new MergeResult();
-        mergeResult.totalElements = result.size();
-        mergeResult.totalPages = result.size() % pageable.getPageSize() == 0 ? result.size() / pageable.getPageSize() : result.size() / pageable.getPageSize() + 1;
+        mergeResult.totalElements = (result == null || result.size() == 0) ? 0 : result.size();
+        mergeResult.totalPages = (result == null || result.size() == 0) ? 0 : (result.size() % pageable.getPageSize() == 0 ? result.size() / pageable.getPageSize() : result.size() / pageable.getPageSize() + 1);
         mergeResult.currentPage = pageable.getPageNumber();
         mergeResult.size = pageable.getPageSize();
         mergeResult.content = PageUtil.toPage(pageable.getPageNumber(), pageable.getPageSize(), result);
