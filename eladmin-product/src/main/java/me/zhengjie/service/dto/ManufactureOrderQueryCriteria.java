@@ -1,6 +1,10 @@
 package me.zhengjie.service.dto;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import me.zhengjie.annotation.Query;
+
+import javax.persistence.Column;
 
 /**
  * @author HL
@@ -8,4 +12,13 @@ import lombok.Data;
  */
 @Data
 public class ManufactureOrderQueryCriteria {
+
+    @Query
+    private String stackNumber;
+
+    @Query
+    private Integer pitchNumber;
+
+    @Query
+    private String FBIP;
 }

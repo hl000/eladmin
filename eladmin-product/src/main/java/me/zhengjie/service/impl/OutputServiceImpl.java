@@ -51,8 +51,9 @@ public class OutputServiceImpl implements OutputService {
             return aa.getFillDate().getTime() >= startDate.getTime() && aa.getFillDate().getTime() <= endDate.getTime();
         }).collect(Collectors.toList());
 
+        if (manufactureList == null || manufactureList.size() == 0)
+            return null;
         List<ManufactureDto> manufactureDtoList = manufactureMapper.toDto(manufactureList);
-
 
         manufactureDtoList.stream().forEach(manufactureDto -> {
             ProductParameterQueryCriteria productParameterQueryCriteria = new ProductParameterQueryCriteria();
@@ -68,6 +69,8 @@ public class OutputServiceImpl implements OutputService {
             manufactureDtoList = manufactureDtoList.stream().filter(a -> criteria.getProcessName().equals(a.getProcessName())).collect(Collectors.toList());
         }
 
+        if (manufactureDtoList == null || manufactureDtoList.size() == 0)
+            return null;
         Map<String, List<ManufactureDto>> groupByMap = manufactureDtoList.stream().collect(Collectors.groupingBy(manufacture -> {
             return manufacture.getManufactureAddress() + "_" + manufacture.getProcessName() + "_" + manufacture.getManufactureName();
         }));

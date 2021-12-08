@@ -66,17 +66,17 @@ public class ManufactureController {
     public void downloadManufacture(HttpServletResponse response, ManufactureQueryCriteria criteria, Boolean isPlan) {
         UserDetails userDetails = SecurityUtils.getCurrentUser();
         List<JSONObject> roles = (List) new JSONObject(new JSONObject(userDetails).get("user")).get("roles");
+        Long userId = (Long) new JSONObject(new JSONObject(userDetails).get("user")).get("id");
         if (roles != null && roles.size() > 0) {
             int flag = 0;
             for (int i = 0; i < roles.size(); i++) {
                 Role role = JSONUtil.toBean(roles.get(0), Role.class);
-                if ("超级管理员".equals(role.getName()) || "测试人员".equals(role.getName()) || "部门主管".equals(role.getName())) {
+                if ("演示".equals(role.getName()) || "超级管理员".equals(role.getName()) || "测试人员".equals(role.getName()) || "部门主管".equals(role.getName())) {
                     flag++;
                     break;
                 }
             }
             if (flag == 0) {
-                Long userId = (Long) new JSONObject(new JSONObject(userDetails).get("user")).get("id");
                 criteria.setUserId(userId);
             }
         }
@@ -137,4 +137,5 @@ public class ManufactureController {
     public List<Reasons> getReasons() {
         return manufactureService.getReasons();
     }
+
 }

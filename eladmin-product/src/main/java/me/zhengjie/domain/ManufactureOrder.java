@@ -26,7 +26,7 @@ public class ManufactureOrder {
     private Integer id;
 
     @Column(name = "stack_number")
-    @ApiModelProperty(value = "生产编号")
+    @ApiModelProperty(value = "电堆编号")
     private String stackNumber;
 
     @Column(name = "pitch_number")
@@ -105,6 +105,39 @@ public class ManufactureOrder {
     @ApiModelProperty(value = "位置6")
     private Double option6;
 
+    @Column(name = "option1_pressure")
+    @ApiModelProperty(value = "加压后位置1")
+    private Double option1Pressure;
+
+    @Column(name = "spring_dimension1_pressure")
+    @ApiModelProperty(value = "加压后弹簧尺寸1")
+    private Double springDimension1Pressure;
+
+    @Column(name = "spring_dimension2_pressure")
+    @ApiModelProperty(value = "加压后弹簧尺寸2")
+    private Double springDimension2Pressure;
+
+    @Column(name = "spring_dimension3_pressure")
+    @ApiModelProperty(value = "加压后弹簧尺寸3")
+    private Double springDimension3Pressure;
+
+    @Column(name = "option4_pressure")
+    @ApiModelProperty(value = "加压后位置4")
+    private Double option4Pressure;
+
+    @Column(name = "option5_pressure")
+    @ApiModelProperty(value = "加压后位置5")
+    private Double option5Pressure;
+
+    @Column(name = "option6_pressure")
+    @ApiModelProperty(value = "加压后位置6")
+    private Double option6Pressure;
+
+    @Column(name = "assembly_stress_pressure")
+    @ApiModelProperty(value = "加压后组装压力")
+    private Double assemblyStressPressure;
+
+
     @Column(name = "leakage_detection")
     @ApiModelProperty(value = "外露检测")
     private String leakageDetection;
@@ -162,6 +195,6 @@ public class ManufactureOrder {
     private String note;
 
     public void copy(ManufactureOrder source) {
-        BeanUtil.copyProperties(source, this, CopyOptions.create().setIgnoreNullValue(true));
+        BeanUtil.copyProperties(source, this, CopyOptions.create().setIgnoreNullValue(false));
     }
 }
