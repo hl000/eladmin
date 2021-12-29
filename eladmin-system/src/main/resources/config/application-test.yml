@@ -63,6 +63,24 @@ spring:
       testOnReturn: false
       poolPreparedStatements: false
       maxPoolPreparedStatementPerConnectionSize: 200
+    second:
+      type: com.alibaba.druid.pool.DruidDataSource
+      driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+      url: jdbc:log4jdbc:sqlserver://10.10.100.140:1433;DatabaseName=r9-data-002
+      username: ${DB_USER:sa}
+      password: ${DB_PWD:Cemt@ce.com}
+      filters: stat
+      initialSize: 2
+      maxActive: 300
+      maxWait: 60000
+      timeBetweenEvictionRunsMillis: 60000
+      minEvictableIdleTimeMillis: 300000
+      validationQuery: SELECT 1
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+      poolPreparedStatements: false
+      maxPoolPreparedStatementPerConnectionSize: 200
 # 登录相关配置
 login:
   # 登录缓存

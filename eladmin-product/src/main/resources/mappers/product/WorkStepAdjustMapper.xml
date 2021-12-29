@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.WorkStepAdjustMapper">
+    <select id="getWorkStepAdjust" resultType="me.zhengjie.domain.WorkStepAdjust">
+        select id as id, _arc_code as arcCode, _inv_code as invCode, _adjust_Qty as adjustQty
+        from ${table}
+        where _arc_code=#{arcCode}
+          and _inv_code=#{invCode}
+    </select>
+
+    <select id="getWorkStepAdjustById" resultType="me.zhengjie.domain.WorkStepAdjust">
+        select id as id, _arc_code as arcCode, _inv_code as invCode, _adjust_Qty as adjustQty
+        from ${table}
+        where ID = ${id}
+    </select>
+
+    <insert id="insertWorkStepAdjust" parameterType="me.zhengjie.domain.WorkStepAdjust">
+        insert into ${table} (_arc_code, _inv_code, _adjust_Qty)
+        values (#{workStepAdjust.arcCode}, #{workStepAdjust.invCode}, #{workStepAdjust.adjustQty})
+    </insert>
+
+    <update id="updateWorkStepAdjust" parameterType="me.zhengjie.domain.WorkStepAdjust">
+        update ${table}
+        set _arc_code = #{workStepAdjust.arcCode},
+            _inv_code = #{workStepAdjust.invCode},
+            _adjust_Qty = #{workStepAdjust.adjustQty}
+        where ID = #{workStepAdjust.id}
+    </update>
+</mapper>

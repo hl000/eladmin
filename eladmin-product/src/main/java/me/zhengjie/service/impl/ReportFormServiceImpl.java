@@ -1,19 +1,19 @@
 package me.zhengjie.service.impl;
 
-import io.swagger.models.auth.In;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.domain.Manufacture;
-import me.zhengjie.domain.ProductParameter;
 import me.zhengjie.repository.ManufactureRepository;
 import me.zhengjie.service.ReportFormService;
-import me.zhengjie.service.dto.DailyPlanGroupDto;
 import me.zhengjie.service.dto.ReportFormDto;
 import me.zhengjie.service.dto.ReportFormQueryCriteria;
 import me.zhengjie.utils.QueryHelp;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**

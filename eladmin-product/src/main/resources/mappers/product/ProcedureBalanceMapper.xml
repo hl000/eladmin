@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.ProcedureBalanceMapper">
+    <resultMap type="me.zhengjie.service.dto.ProcedureBalanceDto" id="getProcedureBalanceDto">
+        <result column="_arc_code" property="arcCode"/>
+        <result column="_arc_name" property="arcName"/>
+        <result column="_inv_code" property="invCode"/>
+        <result column="_inv_name" property="invName"/>
+        <result column="_balance_Qty" property="balanceQty"/>
+    </resultMap>
+    <select id="getProcedureBalance" statementType="CALLABLE" resultMap="getProcedureBalanceDto">
+        exec  getprocedurebalance
+        #{arcName}
+    </select>
+</mapper>

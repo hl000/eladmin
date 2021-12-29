@@ -16,10 +16,10 @@ import javax.sql.DataSource;
 @MapperScan(basePackages = "me.zhengjie.mapper", sqlSessionFactoryRef = "myBatisSqlSessionFactory") // basePackages mapper所在的包名
 public class MyBatisConfig {
     @Bean(name = "myBatisSqlSessionFactory")
-    public SqlSessionFactory clusterSqlSessionFactory(@Qualifier("mybatisDatasource")DataSource mybatisDatasource)
+    public SqlSessionFactory clusterSqlSessionFactory(DynamicDataSource ds)
             throws Exception {
         final SqlSessionFactoryBean sessionFactory = new SqlSessionFactoryBean();
-        sessionFactory.setDataSource(mybatisDatasource);
+        sessionFactory.setDataSource(ds);
         org.springframework.core.io.Resource[] resources = new PathMatchingResourcePatternResolver()
                 .getResources("classpath*:mappers/**/*Mapper.xml");  //MyBatis XML文件所在路径
         sessionFactory.setMapperLocations(resources);

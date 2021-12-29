@@ -1,6 +1,6 @@
 package me.zhengjie.config;
 
-import me.zhengjie.enums.DatabaseType;
+import me.zhengjie.annotation.DatabaseType;
 
 public class DatabaseContextHolder {
 

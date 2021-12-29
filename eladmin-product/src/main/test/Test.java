@@ -11,12 +11,14 @@ public class Test {
 
     @org.junit.Test
     public void timeTest(){
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+//
+//        System.out.println(System.currentTimeMillis());
+//
+//        System.out.println(new Date());
+//
+//        System.out.println(new Date(System.currentTimeMillis()));
 
-        System.out.println(System.currentTimeMillis());
-
-        System.out.println(new Date());
-
-        System.out.println(new Date(System.currentTimeMillis()));
+        System.out.println("111".compareTo("21"));
     }
 }
