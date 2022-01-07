@@ -5,14 +5,10 @@ import me.zhengjie.annotation.Query;
 
 /**
  * @author HL
- * @create 2021/12/13 10:22
+ * @create 2021/12/30 10:14
  */
 @Data
-public class WorkPlanQueryCriteria {
-
+public class WorkPlanTypeQueryCriteria {
     @Query
-    private String planName;
-
-    @Query(propName = "row", joinName = "workPlanType")
     private Integer row;
 }

@@ -27,7 +27,7 @@ public class WorkPlanDetailQueryCriteria {
     private String detailName;
 
     @Query
-    private Integer detailCode;
+    private String detailCode;
 //
 //    @Query
 //    private String dutyPerson;
@@ -40,6 +40,9 @@ public class WorkPlanDetailQueryCriteria {
 
     @Query
     private String status;
+
+    @Query
+    private String planTypeName;
 
 //    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 //    private String today = dateFormat.format(new Date());

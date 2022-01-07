@@ -120,6 +120,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // 放行OPTIONS请求
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/board/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/workSubmit/getWorkListBoard").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/reportFrom/**").permitAll()
                 // 自定义匿名访问所有url放行：允许匿名和带Token访问，细腻化到每个 Request 类型
                 // GET

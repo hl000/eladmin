@@ -1,25 +1,27 @@
 package me.zhengjie.service.impl;
 
-import io.swagger.models.auth.In;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.Utils.DownExcelUtil;
 import me.zhengjie.base.MergeResult;
-import me.zhengjie.domain.*;
-import me.zhengjie.mapper.WorkPlanDetailBatisMapper;
+import me.zhengjie.domain.WorkPlan;
+import me.zhengjie.domain.WorkPlanDetail;
+import me.zhengjie.domain.WorkPlanDetailOutputType;
+import me.zhengjie.domain.WorkPlanType;
 import me.zhengjie.repository.WorkPlanDetailOutputRepository;
 import me.zhengjie.repository.WorkPlanDetailRepository;
 import me.zhengjie.repository.WorkPlanRepository;
+import me.zhengjie.repository.WorkPlanTypeRepository;
 import me.zhengjie.service.WorkPlanService;
 import me.zhengjie.service.dto.WorkPlanDetailQueryCriteria;
 import me.zhengjie.service.dto.WorkPlanGroupDto;
 import me.zhengjie.service.dto.WorkPlanQueryCriteria;
+import me.zhengjie.service.dto.WorkPlanTypeQueryCriteria;
 import me.zhengjie.utils.PageUtil;
 import me.zhengjie.utils.QueryHelp;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -38,6 +40,8 @@ public class WorkPlanServiceImpl implements WorkPlanService {
 
     private final WorkPlanDetailRepository workPlanDetailRepository;
 
+    private final WorkPlanTypeRepository workPlanTypeRepository;
+
     private final WorkPlanDetailOutputRepository workPlanDetailOutputRepository;
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -51,16 +55,43 @@ public class WorkPlanServiceImpl implements WorkPlanService {
     }
 
     @Override
+    public List<WorkPlanType> queryAllWorkPlanType() {
+        List<WorkPlanType> workPlanTypes = workPlanTypeRepository.findAll();
+        workPlanTypes = workPlanTypes.stream().sorted(Comparator.comparing(a -> a.getRow())).collect(Collectors.toList());
+        return workPlanTypes;
+    }
+
+    @Override
     public List<WorkPlanDetailOutputType> queryAllOutPut() {
         return workPlanDetailOutputRepository.findAll();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer createWorkPlan(WorkPlanGroupDto resources) {
+    public WorkPlanGroupDto createWorkPlan(WorkPlanGroupDto resources) {
+        //判断工作计划名是否存在
+        if (isExist(resources)) {
+            WorkPlanGroupDto workPlanGroup = new WorkPlanGroupDto();
+            workPlanGroup.setExist("NAME_EXIST");
+            return workPlanGroup;
+        }
+        //判断是否有重复的计划编号
+        if (isRepeat(resources.getWorkPlanDetails())) {
+            return new WorkPlanGroupDto(null, null, "DETAIL_CODE_REPEAT", null);
+        }
+
+        //判断是否有对应的计划类型
+        WorkPlanTypeQueryCriteria workPlanTypeQueryCriteria = new WorkPlanTypeQueryCriteria();
+        workPlanTypeQueryCriteria.setRow(resources.getRow());
+        List<WorkPlanType> workPlanTypes = workPlanTypeRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, workPlanTypeQueryCriteria, criteriaBuilder));
+        if (workPlanTypes == null && workPlanTypes.size() == 0) {
+            return new WorkPlanGroupDto(null, null, "PLAN_TYPE_NOT_FOUND", null);
+        }
+
+        WorkPlanType workPlanType = workPlanTypes.get(0);
         WorkPlan workPlan = new WorkPlan();
         workPlan.setPlanName(resources.getPlanName());
-        workPlan.setPlanCode(resources.getPlanCode());
+        workPlan.setWorkPlanType(workPlanType);
         WorkPlan workPlan1 = workPlanRepository.save(workPlan);
 
         List<WorkPlanDetail> workPlanDetailList = resources.getWorkPlanDetails();
@@ -69,30 +100,18 @@ public class WorkPlanServiceImpl implements WorkPlanService {
         });
 
         workPlanDetailRepository.saveAll(workPlanDetailList);
-        return workPlan1.getId();
+        return getWorkPlanDetailByPlanId(workPlan1.getId());
     }
 
     @Override
-    public WorkPlanGroupDto isExist(WorkPlanGroupDto resources) {
+    public Boolean isExist(WorkPlanGroupDto resources) {
         WorkPlanQueryCriteria workPlanQueryCriteria = new WorkPlanQueryCriteria();
         workPlanQueryCriteria.setPlanName(resources.getPlanName());
         List<WorkPlan> workPlans = workPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, workPlanQueryCriteria, criteriaBuilder));
         if (workPlans != null && workPlans.size() > 0) {
-            WorkPlanGroupDto workPlanGroup = new WorkPlanGroupDto();
-            workPlanGroup.setExist("NAME_EXIST");
-            return workPlanGroup;
+            return true;
         }
-
-        WorkPlanQueryCriteria criteria1 = new WorkPlanQueryCriteria();
-        criteria1.setPlanCode(resources.getPlanCode());
-        List<WorkPlan> workPlans1 = workPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria1, criteriaBuilder));
-        if (workPlans1 != null && workPlans1.size() > 0) {
-            WorkPlanGroupDto workPlanGroup = new WorkPlanGroupDto();
-            workPlanGroup.setExist("CODE_EXIST");
-            return workPlanGroup;
-        }
-
-        return null;
+        return false;
     }
 
     @Override
@@ -106,17 +125,54 @@ public class WorkPlanServiceImpl implements WorkPlanService {
 
     private List<WorkPlanGroupDto> detailToGroupDto(List<WorkPlanDetail> workPlanDetails) {
         Map<String, List<WorkPlanDetail>> groupByMap = workPlanDetails.stream().collect(Collectors.groupingBy(a -> a.getWorkPlan().getPlanName()));
-        List<WorkPlanGroupDto> workPlanGroupDtos = groupByMap.entrySet().stream().map(e -> new WorkPlanGroupDto(e.getKey(), e.getValue().get(0).getWorkPlan().getPlanCode(), e.getValue(), null)).collect(Collectors.toList());
+        List<WorkPlanGroupDto> workPlanGroupDtos = groupByMap.entrySet().stream().map(e -> new WorkPlanGroupDto(e.getKey(), e.getValue(), null, e.getValue().get(0).getWorkPlan().getWorkPlanType().getRow())).collect(Collectors.toList());
         workPlanGroupDtos.stream().forEach(a -> a.setWorkPlanDetails(a.getWorkPlanDetails().stream().sorted(Comparator.comparing(b -> b.getDetailCode())).collect(Collectors.toList())));
         return workPlanGroupDtos;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer updateWorkPlan(WorkPlanGroupDto resources) {
+    public WorkPlanGroupDto updateWorkPlan(WorkPlanGroupDto resources) {
+        if (isRepeat(resources.getWorkPlanDetails())) {
+            return new WorkPlanGroupDto(null, null, "DETAIL_CODE_REPEAT", null);
+        }
+
         WorkPlan workPlan = new WorkPlan();
         List<WorkPlanDetail> workPlanDetailList = new ArrayList<>();
         List<WorkPlanDetail> workPlanDetails = resources.getWorkPlanDetails();
+
+        //根据任务名查找任务
+        WorkPlanQueryCriteria workPlanQueryCriteria = new WorkPlanQueryCriteria();
+        workPlanQueryCriteria.setPlanName(resources.getPlanName());
+        List<WorkPlan> workPlans = workPlanRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, workPlanQueryCriteria, criteriaBuilder));
+        if (workPlans != null && workPlans.size() > 0) {
+            WorkPlan workPlan1 = workPlans.get(0);
+            if (resources.getRow() != null) {
+                //根据任务序列号查找任务类型
+                if (workPlan1.getWorkPlanType().getRow() != resources.getRow()) {
+                    WorkPlanTypeQueryCriteria workPlanTypeQueryCriteria = new WorkPlanTypeQueryCriteria();
+                    workPlanTypeQueryCriteria.setRow(resources.getRow());
+                    List<WorkPlanType> workPlanTypes = workPlanTypeRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, workPlanTypeQueryCriteria, criteriaBuilder));
+                    if (workPlanTypes != null && workPlanTypes.size() > 0) {
+                        WorkPlanType workPlanType = workPlanTypes.get(0);
+                        workPlan1.setWorkPlanType(workPlanType);
+                        workPlan = workPlanRepository.save(workPlan1);
+                    }else{
+                        return new WorkPlanGroupDto(null, null, "PLAN_TYPE_NOT_FOUND", null);
+                    }
+                } else {
+                    workPlan = workPlan1;
+                }
+            } else {
+                workPlan = workPlan1;
+            }
+        }
+
+        WorkPlan finalWorkPlan = workPlan;
+        workPlanDetails.stream().forEach(a -> {
+            a.setWorkPlan(finalWorkPlan);
+        });
+
         for (WorkPlanDetail workPlanDetail : workPlanDetails) {
             if (workPlanDetail.getId() != null && !"".equals(workPlanDetail.getId())) {
                 workPlan = workPlanDetail.getWorkPlan();
@@ -129,12 +185,17 @@ public class WorkPlanServiceImpl implements WorkPlanService {
                 workPlanDetailList.add(workPlanDetail);
             }
         }
-        WorkPlan finalWorkPlan = workPlan;
-        workPlanDetails.stream().forEach(a -> {
-            a.setWorkPlan(finalWorkPlan);
-        });
+
         workPlanDetailRepository.saveAll(workPlanDetailList);
-        return workPlan.getId();
+        return getWorkPlanDetailByPlanId(workPlan.getId());
+    }
+
+    private Boolean isRepeat(List<WorkPlanDetail> workPlanDetails) {
+        List<String> count = workPlanDetails.stream().map(WorkPlanDetail::getDetailCode).distinct().collect(Collectors.toList());
+        if (count.size() < workPlanDetails.size()) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -151,6 +212,10 @@ public class WorkPlanServiceImpl implements WorkPlanService {
 
         if (criteria.getWorkPlanId() != null && !"".equals(criteria.getWorkPlanId())) {
             workPlanDetailList1 = workPlanDetailList1.stream().filter(a -> a.getWorkPlan().getId() == criteria.getWorkPlanId()).collect(Collectors.toList());
+        }
+
+        if (criteria.getPlanTypeName() != null && !"".equals(criteria.getPlanTypeName())) {
+            workPlanDetailList1 = workPlanDetailList1.stream().filter(a -> criteria.getPlanTypeName().equals(a.getWorkPlan().getWorkPlanType().getPlanTypeName())).collect(Collectors.toList());
         }
 
         if (criteria.getDetailName() != null && !"".equals(criteria.getDetailName())) {
@@ -176,13 +241,20 @@ public class WorkPlanServiceImpl implements WorkPlanService {
 
     @Override
     public Object findWorkPlanDetails(WorkPlanDetailQueryCriteria criteria, Pageable pageable) {
+        //获取所以符合过滤条件的数据
         List<WorkPlanDetail> workPlanDetailList1 = getWorkPlanDetails(criteria);
-        workPlanDetailList1 = workPlanDetailList1.stream().sorted(Comparator.comparing(a -> a.getWorkPlan().getId(), Comparator.reverseOrder())).collect(Collectors.toList());
+
+
+//        workPlanDetailList1 = workPlanDetailList1.stream().sorted(Comparator.comparing(a -> a.getWorkPlan().getId(), Comparator.reverseOrder())).collect(Collectors.toList());
         if (workPlanDetailList1 != null && workPlanDetailList1.size() > 0) {
 
-            Map<Integer, List<WorkPlanDetail>> groupByMap = workPlanDetailList1.stream().collect(Collectors.groupingBy(a -> a.getWorkPlan().getPlanCode()));
-            Map<Integer, List<WorkPlanDetail>> map = sortByKey(groupByMap);
-            List<WorkPlanGroupDto> workPlanGroupDtos = map.entrySet().stream().map(e -> new WorkPlanGroupDto(e.getValue().get(0).getWorkPlan().getPlanName(), e.getValue().get(0).getWorkPlan().getPlanCode(), e.getValue(), null)).collect(Collectors.toList());
+            Map<Integer, List<WorkPlanDetail>> groupByMap = workPlanDetailList1.stream().collect(Collectors.groupingBy(a -> a.getWorkPlan().getId()));
+            List<WorkPlanGroupDto> workPlanGroupDtos = groupByMap.entrySet().stream().map(e -> new WorkPlanGroupDto(e.getValue().get(0).getWorkPlan().getPlanName(), e.getValue(), null, e.getValue().get(0).getWorkPlan().getWorkPlanType().getRow())).collect(Collectors.toList());
+//            workPlanGroupDtos = workPlanGroupDtos.stream().sorted(Comparator.comparing(a -> a.getRow())).collect(Collectors.toList());
+            workPlanGroupDtos = workPlanGroupDtos.stream().sorted(Comparator.comparing(WorkPlanGroupDto::getRow).thenComparing(a -> a.getWorkPlanDetails().get(0).getWorkPlan().getId())).collect(Collectors.toList());
+
+//            Map<Integer, List<WorkPlanDetail>> map = sortByKey(groupByMap);
+//            List<WorkPlanGroupDto> workPlanGroupDtos = map.entrySet().stream().map(e -> new WorkPlanGroupDto(e.getValue().get(0).getWorkPlan().getPlanName(), e.getValue().get(0).getWorkPlan().getPlanCode(), e.getValue(), null)).collect(Collectors.toList());
 
             workPlanGroupDtos.stream().forEach(a -> a.setWorkPlanDetails(a.getWorkPlanDetails().stream().sorted(Comparator.comparing(b -> b.getDetailCode())).collect(Collectors.toList())));
             List<WorkPlanGroupDto> workPlanDetails = new ArrayList<>();
@@ -209,9 +281,14 @@ public class WorkPlanServiceImpl implements WorkPlanService {
     @Override
     public void downloadWorkPlanDetails(HttpServletResponse response, WorkPlanDetailQueryCriteria criteria) throws IOException {
         List<WorkPlanDetail> workPlanDetailList1 = getWorkPlanDetails(criteria);
-        Map<Integer, List<WorkPlanDetail>> groupByMap = workPlanDetailList1.stream().collect(Collectors.groupingBy(a -> a.getWorkPlan().getPlanCode()));
-        Map<Integer, List<WorkPlanDetail>> map1 = sortByKey(groupByMap);
-        List<WorkPlanGroupDto> workPlanGroupDtos = map1.entrySet().stream().map(e -> new WorkPlanGroupDto(e.getValue().get(0).getWorkPlan().getPlanName(), e.getValue().get(0).getWorkPlan().getPlanCode(), e.getValue(), null)).collect(Collectors.toList());
+        Map<Integer, List<WorkPlanDetail>> groupByMap = workPlanDetailList1.stream().collect(Collectors.groupingBy(a -> a.getWorkPlan().getId()));
+        List<WorkPlanGroupDto> workPlanGroupDtos = groupByMap.entrySet().stream().map(e -> new WorkPlanGroupDto(e.getValue().get(0).getWorkPlan().getPlanName(), e.getValue(), null, e.getValue().get(0).getWorkPlan().getWorkPlanType().getRow())).collect(Collectors.toList());
+//        workPlanGroupDtos = workPlanGroupDtos.stream().sorted(Comparator.comparing(a -> a.getRow())).collect(Collectors.toList());
+        workPlanGroupDtos = workPlanGroupDtos.stream().sorted(Comparator.comparing(WorkPlanGroupDto::getRow).thenComparing(a -> a.getWorkPlanDetails().get(0).getWorkPlan().getId())).collect(Collectors.toList());
+
+//        Map<Integer, List<WorkPlanDetail>> groupByMap = workPlanDetailList1.stream().collect(Collectors.groupingBy(a -> a.getWorkPlan().getWorkPlanType().getRow()));
+//        Map<Integer, List<WorkPlanDetail>> map1 = sortByKey(groupByMap);
+//        List<WorkPlanGroupDto> workPlanGroupDtos = map1.entrySet().stream().map(e -> new WorkPlanGroupDto(e.getValue().get(0).getWorkPlan().getPlanName(), e.getValue().get(0).getWorkPlan().getPlanCode(), e.getValue(), null)).collect(Collectors.toList());
         workPlanGroupDtos.stream().forEach(a -> a.setWorkPlanDetails(a.getWorkPlanDetails().stream().sorted(Comparator.comparing(b -> b.getDetailCode())).collect(Collectors.toList())));
 
 
@@ -228,7 +305,7 @@ public class WorkPlanServiceImpl implements WorkPlanService {
             for (WorkPlanDetail workPlanDetail : workPlanDetails) {
                 Map<String, Object> map = new LinkedHashMap<>();
                 map.put("任务名称", workPlanGroupDto.getPlanName());
-                map.put("版本号", workPlanGroupDto.getPlanCode() + "." + workPlanDetail.getDetailCode());
+                map.put("版本号", workPlanDetail.getDetailCode());
                 map.put("任务描述", workPlanDetail.getDetailName());
                 map.put("负责人", workPlanDetail.getDutyPerson());
                 map.put("结果出形式", workPlanDetail.getWorkPlanDetailOutputType().getOutputResult());
@@ -249,7 +326,6 @@ public class WorkPlanServiceImpl implements WorkPlanService {
                 layoutList.add(layoutMap2);
             }
             i++;
-
         }
         DownExcelUtil.downloadExcelByNum(list, layoutList, cellList, response);
 
@@ -282,7 +358,7 @@ public class WorkPlanServiceImpl implements WorkPlanService {
     public Object getWorkPlanDetailHistory(Integer id) {
         WorkPlanDetail workPlanDetail = workPlanDetailRepository.findById(id).orElseGet(WorkPlanDetail::new);
         WorkPlanGroupDto workPlanGroupDto = new WorkPlanGroupDto();
-        if (workPlanDetail != null) {
+        if (workPlanDetail != null && workPlanDetail.getWorkPlan() != null) {
             WorkPlanDetailQueryCriteria workPlanDetailQueryCriteria = new WorkPlanDetailQueryCriteria();
             workPlanDetailQueryCriteria.setWorkPlanId(workPlanDetail.getWorkPlan().getId());
             workPlanDetailQueryCriteria.setDetailCode(workPlanDetail.getDetailCode());

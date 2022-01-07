@@ -35,24 +35,27 @@ public class WorkPlanController {
         return new ResponseEntity<>(workPlanService.queryAllWorkPlan(), HttpStatus.OK);
     }
 
+
+    @GetMapping("/queryAllWorkPlanType")
+    @Log("计划类型下拉框")
+    @ApiOperation("计划类型下拉框")
+    public ResponseEntity<Object> queryAllWorkPlanType() {
+        return new ResponseEntity<>(workPlanService.queryAllWorkPlanType(), HttpStatus.OK);
+    }
+
+
     @PostMapping("/createWorkPlan")
     @Log("新增工作计划")
     @ApiOperation("新增工作计划")
     public ResponseEntity<Object> createWorkPlan(@Validated @RequestBody WorkPlanGroupDto resources) {
-        WorkPlanGroupDto workPlanGroupDto = workPlanService.isExist(resources);
-        if (workPlanGroupDto == null){
-            Integer id = workPlanService.createWorkPlan(resources);
-            return new ResponseEntity<>(workPlanService.getWorkPlanDetailByPlanId(id), HttpStatus.OK);
-        }
-        return new ResponseEntity<>(workPlanGroupDto, HttpStatus.OK);
+        return new ResponseEntity<>(workPlanService.createWorkPlan(resources), HttpStatus.OK);
     }
 
     @PostMapping("/updateWorkPlan")
     @Log("更新工作计划")
     @ApiOperation("更新工作计划")
     public ResponseEntity<Object> updateWorkPlan(@Validated @RequestBody WorkPlanGroupDto resources) {
-        Integer id = workPlanService.updateWorkPlan(resources);
-        return new ResponseEntity<>(workPlanService.getWorkPlanDetailByPlanId(id), HttpStatus.OK);
+        return new ResponseEntity<>(workPlanService.updateWorkPlan(resources), HttpStatus.OK);
     }
 
     @GetMapping("/getWorkPlanDetail")

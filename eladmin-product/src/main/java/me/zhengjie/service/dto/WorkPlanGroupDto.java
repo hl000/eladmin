@@ -18,10 +18,10 @@ public class WorkPlanGroupDto {
 
     private String planName;
 
-    private Integer planCode;
-
     private List<WorkPlanDetail> workPlanDetails;
 
     private String exist;
+
+    private Integer row;
 
 }

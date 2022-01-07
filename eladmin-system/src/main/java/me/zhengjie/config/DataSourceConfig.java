@@ -37,11 +37,12 @@ public class DataSourceConfig {
 
     @Bean
     public DynamicDataSource dataSource(@Qualifier("mybatisDatasource") DataSource mybatisDatasource,
-                                        @Qualifier("secondDatasource") DataSource secondDatasource) {
+                                        @Qualifier("secondDatasource") DataSource secondDatasource,
+                                        @Qualifier("jpaDatasource") DataSource jpaDatasource) {
         Map<Object, Object> targetDataSources = new HashMap<>();
         targetDataSources.put(DatabaseType.mybatis, mybatisDatasource);
         targetDataSources.put(DatabaseType.second, secondDatasource);
-
+        targetDataSources.put(DatabaseType.jpaDatasource, jpaDatasource);
         DynamicDataSource dataSource = new DynamicDataSource();
         dataSource.setTargetDataSources(targetDataSources);// 该方法是AbstractRoutingDataSource的方法
         dataSource.setDefaultTargetDataSource(mybatisDatasource);// 默认的datasource设置为myTestDbDataSource

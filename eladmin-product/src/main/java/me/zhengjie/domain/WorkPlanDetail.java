@@ -34,7 +34,7 @@ public class WorkPlanDetail implements Serializable {
 
     @Column(name = "detail_code")
     @ApiModelProperty(value = "任务编码")
-    private Integer detailCode;
+    private String detailCode;
 
     @Column(name = "duty_person")
     @ApiModelProperty(value = "负责人")
@@ -71,7 +71,7 @@ public class WorkPlanDetail implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         WorkPlanDetail that = (WorkPlanDetail) o;
-        return Objects.equals(id, that.id) && Objects.equals(workPlan.getId(), that.workPlan.getId())&& Objects.equals(detailName, that.detailName) && Objects.equals(detailCode, that.detailCode) && Objects.equals(dutyPerson, that.dutyPerson) && Objects.equals(workPlanDetailOutputType.getId(), that.workPlanDetailOutputType.getId()) && Objects.equals(planStartDate, that.planStartDate) && Objects.equals(planFinishDate, that.planFinishDate) && Objects.equals(actFinishDate, that.actFinishDate) && Objects.equals(remark, that.remark);
+        return Objects.equals(id, that.id) && Objects.equals(workPlan.getId(), that.workPlan.getId()) && Objects.equals(detailName, that.detailName) && Objects.equals(detailCode, that.detailCode) && Objects.equals(dutyPerson, that.dutyPerson) && Objects.equals(workPlanDetailOutputType.getId(), that.workPlanDetailOutputType.getId()) && Objects.equals(planStartDate, that.planStartDate) && Objects.equals(planFinishDate, that.planFinishDate) && Objects.equals(actFinishDate, that.actFinishDate) && Objects.equals(remark, that.remark);
     }
 
     @Override

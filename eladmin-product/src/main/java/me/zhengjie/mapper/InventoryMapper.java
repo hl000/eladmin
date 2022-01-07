@@ -17,4 +17,6 @@ public interface InventoryMapper {
     List<InventoryDto> queryInventory(@Param("table") String table);
 
     List<InventoryDto> getInventoryByCode(@Param("table") String table, @Param("cInvCode") String cInvCode);
+
+    List<InventoryDto> getInventoryByWorkOrder(String workOrder);
 }

@@ -11,4 +11,12 @@
         from ${table}
         where cInvCode = #{cInvCode}
     </select>
+
+    <select id="getInventoryByWorkOrder" resultType="me.zhengjie.service.dto.InventoryDto">
+        select Distinct InvCode as cInvCode,cc.cInvName as cInvName,cc.cInvStd as cInvStd
+        from UFDATA_002_2020.dbo.mom_orderdetail aa
+                 LEFT JOIN UFDATA_002_2020.dbo.mom_order bb on aa.Moid=bb.MoId
+                 LEFT JOIN UFDATA_002_2020.dbo.Inventory cc on aa.InvCode=cc.cInvCode
+                 where MoCode = #{workOrder}
+    </select>
 </mapper>

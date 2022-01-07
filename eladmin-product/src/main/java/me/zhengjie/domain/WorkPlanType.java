@@ -13,24 +13,19 @@ import java.sql.Timestamp;
  */
 @Entity
 @Data
-@Table(name = "rd_work_plan")
-public class WorkPlan {
+@Table(name = "rd_work_plan_type")
+public class WorkPlanType {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @ApiModelProperty(value = "主键")
     private Integer id;
 
-    @Column(name = "plan_name")
-    @ApiModelProperty(value = "计划名")
-    private String planName;
+    @Column(name = "plan_type_name")
+    @ApiModelProperty(value = "计划分类名")
+    private String planTypeName;
 
-    @JoinColumn(name = "plan_type_id")
-    @ManyToOne(fetch = FetchType.EAGER)
-    private WorkPlanType workPlanType;
-
-    @Column(name = "create_date")
-    @ApiModelProperty(value = "创建时间")
-    @CreationTimestamp
-    private Timestamp createDate;
+    @Column(name = "row")
+    @ApiModelProperty(value = "排序号")
+    private Integer row;
 }

@@ -3,6 +3,7 @@ package me.zhengjie.service;
 import me.zhengjie.domain.WorkPlan;
 import me.zhengjie.domain.WorkPlanDetail;
 import me.zhengjie.domain.WorkPlanDetailOutputType;
+import me.zhengjie.domain.WorkPlanType;
 import me.zhengjie.service.dto.WorkPlanDetailQueryCriteria;
 import me.zhengjie.service.dto.WorkPlanGroupDto;
 import org.springframework.data.domain.Pageable;
@@ -18,15 +19,17 @@ import java.util.List;
 public interface WorkPlanService {
     List<WorkPlan> queryAllWorkPlan();
 
+    List<WorkPlanType> queryAllWorkPlanType();
+
     List<WorkPlanDetailOutputType> queryAllOutPut();
 
-    Integer createWorkPlan(WorkPlanGroupDto resources);
+    WorkPlanGroupDto createWorkPlan(WorkPlanGroupDto resources);
 
-    WorkPlanGroupDto isExist(WorkPlanGroupDto resources);
+    Boolean isExist(WorkPlanGroupDto resources);
 
     WorkPlanGroupDto getWorkPlanDetailByPlanId(Integer id);
 
-    Integer updateWorkPlan(WorkPlanGroupDto resources);
+    WorkPlanGroupDto updateWorkPlan(WorkPlanGroupDto resources);
 
     List<WorkPlanDetail> getWorkPlanDetails(WorkPlanDetailQueryCriteria workPlanDetailQueryCriteria);
 
