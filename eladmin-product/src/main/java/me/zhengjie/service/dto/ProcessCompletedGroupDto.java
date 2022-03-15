@@ -9,12 +9,13 @@ import java.util.Map;
  * @create 2021/10/19 21:12
  */
 @Data
-public class ReportFormDto {
+public class ProcessCompletedGroupDto {
 
-    private String manufactureName;
-    private String manufactureAddress;
-    private String invName;
+    private String address;
+    private String invProcess;
+    private String processCode;
     private Integer count;
+    private String orderId;
     private Map<String, Integer> map;
 
 //    public ReportFormDto(String key, Map<String, Integer> map) {

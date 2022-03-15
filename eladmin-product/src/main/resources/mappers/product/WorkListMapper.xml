@@ -1,43 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="me.zhengjie.mapper.WorkListMapper">
-    <resultMap type="me.zhengjie.service.dto.WorkListDto" id="getWorkListDto">
-        <result column="FSub_Date" property="fSubDate"/>
-        <result column="FArc_Name" property="fArcName"/>
-        <result column="FWork_Order" property="fWorkOrder"/>
-        <result column="FInv_Code" property="fInvCode"/>
-        <result column="FInv_Name" property="fInvName"/>
-        <result column="FInv_Std" property="fInvStd"/>
-        <result column="9:00" property="fCompleteTime9"/>
-        <result column="10:00" property="fCompleteTime10"/>
-        <result column="11:00" property="fCompleteTime11"/>
-        <result column="12:00" property="fCompleteTime12"/>
-        <result column="14:00" property="fCompleteTime14"/>
-        <result column="15:00" property="fCompleteTime15"/>
-        <result column="16:00" property="fCompleteTime16"/>
-        <result column="17:00" property="fCompleteTime17"/>
-        <result column="19:30" property="fCompleteTime19"/>
-    </resultMap>
-    <select id="getWorkList" statementType="CALLABLE" resultMap="getWorkListDto">
-        <![CDATA[
-            call  get_work_list
-           (#{workShop,mode=IN,jdbcType=VARCHAR},
-            #{fArcName,mode=IN,jdbcType=VARCHAR},
-            #{startDate,mode=IN,jdbcType=VARCHAR},
-            #{endDate,mode=IN,jdbcType=VARCHAR},
-            #{workOrder,mode=IN,jdbcType=VARCHAR})
-            ]]>
-    </select>
-
-
     <select id="findWorkList" statementType="CALLABLE" resultType="HashMap">
         <![CDATA[
-        call  get_work_list
-            (#{workShop,mode=IN,jdbcType=VARCHAR},
+        call get_work_list (#{workShop,mode=IN,jdbcType=VARCHAR},
             #{fArcName,mode=IN,jdbcType=VARCHAR},
             #{startDate,mode=IN,jdbcType=VARCHAR},
             #{endDate,mode=IN,jdbcType=VARCHAR},
-            #{workOrder,mode=IN,jdbcType=VARCHAR})
+            #{workOrder,mode=IN,jdbcType=VARCHAR},
+            #{displayModel,mode=IN,jdbcType=INTEGER})
         ]]>
     </select>
 

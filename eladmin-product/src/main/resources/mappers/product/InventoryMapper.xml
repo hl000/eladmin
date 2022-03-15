@@ -19,4 +19,10 @@
                  LEFT JOIN UFDATA_002_2020.dbo.Inventory cc on aa.InvCode=cc.cInvCode
                  where MoCode = #{workOrder}
     </select>
+
+    <select id="getInventorys" resultType="me.zhengjie.service.dto.InventoryDto">
+        select Distinct FInv_Code as cInvCode,FInv_Name as cInvName,FInv_Std as cInvStd
+        from UFDATA_002_2020.dbo.Vmom_Order_Detail
+        where FArc_Name=#{fArcName} and FWork_Order = #{workOrder}
+    </select>
 </mapper>

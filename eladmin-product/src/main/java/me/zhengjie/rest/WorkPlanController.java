@@ -79,20 +79,25 @@ public class WorkPlanController {
         return new ResponseEntity<>(workPlanService.queryAllOutPut(), HttpStatus.OK);
     }
 
+    @GetMapping("/queryDutyPerson")
+    @Log("查询负责人下拉列表")
+    @ApiOperation("查询负责人下拉列表")
+    public ResponseEntity<Object> queryDutyPerson() {
+        return new ResponseEntity<>(workPlanService.queryDutyPerson(), HttpStatus.OK);
+    }
+
     @DeleteMapping("/deleteWorkPlanDetail")
     @Log("删除工作计划详情")
     @ApiOperation("删除工作计划详情")
     public ResponseEntity<Object> deleteWorkPlanDetail(@RequestBody Integer id) {
-        workPlanService.deleteWorkPlanDetail(id);
-        return new ResponseEntity<>("success", HttpStatus.OK);
+        return new ResponseEntity<>(workPlanService.deleteWorkPlanDetail(id), HttpStatus.OK);
     }
 
     @DeleteMapping("/deleteWorkPlan")
     @Log("删除工作计划")
     @ApiOperation("删除工作计划")
     public ResponseEntity<Object> deleteWorkPlan(@RequestBody Integer id) {
-        workPlanService.deleteWorkPlan(id);
-        return new ResponseEntity<>("success", HttpStatus.OK);
+        return new ResponseEntity<>(workPlanService.deleteWorkPlan(id), HttpStatus.OK);
     }
 
     @GetMapping("/getWorkPlanDetail/download")

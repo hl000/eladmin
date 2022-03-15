@@ -24,4 +24,5 @@ public class WorkPlanGroupDto {
 
     private Integer row;
 
+    private Boolean isDelete;
 }

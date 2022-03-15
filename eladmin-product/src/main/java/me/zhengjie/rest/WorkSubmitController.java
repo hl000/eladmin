@@ -14,6 +14,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * @author HL
@@ -26,6 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 public class WorkSubmitController {
 
     private final WorkSubmitService workSubmitService;
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
 
     /**
      * 报工
@@ -71,8 +75,9 @@ public class WorkSubmitController {
     @GetMapping("/getWorkListBoard")
     @Log("看板")
     @ApiOperation("看板")
-    public Object getWorkListBoard(String workShop, String fArcName, String startDate, String endDate, String workOrder, Pageable pageable) {
-        return workSubmitService.getWorkList(workShop, fArcName, startDate, endDate, workOrder, pageable);
+    public Object getWorkListBoard(String workShop, String fArcName,String workOrder, Pageable pageable) {
+        String startDate = dateFormat.format(new Date());
+        return workSubmitService.getWorkList(workShop, fArcName, startDate, startDate, workOrder, 0, pageable);
     }
 
     /**
@@ -82,7 +87,7 @@ public class WorkSubmitController {
     @Log("报表界面")
     @ApiOperation("报表界面")
     public Object getWorkList(String workShop, String fArcName, String startDate, String endDate, String workOrder, Pageable pageable) {
-        return workSubmitService.getWorkList(workShop, fArcName, startDate, endDate, workOrder, pageable);
+        return workSubmitService.getWorkList(workShop, fArcName, startDate, endDate, workOrder, 1, pageable);
     }
 
     /**
@@ -92,7 +97,7 @@ public class WorkSubmitController {
     @Log("报表下载")
     @ApiOperation("报表下载")
     public void getWorkListDownload(String workShop, String fArcName, String startDate, String endDate, String workOrder, HttpServletResponse response) {
-        workSubmitService.getWorkListDownload(workShop, fArcName, startDate, endDate, workOrder, response);
+        workSubmitService.getWorkListDownload(workShop, fArcName, startDate, endDate, workOrder, 1, response);
     }
 
     /**
@@ -106,6 +111,16 @@ public class WorkSubmitController {
     }
 
     /**
+     * 车间下拉框
+     */
+    @GetMapping("/queryAllWorkShop")
+    @Log("车间下拉框")
+    @ApiOperation("车间下拉框")
+    public ResponseEntity<Object> queryAllWorkShop() {
+        return new ResponseEntity<>(workSubmitService.queryAllWorkShop(), HttpStatus.OK);
+    }
+
+    /**
      * 时间下拉框
      */
     @GetMapping("/queryAllTimeList")
@@ -116,13 +131,23 @@ public class WorkSubmitController {
     }
 
     /**
+     * 时间下拉框
+     */
+    @GetMapping("/queryAllTime")
+    @Log("查询时间列表")
+    @ApiOperation("查询时间列表")
+    public ResponseEntity<Object> queryAllTime(@RequestParam String fSubDate, @RequestParam Integer fArcID, @RequestParam String fWorkOrder, @RequestParam String fInvName, @RequestParam String fInvStd) {
+        return new ResponseEntity<>(workSubmitService.queryAllTime(fSubDate, fArcID, fWorkOrder, fInvName, fInvStd), HttpStatus.OK);
+    }
+
+    /**
      * 工单号和物料关系
      */
     @GetMapping("/getInventoryByWorkOrder")
     @Log("根据工单号查物料信息")
     @ApiOperation("根据工单号查物料信息")
-    public Object getInventoryByWorkOrder(String workOrder) {
-        return workSubmitService.getInventoryByWorkOrder(workOrder);
+    public Object getInventoryByWorkOrder(@RequestParam String fArcName, @RequestParam String workOrder) {
+        return workSubmitService.getInventoryByWorkOrder(fArcName, workOrder);
     }
 
 

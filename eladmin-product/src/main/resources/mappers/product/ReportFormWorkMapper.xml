@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.ReportFormMapper">
+    <select id="queryReportFormWorkDto" resultType="me.zhengjie.service.dto.ReportFormWorkDto">
+        select adr as address,
+        FMake_Time as fillDate,
+        FInv_Name as invName,
+        orderID as orderId,
+        FComplete_Qty as quantity,
+        FProcess_Code as processCode
+        from UFDATA_002_2020.dbo.View_Finished_Into_Warehouse
+        <![CDATA[    where FMake_Time >= #{startDate}
+          and FMake_Time <= #{endDate}   ]]>
+        <if test="invName != null">
+            and FInv_Name like '%${invName}%'
+        </if>
+        <if test="address != null">
+            and adr = #{address,jdbcType=VARCHAR}
+        </if>
+
+    </select>
+
+    <select id="queryProcessCompleted" resultType="me.zhengjie.service.dto.ProcessCompletedDto">
+
+        select adr as address,
+        FMake_Time as fillDate,
+        FInv_Process as invProcess,
+        FProcess_Code as processCode,
+        orderID as orderId,
+        FComplete_Qty as quantity
+        from UFDATA_002_2020.dbo.View_Process_Completed
+        <![CDATA[    where FMake_Time >= #{startDate}
+          and FMake_Time <= #{endDate}   ]]>
+        <if test="invProcess != null">
+            and FInv_Process like '%${invProcess}%'
+        </if>
+        <if test="address != null">
+            and adr = #{address,jdbcType=VARCHAR}
+        </if>
+
+    </select>
+
+
+    <select id="getRepertory" resultType="me.zhengjie.service.dto.SemiFinishedStockDto">
+
+        select AdrCode as adrCode,
+        AdrName as adrName,
+        cInvUnit as cInvUnit,
+        qty as qty
+        from UFDATA_002_2020.dbo.View_Semi_Finished_Stock
+          where 1=1
+        <if test="cInvUnit != null">
+            and cInvUnit like '${cInvUnit}%'
+        </if>
+        <if test="adrName != null">
+            and AdrName = #{adrName,jdbcType=VARCHAR}
+        </if>
+        order by AdrCode
+    </select>
+
+    <select id="getPitchList" resultType="java.lang.String">
+        select Distinct
+        cInvUnit as cInvUnit
+        from UFDATA_002_2020.dbo.View_Semi_Finished_Stock
+        order by cInvUnit
+    </select>
+
+</mapper>

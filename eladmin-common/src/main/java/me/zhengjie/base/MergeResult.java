@@ -8,6 +8,8 @@ public class MergeResult {
     public int size;
     public int totalElements;
 
+    public String date;
+
     public Collection<Object> content;
 
 

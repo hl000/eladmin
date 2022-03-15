@@ -33,13 +33,15 @@ public interface WorkPlanService {
 
     List<WorkPlanDetail> getWorkPlanDetails(WorkPlanDetailQueryCriteria workPlanDetailQueryCriteria);
 
-    void deleteWorkPlanDetail(Integer id);
+    Object deleteWorkPlanDetail(Integer id);
 
-    void deleteWorkPlan(Integer id);
+    Object deleteWorkPlan(Integer id);
 
     Object getWorkPlanDetailHistory(Integer id);
 
     Object findWorkPlanDetails(WorkPlanDetailQueryCriteria criteria, Pageable pageable);
 
     void downloadWorkPlanDetails(HttpServletResponse response, WorkPlanDetailQueryCriteria criteria) throws IOException;
+
+    Object queryDutyPerson();
 }

@@ -16,6 +16,8 @@ public class WorkListMapDto {
 
     private String fArcName;
 
+    private String fArcCode;
+
     private String fWorkOrder;
 
     private String fInvCode;
@@ -23,6 +25,8 @@ public class WorkListMapDto {
     private String fInvName;
 
     private String fInvStd;
+
+    private Integer fProductionScheduling;
 
     private Map<String, Integer> map;
 

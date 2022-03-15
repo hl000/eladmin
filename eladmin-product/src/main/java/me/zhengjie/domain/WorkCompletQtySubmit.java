@@ -49,6 +49,10 @@ public class WorkCompletQtySubmit {
     @ApiModelProperty(value = "存货规格")
     private String fInvStd;
 
+    @Column(name = "FProduction_Scheduling")
+    @ApiModelProperty(value = "当日排产")
+    private Integer fProductionScheduling;
+
     @JoinColumn(name = "FComplete_Time_id")
     @ManyToOne(fetch = FetchType.EAGER)
     private WorkSubmitTimeList workSubmitTimeList;

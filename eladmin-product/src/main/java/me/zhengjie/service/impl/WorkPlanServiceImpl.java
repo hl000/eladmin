@@ -1,5 +1,7 @@
 package me.zhengjie.service.impl;
 
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.Utils.DownExcelUtil;
 import me.zhengjie.base.MergeResult;
@@ -7,21 +9,23 @@ import me.zhengjie.domain.WorkPlan;
 import me.zhengjie.domain.WorkPlanDetail;
 import me.zhengjie.domain.WorkPlanDetailOutputType;
 import me.zhengjie.domain.WorkPlanType;
+import me.zhengjie.mapper.SystemUserMapper;
+import me.zhengjie.mapper.WorkPlanDetailMapper;
 import me.zhengjie.repository.WorkPlanDetailOutputRepository;
 import me.zhengjie.repository.WorkPlanDetailRepository;
 import me.zhengjie.repository.WorkPlanRepository;
 import me.zhengjie.repository.WorkPlanTypeRepository;
 import me.zhengjie.service.WorkPlanService;
-import me.zhengjie.service.dto.WorkPlanDetailQueryCriteria;
-import me.zhengjie.service.dto.WorkPlanGroupDto;
-import me.zhengjie.service.dto.WorkPlanQueryCriteria;
-import me.zhengjie.service.dto.WorkPlanTypeQueryCriteria;
+import me.zhengjie.service.dto.*;
 import me.zhengjie.utils.PageUtil;
 import me.zhengjie.utils.QueryHelp;
+import me.zhengjie.utils.SecurityUtils;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -45,6 +49,12 @@ public class WorkPlanServiceImpl implements WorkPlanService {
     private final WorkPlanDetailOutputRepository workPlanDetailOutputRepository;
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+    @Resource
+    private final SystemUserMapper systemUserMapper;
+
+    @Resource
+    private final WorkPlanDetailMapper workPlanDetailMapper;
 
     @Override
     public List<WorkPlan> queryAllWorkPlan() {
@@ -77,7 +87,7 @@ public class WorkPlanServiceImpl implements WorkPlanService {
         }
         //判断是否有重复的计划编号
         if (isRepeat(resources.getWorkPlanDetails())) {
-            return new WorkPlanGroupDto(null, null, "DETAIL_CODE_REPEAT", null);
+            return new WorkPlanGroupDto(null, null, "DETAIL_CODE_REPEAT", null, null);
         }
 
         //判断是否有对应的计划类型
@@ -85,7 +95,7 @@ public class WorkPlanServiceImpl implements WorkPlanService {
         workPlanTypeQueryCriteria.setRow(resources.getRow());
         List<WorkPlanType> workPlanTypes = workPlanTypeRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, workPlanTypeQueryCriteria, criteriaBuilder));
         if (workPlanTypes == null && workPlanTypes.size() == 0) {
-            return new WorkPlanGroupDto(null, null, "PLAN_TYPE_NOT_FOUND", null);
+            return new WorkPlanGroupDto(null, null, "PLAN_TYPE_NOT_FOUND", null, null);
         }
 
         WorkPlanType workPlanType = workPlanTypes.get(0);
@@ -125,16 +135,56 @@ public class WorkPlanServiceImpl implements WorkPlanService {
 
     private List<WorkPlanGroupDto> detailToGroupDto(List<WorkPlanDetail> workPlanDetails) {
         Map<String, List<WorkPlanDetail>> groupByMap = workPlanDetails.stream().collect(Collectors.groupingBy(a -> a.getWorkPlan().getPlanName()));
-        List<WorkPlanGroupDto> workPlanGroupDtos = groupByMap.entrySet().stream().map(e -> new WorkPlanGroupDto(e.getKey(), e.getValue(), null, e.getValue().get(0).getWorkPlan().getWorkPlanType().getRow())).collect(Collectors.toList());
+        List<WorkPlanGroupDto> workPlanGroupDtos = groupByMap.entrySet().stream().map(e -> new WorkPlanGroupDto(e.getKey(), e.getValue(), null, e.getValue().get(0).getWorkPlan().getWorkPlanType().getRow(), false)).collect(Collectors.toList());
         workPlanGroupDtos.stream().forEach(a -> a.setWorkPlanDetails(a.getWorkPlanDetails().stream().sorted(Comparator.comparing(b -> b.getDetailCode())).collect(Collectors.toList())));
+        workPlanGroupDtos = setUpdateOrDeleteFlag(workPlanGroupDtos);
+        return workPlanGroupDtos;
+    }
+
+    private List<WorkPlanGroupDto> setUpdateOrDeleteFlag(List<WorkPlanGroupDto> workPlanGroupDtos) {
+
+        UserDetails userDetails = SecurityUtils.getCurrentUser();
+
+        List<JSONObject> roles = (List) new JSONObject(new JSONObject(userDetails).get("user")).get("roles");
+        int isDelete = 0;
+        if (roles != null && roles.size() > 0) {
+            for (int i = 0; i < roles.size(); i++) {
+                Role role = JSONUtil.toBean(roles.get(0), Role.class);
+                if ("设计部管理".equals(role.getName()) || "超级管理员".equals(role.getName()) || "测试人员".equals(role.getName())) {
+                    isDelete++;
+                    break;
+                }
+            }
+        }
+
+        for (WorkPlanGroupDto workPlanGroupDto : workPlanGroupDtos) {
+            if (isDelete > 0) {
+                workPlanGroupDto.setIsDelete(true);
+                workPlanGroupDto.getWorkPlanDetails().stream().forEach(a -> {
+                    a.setIsUpdate(true);
+                });
+            } else {
+                List<WorkPlanDetail> workPlanDetails = workPlanGroupDto.getWorkPlanDetails();
+                for (WorkPlanDetail workPlanDetail : workPlanDetails) {
+                    String[] dutyPersons = workPlanDetail.getDutyPerson().split("、");
+                    for (int i = 0; i < dutyPersons.length; i++) {
+                        if (dutyPersons[i].equals(userDetails.getUsername())) {
+                            workPlanDetail.setIsUpdate(true);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
         return workPlanGroupDtos;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public WorkPlanGroupDto updateWorkPlan(WorkPlanGroupDto resources) {
+        UserDetails userDetails = SecurityUtils.getCurrentUser();
         if (isRepeat(resources.getWorkPlanDetails())) {
-            return new WorkPlanGroupDto(null, null, "DETAIL_CODE_REPEAT", null);
+            return new WorkPlanGroupDto(null, null, "DETAIL_CODE_REPEAT", null, null);
         }
 
         WorkPlan workPlan = new WorkPlan();
@@ -157,8 +207,8 @@ public class WorkPlanServiceImpl implements WorkPlanService {
                         WorkPlanType workPlanType = workPlanTypes.get(0);
                         workPlan1.setWorkPlanType(workPlanType);
                         workPlan = workPlanRepository.save(workPlan1);
-                    }else{
-                        return new WorkPlanGroupDto(null, null, "PLAN_TYPE_NOT_FOUND", null);
+                    } else {
+                        return new WorkPlanGroupDto(null, null, "PLAN_TYPE_NOT_FOUND", null, null);
                     }
                 } else {
                     workPlan = workPlan1;
@@ -179,6 +229,7 @@ public class WorkPlanServiceImpl implements WorkPlanService {
                 WorkPlanDetail workPlanDetail1 = workPlanDetailRepository.findById(workPlanDetail.getId()).orElseGet(WorkPlanDetail::new);
                 if (!workPlanDetail.equals(workPlanDetail1)) {
                     workPlanDetail.setId(null);
+                    workPlanDetail.setUpdater(userDetails.getUsername());
                     workPlanDetailRepository.save(workPlanDetail);
                 }
             } else {
@@ -249,9 +300,10 @@ public class WorkPlanServiceImpl implements WorkPlanService {
         if (workPlanDetailList1 != null && workPlanDetailList1.size() > 0) {
 
             Map<Integer, List<WorkPlanDetail>> groupByMap = workPlanDetailList1.stream().collect(Collectors.groupingBy(a -> a.getWorkPlan().getId()));
-            List<WorkPlanGroupDto> workPlanGroupDtos = groupByMap.entrySet().stream().map(e -> new WorkPlanGroupDto(e.getValue().get(0).getWorkPlan().getPlanName(), e.getValue(), null, e.getValue().get(0).getWorkPlan().getWorkPlanType().getRow())).collect(Collectors.toList());
+            List<WorkPlanGroupDto> workPlanGroupDtos = groupByMap.entrySet().stream().map(e -> new WorkPlanGroupDto(e.getValue().get(0).getWorkPlan().getPlanName(), e.getValue(), null, e.getValue().get(0).getWorkPlan().getWorkPlanType().getRow(), false)).collect(Collectors.toList());
 //            workPlanGroupDtos = workPlanGroupDtos.stream().sorted(Comparator.comparing(a -> a.getRow())).collect(Collectors.toList());
             workPlanGroupDtos = workPlanGroupDtos.stream().sorted(Comparator.comparing(WorkPlanGroupDto::getRow).thenComparing(a -> a.getWorkPlanDetails().get(0).getWorkPlan().getId())).collect(Collectors.toList());
+
 
 //            Map<Integer, List<WorkPlanDetail>> map = sortByKey(groupByMap);
 //            List<WorkPlanGroupDto> workPlanGroupDtos = map.entrySet().stream().map(e -> new WorkPlanGroupDto(e.getValue().get(0).getWorkPlan().getPlanName(), e.getValue().get(0).getWorkPlan().getPlanCode(), e.getValue(), null)).collect(Collectors.toList());
@@ -265,7 +317,7 @@ public class WorkPlanServiceImpl implements WorkPlanService {
             } else if (workPlanGroupDtos.size() > pageable.getPageNumber() * pageable.getPageSize() && workPlanGroupDtos.size() >= (pageable.getPageNumber() + 1) * pageable.getPageSize()) {
                 workPlanDetails = workPlanGroupDtos.subList(pageable.getPageNumber() * pageable.getPageSize(), (pageable.getPageNumber() + 1) * pageable.getPageSize());
             }
-
+            workPlanDetails = setUpdateOrDeleteFlag(workPlanDetails);
             MergeResult mergeResult = new MergeResult();
             mergeResult.totalElements = workPlanGroupDtos.size();
             mergeResult.totalPages = workPlanGroupDtos.size() % pageable.getPageSize() == 0 ? workPlanGroupDtos.size() / pageable.getPageSize() : workPlanGroupDtos.size() / pageable.getPageSize() + 1;
@@ -282,13 +334,9 @@ public class WorkPlanServiceImpl implements WorkPlanService {
     public void downloadWorkPlanDetails(HttpServletResponse response, WorkPlanDetailQueryCriteria criteria) throws IOException {
         List<WorkPlanDetail> workPlanDetailList1 = getWorkPlanDetails(criteria);
         Map<Integer, List<WorkPlanDetail>> groupByMap = workPlanDetailList1.stream().collect(Collectors.groupingBy(a -> a.getWorkPlan().getId()));
-        List<WorkPlanGroupDto> workPlanGroupDtos = groupByMap.entrySet().stream().map(e -> new WorkPlanGroupDto(e.getValue().get(0).getWorkPlan().getPlanName(), e.getValue(), null, e.getValue().get(0).getWorkPlan().getWorkPlanType().getRow())).collect(Collectors.toList());
-//        workPlanGroupDtos = workPlanGroupDtos.stream().sorted(Comparator.comparing(a -> a.getRow())).collect(Collectors.toList());
+        List<WorkPlanGroupDto> workPlanGroupDtos = groupByMap.entrySet().stream().map(e -> new WorkPlanGroupDto(e.getValue().get(0).getWorkPlan().getPlanName(), e.getValue(), null, e.getValue().get(0).getWorkPlan().getWorkPlanType().getRow(), false)).collect(Collectors.toList());
         workPlanGroupDtos = workPlanGroupDtos.stream().sorted(Comparator.comparing(WorkPlanGroupDto::getRow).thenComparing(a -> a.getWorkPlanDetails().get(0).getWorkPlan().getId())).collect(Collectors.toList());
 
-//        Map<Integer, List<WorkPlanDetail>> groupByMap = workPlanDetailList1.stream().collect(Collectors.groupingBy(a -> a.getWorkPlan().getWorkPlanType().getRow()));
-//        Map<Integer, List<WorkPlanDetail>> map1 = sortByKey(groupByMap);
-//        List<WorkPlanGroupDto> workPlanGroupDtos = map1.entrySet().stream().map(e -> new WorkPlanGroupDto(e.getValue().get(0).getWorkPlan().getPlanName(), e.getValue().get(0).getWorkPlan().getPlanCode(), e.getValue(), null)).collect(Collectors.toList());
         workPlanGroupDtos.stream().forEach(a -> a.setWorkPlanDetails(a.getWorkPlanDetails().stream().sorted(Comparator.comparing(b -> b.getDetailCode())).collect(Collectors.toList())));
 
 
@@ -312,6 +360,8 @@ public class WorkPlanServiceImpl implements WorkPlanService {
                 map.put("计划开始时间", workPlanDetail.getPlanStartDate());
                 map.put("计划完成时间", workPlanDetail.getPlanFinishDate());
                 map.put("实际完成时间", workPlanDetail.getActFinishDate());
+                map.put("更新人", workPlanDetail.getUpdater());
+                map.put("更新原因", workPlanDetail.getUpdateReason());
                 map.put("备注", workPlanDetail.getRemark());
                 list.add(map);
             }
@@ -331,6 +381,12 @@ public class WorkPlanServiceImpl implements WorkPlanService {
 
     }
 
+    @Override
+    public Object queryDutyPerson() {
+
+        return systemUserMapper.queryDutyPerson();
+    }
+
     private Map<Integer, List<WorkPlanDetail>> sortByKey(Map<Integer, List<WorkPlanDetail>> map) {
         Map<Integer, List<WorkPlanDetail>> result = new LinkedHashMap<>(map.size());
         map.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEachOrdered(e -> {
@@ -340,18 +396,50 @@ public class WorkPlanServiceImpl implements WorkPlanService {
     }
 
     @Override
-    public void deleteWorkPlanDetail(Integer id) {
-        workPlanDetailRepository.deleteById(id);
+    public Object deleteWorkPlanDetail(Integer id) {
+        UserDetails userDetails = SecurityUtils.getCurrentUser();
+        List<JSONObject> roles = (List) new JSONObject(new JSONObject(userDetails).get("user")).get("roles");
+        int isDelete = 0;
+        if (roles != null && roles.size() > 0) {
+            for (int i = 0; i < roles.size(); i++) {
+                Role role = JSONUtil.toBean(roles.get(0), Role.class);
+                if ("设计部管理".equals(role.getName()) || "超级管理员".equals(role.getName()) || "测试人员".equals(role.getName())) {
+                    isDelete++;
+                    break;
+                }
+            }
+        }
+        if (isDelete > 0) {
+            workPlanDetailRepository.deleteById(id);
+            return "SUCCESS";
+        }
+        return "NOT_AUTHORIZED";
     }
 
     @Override
     @Transactional
-    public void deleteWorkPlan(Integer id) {
-        WorkPlanDetailQueryCriteria workPlanDetailQueryCriteria = new WorkPlanDetailQueryCriteria();
-        workPlanDetailQueryCriteria.setWorkPlanId(id);
-        List<WorkPlanDetail> workPlanDetails = workPlanDetailRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, workPlanDetailQueryCriteria, criteriaBuilder));
-        workPlanDetailRepository.deleteAll(workPlanDetails);
-        workPlanRepository.deleteById(id);
+    public Object deleteWorkPlan(Integer id) {
+        UserDetails userDetails = SecurityUtils.getCurrentUser();
+        List<JSONObject> roles = (List) new JSONObject(new JSONObject(userDetails).get("user")).get("roles");
+        int isDelete = 0;
+        if (roles != null && roles.size() > 0) {
+            for (int i = 0; i < roles.size(); i++) {
+                Role role = JSONUtil.toBean(roles.get(0), Role.class);
+                if ("设计部管理".equals(role.getName()) || "超级管理员".equals(role.getName()) || "测试人员".equals(role.getName())) {
+                    isDelete++;
+                    break;
+                }
+            }
+        }
+        if (isDelete > 0) {
+            WorkPlanDetailQueryCriteria workPlanDetailQueryCriteria = new WorkPlanDetailQueryCriteria();
+            workPlanDetailQueryCriteria.setWorkPlanId(id);
+            List<WorkPlanDetail> workPlanDetails = workPlanDetailRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, workPlanDetailQueryCriteria, criteriaBuilder));
+            workPlanDetailRepository.deleteAll(workPlanDetails);
+            workPlanRepository.deleteById(id);
+            return "SUCCESS";
+        }
+        return "NOT_AUTHORIZED";
     }
 
     @Override

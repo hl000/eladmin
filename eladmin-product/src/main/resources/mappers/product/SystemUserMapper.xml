@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.SystemUserMapper">
+
+    <select id="queryDutyPerson" resultType="java.lang.String">
+        select aa.username
+        from sys_user aa
+                 left join sys_users_roles bb on aa.user_id = bb.user_id
+                 left join sys_role cc on bb.role_id = cc.role_id
+        where cc.name = '设计部'
+           or cc.name = '设计部管理'
+        ORDER BY cc.name DESC,convert(aa.username using gbk) ASC;
+    </select>
+
+</mapper>

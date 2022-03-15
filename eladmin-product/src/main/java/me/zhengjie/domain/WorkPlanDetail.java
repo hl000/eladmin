@@ -1,6 +1,7 @@
 package me.zhengjie.domain;
 
 import io.swagger.annotations.ApiModelProperty;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -40,6 +41,14 @@ public class WorkPlanDetail implements Serializable {
     @ApiModelProperty(value = "负责人")
     private String dutyPerson;
 
+    @Column(name = "updater")
+    @ApiModelProperty(value = "变更人")
+    private String updater;
+
+    @Column(name = "update_reason")
+    @ApiModelProperty(value = "变更原因")
+    private String updateReason;
+
     @JoinColumn(name = "output_result_id")
     @ManyToOne(fetch = FetchType.EAGER)
     private WorkPlanDetailOutputType workPlanDetailOutputType;
@@ -65,6 +74,8 @@ public class WorkPlanDetail implements Serializable {
     @ApiModelProperty(value = "备注")
     private String remark;
 
+    @Transient
+    private Boolean isUpdate = false;
 
     @Override
     public boolean equals(Object o) {
