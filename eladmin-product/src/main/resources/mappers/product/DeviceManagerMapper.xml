@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="me.zhengjie.mapper.DeviceManagerMapper">
+    <select id="getDeviceManager" resultType="me.zhengjie.service.dto.DeviceManagerDto">
+        select a.device_id as deviceId,
+        a.device_code as deviceCode,
+        a.device_site as deviceSite,
+        a.asset_code as assetCode,
+        a.lan_address_one as lanAddressOne,
+        a.lan_address_two as lanAddressTwo,
+        a.lan_address_three as lanAddressThree,
+        a.lan_address_four as lanAddressFour,
+        b.device_type_id as deviceTypeId,
+        b.device_type_name as deviceTypeName,
+        c.user_id as userId,
+        c.user_name as userName,
+        d.department_id as deptId,
+        d.department_name as deptName,
+        a.purchase_date as purchaseDate,
+        a.picture_address as pictureAddress,
+        a.create_date as createDate
+        from Device_ManagerDemo.dbo.device_manager as a
+        left join Device_ManagerDemo.dbo.device_manager_type as b on a.device_type_id = b.device_type_id
+        left join Device_ManagerDemo.dbo.sys_dingding_user as c on a.user_id = c.user_id
+        left join Device_ManagerDemo.dbo.sys_dingding_department as d on c.department_id = d.department_id
+        <if test="deviceCode != null">
+            where a.device_code like '%${deviceCode}%'
+        </if>
+        order by a.create_date desc;
+    </select>
+
+    <select id="getDeviceManagerHistory" resultType="me.zhengjie.service.dto.DeviceManagerDto">
+        select a.device_id         as deviceId,
+               a.device_code       as deviceCode,
+               a.device_site       as deviceSite,
+               a.asset_code        as assetCode,
+               a.lan_address_one   as lanAddressOne,
+               a.lan_address_two   as lanAddressTwo,
+               a.lan_address_three as lanAddressThree,
+               a.lan_address_four  as lanAddressFour,
+               b.device_type_id    as deviceTypeId,
+               b.device_type_name  as deviceTypeName,
+               c.user_id           as userId,
+               c.user_name         as userName,
+               d.department_id     as deptId,
+               d.department_name   as deptName,
+               a.purchase_date     as purchaseDate,
+               a.picture_address   as pictureAddress,
+               a.create_date       as createDate
+        from Device_ManagerDemo.dbo.device_manager as a
+                 left join Device_ManagerDemo.dbo.device_manager_type as b on a.device_type_id = b.device_type_id
+                 left join Device_ManagerDemo.dbo.sys_dingding_user as c on a.user_id = c.user_id
+                 left join Device_ManagerDemo.dbo.sys_dingding_department as d on c.department_id = d.department_id
+        where a.asset_code = #{assetCode}
+        order by a.create_date desc;
+    </select>
+
+    <select id="getLastDeviceManager" resultType="me.zhengjie.service.dto.DeviceManagerDto">
+        select a.device_id         as deviceId,
+               a.device_code       as deviceCode,
+               a.device_site       as deviceSite,
+               a.asset_code        as assetCode,
+               a.lan_address_one   as lanAddressOne,
+               a.lan_address_two   as lanAddressTwo,
+               a.lan_address_three as lanAddressThree,
+               a.lan_address_four  as lanAddressFour,
+               b.device_type_id    as deviceTypeId,
+               b.device_type_name  as deviceTypeName,
+               c.user_id           as userId,
+               c.user_name         as userName,
+               d.department_id     as deptId,
+               d.department_name   as deptName,
+               a.purchase_date     as purchaseDate,
+               a.picture_address   as pictureAddress,
+               a.create_date       as createDate
+        from Device_ManagerDemo.dbo.device_manager as a
+                 left join Device_ManagerDemo.dbo.device_manager_type as b on a.device_type_id = b.device_type_id
+                 left join Device_ManagerDemo.dbo.sys_dingding_user as c on a.user_id = c.user_id
+                 left join Device_ManagerDemo.dbo.sys_dingding_department as d on c.department_id = d.department_id
+        where a.device_id = (select max(device_id) from Device_ManagerDemo.dbo.device_manager)
+    </select>
+
+    <insert id="saveDeviceManager" parameterType="me.zhengjie.service.dto.DeviceManagerDto">
+        insert into Device_ManagerDemo.dbo.device_manager (device_code, device_site,
+                                                           asset_code, lan_address_one, lan_address_two,
+                                                           lan_address_three, lan_address_four, device_type_id,
+                                                           user_id, purchase_date, picture_address, create_date)
+        values (#{deviceCode,jdbcType=VARCHAR}, #{deviceSite,jdbcType=VARCHAR}, #{assetCode,jdbcType=VARCHAR},
+                #{lanAddressOne,jdbcType=VARCHAR}, #{lanAddressTwo,jdbcType=VARCHAR},
+                #{lanAddressThree,jdbcType=VARCHAR},
+                #{lanAddressFour,jdbcType=VARCHAR}, #{deviceTypeId,jdbcType=INTEGER}, #{userId,jdbcType=VARCHAR},
+                #{purchaseDate,jdbcType=DATE}, #{pictureAddress,jdbcType=VARCHAR}, #{createDate,jdbcType=TIMESTAMP})
+    </insert>
+
+    <select id="findAllDeviceType" resultType="me.zhengjie.domain.DeviceManagerType">
+        select device_type_id as deviceTypeId, device_type_name as deviceTypeName
+        from Device_ManagerDemo.dbo.device_manager_type
+    </select>
+
+    <select id="getAsset" resultType="me.zhengjie.service.dto.AssetDto">
+        select sAssetNum  as assetCode,
+               dStartdate as startDate,
+               sStyle     as deviceStyle,
+               sName      as assetName,
+               cVenName   as supplierName
+        from UFDATA_002_2020.dbo.fa_Cards
+                 left join UFDATA_002_2020.dbo.fa_AssetTypes on fa_Cards.sTypeNum = fa_AssetTypes.sNum
+                 left join UFDATA_002_2020.dbo.Vendor on fa_Cards.cVenCode = Vendor.cVenCode
+    </select>
+
+</mapper>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="me.zhengjie.mapper.PersonnelMapper">
+    <insert id="insertUser" parameterType="me.zhengjie.domain.DingUser">
+        insert into Device_ManagerDemo.dbo.sys_dingding_user (user_id, department_id, user_name, user_status)
+        values (#{userid,jdbcType=INTEGER}, #{deptId,jdbcType=BIGINT}, #{name,jdbcType=VARCHAR},
+                #{userStatus,jdbcType=BIT})
+    </insert>
+
+    <select id="findAllUser" resultType="me.zhengjie.domain.DingUser">
+        select user_id as userid, department_id as deptId, user_name as name, user_status as userStatus
+        from Device_ManagerDemo.dbo.sys_dingding_user
+    </select>
+
+    <select id="getUserList" resultType="me.zhengjie.service.dto.DingUserDto">
+        select a.user_id as userid, a.department_id as deptId, a.user_name as name, b.department_name as deptName
+        from Device_ManagerDemo.dbo.sys_dingding_user as a
+                 left join Device_ManagerDemo.dbo.sys_dingding_department as b on a.department_id = b.department_id
+        where a.user_status = 1
+    </select>
+
+    <insert id="insertDepartment" parameterType="me.zhengjie.domain.DingDepartment">
+        insert into Device_ManagerDemo.dbo.sys_dingding_department (department_id, department_name)
+        values (#{deptId,jdbcType=BIGINT}, #{deptName,jdbcType=VARCHAR})
+    </insert>
+
+    <select id="findAllDepartment" resultType="me.zhengjie.domain.DingDepartment">
+        select department_id as deptId, department_name as deptName
+        from Device_ManagerDemo.dbo.sys_dingding_department
+    </select>
+
+
+</mapper>
