@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.VehicleMileageMapper">
+    <select id="getVehicleMileage" resultType="me.zhengjie.service.dto.VehicleMileageDto">
+        select
+        Licence_Plate as licencePlate,
+        Daily_Mileage as dailyMileage,
+        Total_Mileage as totalMileage,
+        Drive_Date as driveDate,
+        FYBIANHAO as FYBIANHAO,
+        FGBIANHAO as FGBIANHAO,
+        (case when FID is not null then 'true' else 'false' end ) as updateStack
+        <![CDATA[   from ${mileageTable} as a
+        left join ${ADMXTGHTable} as b on a.Licence_Plate = b.FCHEPAI and a.Drive_Date = b.FDATE ]]>
+        where 1=1
+        <if test="licencePlate != null">
+            and Licence_Plate=#{licencePlate}
+        </if>
+        <![CDATA[   and Drive_Date >= #{startDate} and  Drive_Date <= #{endDate} ]]>
+        <if test="updateStackFlag">
+            <![CDATA[    and Licence_Plate in (select Licence_Plate from ${mileageTable} as c
+            inner join ${ADMXTGHTable} as d on c.Licence_Plate = d.FCHEPAI and c.Drive_Date = d.FDATE where d.FDATE
+            >= #{startDate} and d.FDATE <= #{endDate})]]>
+        </if>
+    </select>
+
+    <select id="getVehicleList" resultType="java.lang.String">
+        <![CDATA[
+        select Licence_Plate as licencePlate
+        from ${table}
+        group by Licence_Plate
+        ]]>
+    </select>
+</mapper>
