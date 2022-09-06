@@ -1,12 +1,8 @@
 package me.zhengjie.repository;
 
-import io.swagger.annotations.ApiModelProperty;
 import me.zhengjie.domain.Manufacture;
-import me.zhengjie.domain.TechniqueInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-
-import javax.persistence.Column;
 
 /**
  * @author HL

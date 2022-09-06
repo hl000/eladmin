@@ -51,6 +51,13 @@ public class SysUserController {
         sysUserService.download(sysUserService.queryAll(criteria), response);
     }
 
+    @GetMapping("/queryAllUser")
+    @Log("查询所有User")
+    @ApiOperation("查询所有User")
+    public ResponseEntity<Object> queryAllUser(SysUserQueryCriteria criteria){
+        return new ResponseEntity<>(sysUserService.queryAll(criteria),HttpStatus.OK);
+    }
+
     @GetMapping
     @Log("查询user")
     @ApiOperation("查询user")

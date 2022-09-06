@@ -46,7 +46,6 @@ public class TechniqueInfoServiceImpl implements TechniqueInfoService {
     @Override
     public List<TechniqueInfoDto> queryAll(TechniqueInfoQueryCriteria criteria) {
         return techniqueInfoMapper.toDto(techniqueInfoRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder)));
-
     }
 
     @Override

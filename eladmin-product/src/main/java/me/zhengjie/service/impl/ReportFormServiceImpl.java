@@ -7,10 +7,13 @@ import me.zhengjie.repository.ManufactureRepository;
 import me.zhengjie.repository.WorkFactoryProcessRepository;
 import me.zhengjie.service.ReportFormService;
 import me.zhengjie.service.dto.*;
+import me.zhengjie.utils.DateUtil;
+import me.zhengjie.utils.FileUtil;
 import me.zhengjie.utils.QueryHelp;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -136,5 +139,119 @@ public class ReportFormServiceImpl implements ReportFormService {
     @Override
     public Object getPitchList() {
         return reportFormMapper.getPitchList();
+    }
+
+    @Override
+    public void allReportFromDownload(HttpServletResponse response, String startDate, String endDate, String address, String invName) {
+        List<ReportFormGroupDto> reportFormDtos = getAllReportForm(startDate, endDate, address, invName);
+        List<String> listDate = DateUtil.getBetweenDate(startDate, endDate);
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (ReportFormGroupDto reportFormGroupDto : reportFormDtos) {
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("工厂", reportFormGroupDto.getAddress());
+            map.put("物料名称", reportFormGroupDto.getInvName());
+            for (String date : listDate) {
+                map.put(date, reportFormGroupDto.getMap().get(date) != null ? reportFormGroupDto.getMap().get(date) : "--");
+            }
+            map.put("合计", reportFormGroupDto.getCount());
+            list.add(map);
+        }
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("物料名称", "合计");
+        for (String date : listDate) {
+            int count = 0;
+            for (Map<String, Object> report : list) {
+                if (report.get(date) != null && !"--".equals(String.valueOf(report.get(date)))) {
+                    count = count + Integer.parseInt(String.valueOf(report.get(date)));
+                }
+            }
+            map.put(date, count);
+        }
+
+        int summary = 0;
+        for (Map<String, Object> report : list) {
+            if (report.get("合计") != null && !"--".equals(String.valueOf(report.get("合计")))) {
+                summary = summary + Integer.parseInt(String.valueOf(report.get("合计")));
+            }
+        }
+        map.put("合计", summary);
+        list.add(map);
+
+        try {
+            FileUtil.downloadExcel(list, response);
+        } catch (Exception e) {
+        }
+    }
+
+    @Override
+    public void processCompletedDownload(HttpServletResponse response, String startDate, String endDate, String address, String invProcess) {
+        List<ProcessCompletedGroupDto> reportFormDtos = getProcessCompleted(startDate, endDate, address, invProcess);
+        List<String> listDate = DateUtil.getBetweenDate(startDate, endDate);
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (ProcessCompletedGroupDto processCompletedGroupDto : reportFormDtos) {
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("工厂", processCompletedGroupDto.getAddress());
+            map.put("工序", processCompletedGroupDto.getInvProcess());
+            for (String date : listDate) {
+                map.put(date, processCompletedGroupDto.getMap().get(date) != null ? processCompletedGroupDto.getMap().get(date) : "--");
+            }
+            map.put("合计", processCompletedGroupDto.getCount());
+            list.add(map);
+        }
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("工序", "合计");
+        for (String date : listDate) {
+            int count = 0;
+            for (Map<String, Object> report : list) {
+                if (report.get(date) != null && !"--".equals(String.valueOf(report.get(date)))) {
+                    count = count + Integer.parseInt(String.valueOf(report.get(date)));
+                }
+            }
+            map.put(date, count);
+        }
+
+        int summary = 0;
+        for (Map<String, Object> report : list) {
+            if (report.get("合计") != null && !"--".equals(String.valueOf(report.get("合计")))) {
+                summary = summary + Integer.parseInt(String.valueOf(report.get("合计")));
+            }
+        }
+        map.put("合计", summary);
+        list.add(map);
+
+        try {
+            FileUtil.downloadExcel(list, response);
+        } catch (Exception e) {
+        }
+
+    }
+
+    @Override
+    public void repertoryDownload(HttpServletResponse response, String cInvUnit, String adrName) {
+        List<SemiFinishedStockDto> semiFinishedStockDtos = getRepertory(cInvUnit, adrName);
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (SemiFinishedStockDto semiFinishedStockDto : semiFinishedStockDtos) {
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("工厂", semiFinishedStockDto.getAdrName());
+            map.put("节数", semiFinishedStockDto.getCInvUnit());
+            map.put("数量", semiFinishedStockDto.getQty());
+            list.add(map);
+        }
+        Map<String, Object> map = new HashMap<>();
+        map.put("工厂", "合计");
+        int summary = 0;
+        for (Map<String, Object> report : list) {
+            if (report.get("数量") != null && !"--".equals(String.valueOf(report.get("数量")))) {
+                summary = summary + Integer.parseInt(String.valueOf(report.get("数量")));
+            }
+        }
+        map.put("数量", summary);
+        list.add(map);
+        try {
+            FileUtil.downloadExcel(list, response);
+        } catch (Exception e) {
+        }
     }
 }

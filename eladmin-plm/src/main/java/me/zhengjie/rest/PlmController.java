@@ -63,7 +63,7 @@ public class PlmController {
     @Log("查询某个键的所有值集合")
     @ApiOperation("查询某个键的所有值集合")
     public Object queryKvSet(KvDto kvDto) {
-        try{
+        try {
             if (PlmConstant.K_MAIN.equals(kvDto.type) || StringUtils.isEmpty(kvDto.type)) {
                 kvDto.table = PlmConstant.get_K_MAIN_TABLE();
             } else if (PlmConstant.K_GZ_PAPER.equals(kvDto.type)) {
@@ -77,9 +77,9 @@ public class PlmController {
             }
             List<String> result = dbManager.getSelectItemValue(kvDto);
             List<ResKv> obj = new ArrayList<>();
-            result.stream().filter(str->StringUtils.isNotEmpty(str)).collect(Collectors.toList()).forEach(str -> obj.add(new ResKv(kvDto.key, str)));
+            result.stream().filter(str -> StringUtils.isNotEmpty(str)).collect(Collectors.toList()).forEach(str -> obj.add(new ResKv(kvDto.key, str)));
             return new ResKv(kvDto.key, obj);
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new BadRequestException("/kv/set发生错误");
         }
     }
@@ -95,7 +95,9 @@ public class PlmController {
         try {
            /* KvDto k = new KvDto("user", SecurityUtils.getCurrentUser().getUsername());
             k.table = PlmConstant.get_K_PLM_USER_ALLOWED();*/
+            //ADMPLM_MG
             List<String> allowedPart = dbManager.queryUserAllowedPart(PlmConstant.get_K_PLM_USER_ALLOWED(), SecurityUtils.getCurrentUser().getUsername(), "plm");
+            //ADMPLM
             kvDto.table = PlmConstant.get_K_MAIN_TABLE();
             List<MainDto> ret = dbManager.selectRecordByKv(kvDto);
 
@@ -104,19 +106,23 @@ public class PlmController {
             if (allDianDui !=null &&  allDianDui.size() >0) {
                 replaceRecord = dbManager.getShouHouDetailByStack(allDianDui);
             }*/
+
+            //ADMXTGH
             List<StackReplaceDto> replaceRecord = dbManager.getShouHouDetailByStack(new HashSet<>());
-           // System.out.println(allDianDui);
+            // System.out.println(allDianDui);
             //TODO 对于存在更换电堆的先进行手动替换
             fixProcess(ret, replaceRecord);
             return mergeFromPart(ret.size(), PageUtil.toPage(pageable.getPageNumber(), pageable.getPageSize(), ret), pageable, MergeEnum.MAIN, allowedPart);
         } catch (Exception e) {
-            throw new BadRequestException("/record/bykv发生错误"+ e);
+            throw new BadRequestException("/record/bykv发生错误" + e);
         }
     }
 
     private void fixProcess(List<MainDto> ret, List<StackReplaceDto> replaceRecord) {
         if (replaceRecord.size() > 0) {
-            Map<String,String> map = replaceRecord.stream().collect(Collectors.toMap(s->s.FGBIANHAO, s->s.FCHEPAI));
+//            Map<String, String> map = replaceRecord.stream().collect(Collectors.toMap(s -> s.FGBIANHAO, s -> s.FCHEPAI));
+            Map<String, String> map = replaceRecord.stream().collect(Collectors.toMap(StackReplaceDto::getFGBIANHAO, StackReplaceDto::getFCHEPAI, (v1, v2) -> v2));
+
             for (MainDto mainDto : ret) {
                 if (map.containsKey(mainDto.getDIANDUI())) {
                     mainDto.setCHEPAI(map.get(mainDto.getDIANDUI()));
@@ -129,9 +135,9 @@ public class PlmController {
     @GetMapping(value = "/record/bykv/download")
     @Log("下载导出")
     @ApiOperation("下载导出")
-    public Object downloadPagesByKV (
+    public Object downloadPagesByKV(
             HttpServletResponse response,
-            KvDto kvDto) throws IOException{
+            KvDto kvDto) throws IOException {
         kvDto.table = PlmConstant.get_K_MAIN_TABLE();
         List<MainDto> ret = dbManager.selectRecordByKv(kvDto);
         DownUtils.downloadMain(ret, response);
@@ -149,12 +155,12 @@ public class PlmController {
         try {
            /* KvDto k = new KvDto("name", SecurityUtils.getCurrentUser().getUsername());
             k.table = PlmConstant.get_K_PLM_USER_ALLOWED();*/
-            List<String> allowedPart = dbManager.queryUserAllowedPart(PlmConstant.get_K_PLM_USER_ALLOWED(),SecurityUtils.getCurrentUser().getUsername(), "plm");
+            List<String> allowedPart = dbManager.queryUserAllowedPart(PlmConstant.get_K_PLM_USER_ALLOWED(), SecurityUtils.getCurrentUser().getUsername(), "plm");
             if (PlmConstant.K_MEA.equals(kvDto.type)) {
                 kvDto.table = PlmConstant.get_K_MEA_TABLE();
                 return fillMeaDetail(dbManager.getMeaDetail(kvDto), allowedPart);
             } else if (PlmConstant.K_GZ_PAPER.equals(kvDto.type) || PlmConstant.K_CHANPIN.equals(kvDto.type)) {
-                kvDto.table = PlmConstant.K_GZ_PAPER.equals(kvDto.type) ?   PlmConstant.get_K_GZ_PAPER_TABLE() : PlmConstant.get_K_CHANPIN_TABLE();
+                kvDto.table = PlmConstant.K_GZ_PAPER.equals(kvDto.type) ? PlmConstant.get_K_GZ_PAPER_TABLE() : PlmConstant.get_K_CHANPIN_TABLE();
                 List<KvDto> list = new ArrayList<>();
                 KvDto kvDto1 = new KvDto(kvDto.key, kvDto.value);
                 list.add(kvDto1);
@@ -167,18 +173,18 @@ public class PlmController {
                 List<GongzhuangPaperDto> ret = dbManager.getGongZhuangDetail(kvDto);
                 //第二步，获取所有的知识库内的文件
                 List<KvDto> newKvDtoList = new ArrayList<>();
-                KvDto newKvDto1 = new KvDto("firstDir", PlmConstant.K_GZ_PAPER.equals(kvDto.type) ? "工装": "产品");
+                KvDto newKvDto1 = new KvDto("firstDir", PlmConstant.K_GZ_PAPER.equals(kvDto.type) ? "工装" : "产品");
                 KvDto newKvDto2 = new KvDto("secondDir", kvDto.value);
                 newKvDtoList.add(newKvDto1);
                 newKvDtoList.add(newKvDto2);
                 if (StringUtils.isNotEmpty(kvDto.subKey) && StringUtils.isNotEmpty(kvDto.subValue)) {
-                   if (kvDto.subKey.equals("FFUZEREN")) {
-                       KvDto newKvDto3 = new KvDto("writer", kvDto.subValue);
-                       newKvDtoList.add(newKvDto3);
-                   }else if (kvDto.subKey.equals("FGONGXU")) {
-                       KvDto newKvDto3 = new KvDto("thirdDir", kvDto.subValue);
-                       newKvDtoList.add(newKvDto3);
-                   }
+                    if (kvDto.subKey.equals("FFUZEREN")) {
+                        KvDto newKvDto3 = new KvDto("writer", kvDto.subValue);
+                        newKvDtoList.add(newKvDto3);
+                    } else if (kvDto.subKey.equals("FGONGXU")) {
+                        KvDto newKvDto3 = new KvDto("thirdDir", kvDto.subValue);
+                        newKvDtoList.add(newKvDto3);
+                    }
                 }
                 kvDto.table = PlmConstant.get_K_KNOWLEDGE_FILE();
                 kvDto.subList = newKvDtoList;
@@ -211,12 +217,12 @@ public class PlmController {
                 }
                 kvDto.subList = list;
                 int totalCnt = dbManager.getCountByKV(kvDto);
-                kvDto.fromIndex = pageable.getPageSize() * pageable.getPageNumber() +1 ;
+                kvDto.fromIndex = pageable.getPageSize() * pageable.getPageNumber() + 1;
                 kvDto.endIndex = pageable.getPageSize() * pageable.getPageNumber() + pageable.getPageSize();
                 List<SheBeiPaperDto> ret = dbManager.getSheBeiPaperDetail(kvDto);
                 return mergeFromPart(totalCnt, ret, pageable, MergeEnum.SB_PAPER, allowedPart);
-            } else if (PlmConstant.K_STACK_REPLACE.equals(kvDto.type) ){
-                List<StackReplaceInfo>  ret =  fixHistoryService.queryByStack(kvDto.value);
+            } else if (PlmConstant.K_STACK_REPLACE.equals(kvDto.type)) {
+                List<StackReplaceInfo> ret = fixHistoryService.queryByStack(kvDto.value);
                 return mergeFromPart(ret.size(), PageUtil.toPage(pageable.getPageNumber(), pageable.getPageSize(), ret), pageable, MergeEnum.STACK_REPLACE, allowedPart);
 
             } else if (PlmConstant.K_CAR_MILEAGE.equals(kvDto.type)) {

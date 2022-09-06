@@ -37,7 +37,7 @@ public class DingUser {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DingUser dingUser = (DingUser) o;
-        return Objects.equals(userid, dingUser.userid) && Objects.equals(name, dingUser.name) && Objects.equals(userStatus, dingUser.userStatus) && Objects.equals(deptId, dingUser.deptId);
+        return Objects.equals(userid, dingUser.userid);
     }
 
     @Override

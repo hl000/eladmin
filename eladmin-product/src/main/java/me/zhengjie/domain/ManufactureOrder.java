@@ -4,11 +4,9 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.sql.Date;
-import java.sql.Timestamp;
 
 /**
  * @author HL
@@ -25,366 +23,159 @@ public class ManufactureOrder {
     @ApiModelProperty(value = "主键id")
     private Integer id;
 
+    @Column(name = "stack_specific")
+    @ApiModelProperty(value = "电堆型号")
+    private String stackSpecific;
+
     @Column(name = "stack_number")
     @ApiModelProperty(value = "电堆编号")
     private String stackNumber;
-
-    @Column(name = "pitch_number")
-    @ApiModelProperty(value = "节数")
-    private Integer pitchNumber;
 
     @Column(name = "test_purpose")
     @ApiModelProperty(value = "测试目的")
     private String testPurpose;
 
+    @Column(name = "pitch_number")
+    @ApiModelProperty(value = "电堆节数")
+    private Integer pitchNumber;
+
+    @Column(name = "active_area")
+    @ApiModelProperty(value = "活性面积")
+    private Double activeArea;
+
+    @JoinColumn(name = "user_id")
+    @ApiModelProperty(value = "实验设计人")
+    @ManyToOne(fetch = FetchType.EAGER)
+    private SysUser experimentDesigner;
+
     @Column(name = "FBIP")
     @ApiModelProperty(value = "BIP编号")
     private String FBIP;
-
-//    @Column(name = "fake_batteries")
-//    @ApiModelProperty(value = "假电池数")
-//    private Integer fakeBatteries;
 
     @Column(name = "MEA")
     @ApiModelProperty(value = "MEA型号")
     private String MEA;
 
-    @Column(name = "mea_date")
-    @ApiModelProperty(value = "MEA日期")
-    private Date meaDate;
+    @Column(name = "assembly_pressure")
+    @ApiModelProperty(value = "组装压力")
+    private Double assemblyPressure;
 
-    @Column(name = "carbon_paper_thickness")
-    @ApiModelProperty(value = "碳纸厚度")
-    private Double carbonPaperThickness;
+    @Column(name = "ambient_temperature")
+    @ApiModelProperty(value = "环境温度")
+    private Double ambientTemperature;
 
-    @Column(name = "proton_membrane_thickness")
-    @ApiModelProperty(value = "质子膜厚度")
-    private Double protonMembraneThickness;
+    @Column(name = "ambient_humidity")
+    @ApiModelProperty(value = "环境湿度")
+    private Double ambientHumidity;
 
-    @Column(name = "border_thickness")
-    @ApiModelProperty(value = "边框厚度")
-    private Double borderThickness;
+    @Column(name = "assembly_date")
+    @ApiModelProperty(value = "组装日期")
+    private Date assemblyDate;
 
-    @Column(name = "unit_number")
-    @ApiModelProperty(value = "单元节数")
-    private Integer unitNumber;
-
-    @Column(name = "unit_personnel")
-    @ApiModelProperty(value = "单元组装人员")
-    private String unitPersonnel;
-
-
-    @Column(name = "unit_leak_stress")
-    @ApiModelProperty(value = "单元胶线测漏压力")
-    private Double unitLeakStress;
-
-    @Column(name = "option1_one")
-    @ApiModelProperty(value = "位置1一次")
-    private Double option1One;
-
-    @Column(name = "option1_two")
-    @ApiModelProperty(value = "位置1二次")
-    private Double option1Two;
-
-    @Column(name = "option1_three")
-    @ApiModelProperty(value = "位置1三次")
-    private Double option1Three;
-
-    @Column(name = "option2_one")
-    @ApiModelProperty(value = "位置2一次")
-    private Double option2One;
-
-    @Column(name = "option2_two")
-    @ApiModelProperty(value = "位置2二次")
-    private Double option2Two;
-
-    @Column(name = "option2_three")
-    @ApiModelProperty(value = "位置2三次")
-    private Double option2Three;
-
-    @Column(name = "option3_one")
-    @ApiModelProperty(value = "位置3一次")
-    private Double option3One;
-
-    @Column(name = "option3_two")
-    @ApiModelProperty(value = "位置3二次")
-    private Double option3Two;
-
-    @Column(name = "option3_three")
-    @ApiModelProperty(value = "位置3三次")
-    private Double option3Three;
-
-    @Column(name = "option4_one")
-    @ApiModelProperty(value = "位置4一次")
-    private Double option4One;
-
-    @Column(name = "option4_two")
-    @ApiModelProperty(value = "位置4二次")
-    private Double option4Two;
-
-    @Column(name = "option4_three")
-    @ApiModelProperty(value = "位置4三次")
-    private Double option4Three;
-
-    @Column(name = "spring_dimension1_one")
-    @ApiModelProperty(value = "弹簧尺寸1一次")
-    private Double springDimension1One;
-
-    @Column(name = "spring_dimension1_two")
-    @ApiModelProperty(value = "弹簧尺寸1二次")
-    private Double springDimension1Two;
-
-    @Column(name = "spring_dimension1_three")
-    @ApiModelProperty(value = "弹簧尺寸1三次")
-    private Double springDimension1Three;
-
-    @Column(name = "spring_dimension2_one")
-    @ApiModelProperty(value = "弹簧尺寸2一次")
-    private Double springDimension2One;
-
-    @Column(name = "spring_dimension2_two")
-    @ApiModelProperty(value = "弹簧尺寸2二次")
-    private Double springDimension2Two;
-
-    @Column(name = "spring_dimension2_three")
-    @ApiModelProperty(value = "弹簧尺寸2三次")
-    private Double springDimension2Three;
-
-    @Column(name = "spring_dimension3_one")
-    @ApiModelProperty(value = "弹簧尺寸3一次")
-    private Double springDimension3One;
-
-    @Column(name = "spring_dimension3_two")
-    @ApiModelProperty(value = "弹簧尺寸3二次")
-    private Double springDimension3Two;
-
-    @Column(name = "spring_dimension3_three")
-    @ApiModelProperty(value = "弹簧尺寸3三次")
-    private Double springDimension3Three;
-
-    @Column(name = "relief_pressure")
-    @ApiModelProperty(value = "泄压压力")
-    private Double reliefPressure;
+    @Column(name = "end_paper_model")
+    @ApiModelProperty(value = "碳纸型号")
+    private String endPaperModel;
 
     @Column(name = "end_paper_thickness")
     @ApiModelProperty(value = "端板碳纸厚度")
     private Double endPaperThickness;
 
+    @Column(name = "stack_identification")
+    @ApiModelProperty(value = "电堆新旧标识")
+    private String stackIdentification;
+
+//    @Column(name = "relief_pressure")
+//    @ApiModelProperty(value = "泄压压力")
+//    private Double reliefPressure;
+
+    @Column(name = "equipment_flatness")
+    @ApiModelProperty(value = "设备平整度")
+    private Double equipmentFlatness;
+
+    @JoinColumn(name = "work_device_id")
+    @ApiModelProperty(value = "组装设备编号")
+    @ManyToOne(fetch = FetchType.EAGER)
+    private WorkDevice workDevice;
+
     @Column(name = "assembly_personnel")
     @ApiModelProperty(value = "组堆人员")
     private String assemblyPersonnel;
 
-    @Column(name = "assembly_date")
-    @ApiModelProperty(value = "组堆日期")
-    private Date assemblyDate;
+    @Column(name = "unit_number")
+    @ApiModelProperty(value = "单元节数")
+    private Integer unitNumber;
 
-    @Column(name = "water_hydrogen_one")
-    @ApiModelProperty(value = "水串氢一次实际数据")
-    private String waterHydrogenOne;
+    @Column(name = "unit_leak_stress")
+    @ApiModelProperty(value = "单元胶线测漏压力")
+    private Double unitLeakStress;
 
-    @Column(name = "water_hydrogen_two")
-    @ApiModelProperty(value = "水串氢二次实际数据")
-    private String waterHydrogenTwo;
+    @Column(name = "unit_personnel")
+    @ApiModelProperty(value = "单元组装人员")
+    private String unitPersonnel;
 
-    @Column(name = "water_oxygen_one")
-    @ApiModelProperty(value = "水串氧一次实际数据")
-    private String waterOxygenOne;
+    @Column(name = "in_option_one")
+    @ApiModelProperty(value = "位置1")
+    private Double inOptionOne;
 
-    @Column(name = "water_oxygen_two")
-    @ApiModelProperty(value = "水串氧二次实际数据")
-    private String waterOxygenTwo;
+    @Column(name = "in_option_two")
+    @ApiModelProperty(value = "位置2")
+    private Double inOptionTwo;
 
-    @Column(name = "hydrogen_water_one")
-    @ApiModelProperty(value = "氢串水一次实际数据")
-    private String hydrogenWaterOne;
+    @Column(name = "average_inner_ruler")
+    @ApiModelProperty(value = "平均内尺寸")
+    private Double averageInnerRuler;
 
-    @Column(name = "hydrogen_water_two")
-    @ApiModelProperty(value = "氢串水二次实际数据")
-    private String hydrogenWaterTwo;
+    @Column(name = "inner_ruler_gap")
+    @ApiModelProperty(value = "内尺寸高度差")
+    private Double innerRulerGap;
 
-    @Column(name = "hydrogen_oxygen_mix_one")
-    @ApiModelProperty(value = "氢氧互串一次实际数据")
-    private String hydrogenOxygenMixOne;
+    @Column(name = "out_option_one")
+    @ApiModelProperty(value = "外尺寸1")
+    private Double outOptionOne;
 
-    @Column(name = "hydrogen_oxygen_mix_two")
-    @ApiModelProperty(value = "氢氧互串二次实际数据")
-    private String hydrogenOxygenMixTwo;
+    @Column(name = "out_option_two")
+    @ApiModelProperty(value = "外尺寸2")
+    private Double outOptionTwo;
 
-    @Column(name = "oxygen_water_one")
-    @ApiModelProperty(value = "氧串水一次实际数据")
-    private String oxygenWaterOne;
+    @Column(name = "average_outer_ruler")
+    @ApiModelProperty(value = "平均外尺寸")
+    private Double averageOuterRuler;
 
-    @Column(name = "oxygen_water_two")
-    @ApiModelProperty(value = "氧串水二次实际数据")
-    private String oxygenWaterTwo;
+    @Column(name = "outer_ruler_gap")
+    @ApiModelProperty(value = "外尺寸高度差")
+    private Double outerRulerGap;
 
-    @Column(name = "oxygen_hydrogen_mix_onw")
-    @ApiModelProperty(value = "氧氢互串一次实际数据")
-    private String oxygenHydrogenMixOne;
+    @Column(name = "spring_dimension1")
+    @ApiModelProperty(value = "弹簧尺寸1")
+    private Double springDimension1;
 
-    @Column(name = "oxygen_hydrogen_mix_two")
-    @ApiModelProperty(value = "氧氢互串二次实际数据")
-    private String oxygenHydrogenMixTwo;
+    @Column(name = "spring_dimension2")
+    @ApiModelProperty(value = "弹簧尺寸2")
+    private Double springDimension2;
 
-    @Column(name = "hydrogen_oxygen_water_one")
-    @ApiModelProperty(value = "氢氧串水一次数据数据")
-    private String hydrogenOxygenWaterOne;
+    @Column(name = "spring_dimension3")
+    @ApiModelProperty(value = "弹簧尺寸3")
+    private Double springDimension3;
 
-    @Column(name = "hydrogen_oxygen_water_two")
-    @ApiModelProperty(value = "氢氧串水二次实际数据")
-    private String hydrogenOxygenWaterTwo;
+    @Column(name = "spring_dimension_gap")
+    @ApiModelProperty(value = "弹簧尺寸差")
+    private Double springDimensionGap;
 
-    @Column(name = "leakage_detection_one")
-    @ApiModelProperty(value = "外露检测一次实际数据")
-    private String leakageDetectionOne;
+    @Column(name = "hydrogen_oxygen_mix")
+    @ApiModelProperty(value = "氢氧互串")
+    private Double hydrogenOxygenMix;
 
-    @Column(name = "leakage_detection_two")
-    @ApiModelProperty(value = "外露检测二次实际数据")
-    private String leakageDetectionTwo;
+    @Column(name = "oxygen_hydrogen_mix")
+    @ApiModelProperty(value = "氧氢互串")
+    private Double oxygenHydrogenMix;
 
-    @Column(name = "first_total_voltage_current_density600")
-    @ApiModelProperty(value = "第一次活化总电压600电密")
-    private String firstTotalVoltageCurrentDensity600;
+    @Column(name = "average_mix")
+    @ApiModelProperty(value = "互串平均值")
+    private Double averageMix;
 
-    @Column(name = "first_total_voltage_current_density700")
-    @ApiModelProperty(value = "第一次活化总电压700电密")
-    private String firstTotalVoltageCurrentDensity700;
-
-    @Column(name = "first_total_voltage_current_density800")
-    @ApiModelProperty(value = "第一次活化总电压800电密")
-    private String firstTotalVoltageCurrentDensity800;
-
-    @Column(name = "first_average_voltage_current_density600")
-    @ApiModelProperty(value = "第一次活化平均电压600电密")
-    private String firstAverageVoltageCurrentDensity600;
-
-    @Column(name = "first_average_voltage_current_density700")
-    @ApiModelProperty(value = "第一次活化平均电压700电密")
-    private String firstAverageVoltageCurrentDensity700;
-
-    @Column(name = "first_average_voltage_current_density800")
-    @ApiModelProperty(value = "第一次活化平均电压800电密")
-    private String firstAverageVoltageCurrentDensity800;
-
-    @Column(name = "first_head_voltage_current_density600")
-    @ApiModelProperty(value = "第一次活化首节电压600电密")
-    private String firstHeadVoltageCurrentDensity600;
-
-    @Column(name = "first_head_voltage_current_density700")
-    @ApiModelProperty(value = "第一次活化首节电压700电密")
-    private String firstHeadVoltageCurrentDensity700;
-
-    @Column(name = "first_head_voltage_current_density800")
-    @ApiModelProperty(value = "第一次活化首节电压800电密")
-    private String firstHeadVoltageCurrentDensity800;
-
-    @Column(name = "first_terminal_voltage_current_density600")
-    @ApiModelProperty(value = "第一次活化末节电压600电密")
-    private String firstTerminalVoltageCurrentDensity600;
-
-    @Column(name = "first_terminal_voltage_current_density700")
-    @ApiModelProperty(value = "第一次活化末节电压700电密")
-    private String firstTerminalVoltageCurrentDensity700;
-
-    @Column(name = "first_terminal_voltage_current_density800")
-    @ApiModelProperty(value = "第一次活化末节电压800电密")
-    private String firstTerminalVoltageCurrentDensity800;
-
-    @Column(name = "second_total_voltage_current_density600")
-    @ApiModelProperty(value = "第二次活化总电压600电密")
-    private String secondTotalVoltageCurrentDensity600;
-
-    @Column(name = "second_total_voltage_current_density700")
-    @ApiModelProperty(value = "第二次活化总电压700电密")
-    private String secondTotalVoltageCurrentDensity700;
-
-    @Column(name = "second_total_voltage_current_density800")
-    @ApiModelProperty(value = "第二次活化总电压800电密")
-    private String secondTotalVoltageCurrentDensity800;
-
-    @Column(name = "second_average_voltage_current_density600")
-    @ApiModelProperty(value = "第二次活化平均电压600电密")
-    private String secondAverageVoltageCurrentDensity600;
-
-    @Column(name = "second_average_voltage_current_density700")
-    @ApiModelProperty(value = "第二次活化平均电压700电密")
-    private String secondAverageVoltageCurrentDensity700;
-
-    @Column(name = "second_average_voltage_current_density800")
-    @ApiModelProperty(value = "第二次活化平均电压800电密")
-    private String secondAverageVoltageCurrentDensity800;
-
-    @Column(name = "second_head_voltage_current_density600")
-    @ApiModelProperty(value = "第二次活化首节电压600电密")
-    private String secondHeadVoltageCurrentDensity600;
-
-    @Column(name = "second_head_voltage_current_density700")
-    @ApiModelProperty(value = "第二次活化首节电压700电密")
-    private String secondHeadVoltageCurrentDensity700;
-
-    @Column(name = "second_head_voltage_current_density800")
-    @ApiModelProperty(value = "第二次活化首节电压800电密")
-    private String secondHeadVoltageCurrentDensity800;
-
-    @Column(name = "second_terminal_voltage_current_density600")
-    @ApiModelProperty(value = "第二次活化末节电压600电密")
-    private String secondTerminalVoltageCurrentDensity600;
-
-    @Column(name = "second_terminal_voltage_current_density700")
-    @ApiModelProperty(value = "第二次活化末节电压700电密")
-    private String secondTerminalVoltageCurrentDensity700;
-
-    @Column(name = "second_terminal_voltage_current_density800")
-    @ApiModelProperty(value = "第二次活化末节电压800电密")
-    private String secondTerminalVoltageCurrentDensity800;
-
-    @Column(name = "third_total_voltage_current_density600")
-    @ApiModelProperty(value = "第三次活化总电压600电密")
-    private String thirdTotalVoltageCurrentDensity600;
-
-    @Column(name = "third_total_voltage_current_density700")
-    @ApiModelProperty(value = "第三次活化总电压700电密")
-    private String thirdTotalVoltageCurrentDensity700;
-
-    @Column(name = "third_total_voltage_current_density800")
-    @ApiModelProperty(value = "第三次活化总电压800电密")
-    private String thirdTotalVoltageCurrentDensity800;
-
-    @Column(name = "third_average_voltage_current_density600")
-    @ApiModelProperty(value = "第三次活化平均电压600电密")
-    private String thirdAverageVoltageCurrentDensity600;
-
-    @Column(name = "third_average_voltage_current_density700")
-    @ApiModelProperty(value = "第三次活化平均电压700电密")
-    private String thirdAverageVoltageCurrentDensity700;
-
-    @Column(name = "third_average_voltage_current_density800")
-    @ApiModelProperty(value = "第三次活化平均电压800电密")
-    private String thirdAverageVoltageCurrentDensity800;
-
-    @Column(name = "third_head_voltage_current_density600")
-    @ApiModelProperty(value = "第三次活化首节电压600电密")
-    private String thirdHeadVoltageCurrentDensity600;
-
-    @Column(name = "third_head_voltage_current_density700")
-    @ApiModelProperty(value = "第三次活化首节电压700电密")
-    private String thirdHeadVoltageCurrentDensity700;
-
-    @Column(name = "third_head_voltage_current_density800")
-    @ApiModelProperty(value = "第三次活化首节电压800电密")
-    private String thirdHeadVoltageCurrentDensity800;
-
-    @Column(name = "third_terminal_voltage_current_density600")
-    @ApiModelProperty(value = "第三次活化末节电压600电密")
-    private String thirdTerminalVoltageCurrentDensity600;
-
-    @Column(name = "third_terminal_voltage_current_density700")
-    @ApiModelProperty(value = "第三次活化末节电压700电密")
-    private String thirdTerminalVoltageCurrentDensity700;
-
-    @Column(name = "third_terminal_voltage_current_density800")
-    @ApiModelProperty(value = "第三次活化末节电压800电密")
-    private String thirdTerminalVoltageCurrentDensity800;
+    @Column(name = "remark")
+    @ApiModelProperty(value = "备注")
+    private String remark;
 
     public void copy(ManufactureOrder source) {
         BeanUtil.copyProperties(source, this, CopyOptions.create().setIgnoreNullValue(false));

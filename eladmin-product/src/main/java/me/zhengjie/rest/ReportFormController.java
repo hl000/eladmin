@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -56,6 +57,14 @@ public class ReportFormController {
         return mergeResult;
     }
 
+
+    @GetMapping("/getAllReportFrom/download")
+    @Log("allReportFromDownload")
+    @ApiOperation("allReportFromDownload")
+    public void allReportFromDownload(HttpServletResponse response, @RequestParam String startDate, @RequestParam String endDate, String address, String invName) {
+        reportFormService.allReportFromDownload(response,startDate, endDate, address, invName);
+    }
+
     @GetMapping("/getProcessCompleted")
     @Log("getProcessCompleted")
     @ApiOperation("getProcessCompleted")
@@ -70,6 +79,14 @@ public class ReportFormController {
         return mergeResult;
     }
 
+
+    @GetMapping("/getProcessCompleted/download")
+    @Log("processCompletedDownload")
+    @ApiOperation("processCompletedDownload")
+    public void processCompletedDownload(HttpServletResponse response,@RequestParam String startDate, @RequestParam String endDate, String address, String invProcess) {
+        reportFormService.processCompletedDownload(response,startDate, endDate, address, invProcess);
+    }
+
     @GetMapping("/getRepertory")
     @Log("getRepertory库存")
     @ApiOperation("getRepertory")
@@ -82,6 +99,13 @@ public class ReportFormController {
         mergeResult.size = pageable.getPageSize();
         mergeResult.content = PageUtil.toPage(pageable.getPageNumber(), pageable.getPageSize(), semiFinishedStockDtos);
         return mergeResult;
+    }
+
+    @GetMapping("/getRepertory/download")
+    @Log("repertoryDownload")
+    @ApiOperation("repertoryDownload")
+    public void repertoryDownload(HttpServletResponse response,String cInvUnit, String adrName) {
+        reportFormService.repertoryDownload(response,cInvUnit, adrName);
     }
 
     @GetMapping("/getPitchList")

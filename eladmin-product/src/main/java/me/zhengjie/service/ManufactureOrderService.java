@@ -1,6 +1,11 @@
 package me.zhengjie.service;
 
+import me.zhengjie.domain.ElectricPipeActivation;
 import me.zhengjie.domain.ManufactureOrder;
+import me.zhengjie.domain.WorkDevice;
+import me.zhengjie.service.dto.ElectricPipeActivationDto;
+import me.zhengjie.service.dto.ElectricPipeActivationQueryCriteria;
+import me.zhengjie.service.dto.ManufactureOrderActiveDto;
 import me.zhengjie.service.dto.ManufactureOrderQueryCriteria;
 import org.springframework.data.domain.Pageable;
 
@@ -39,4 +44,17 @@ public interface ManufactureOrderService {
      * @param resources /
      */
     ManufactureOrder update(ManufactureOrder resources);
+
+
+    Object queryElectricActivation(ElectricPipeActivationQueryCriteria criteria, Pageable pageable);
+
+    ElectricPipeActivationDto updateActive(ElectricPipeActivationDto electricPipeActivation);
+
+    ElectricPipeActivationDto createActive(ElectricPipeActivationDto electricPipeActivation);
+
+    ElectricPipeActivationDto getElectricActivationById(Integer id);
+
+    List<WorkDevice> queryWorkDevice();
+
+    ManufactureOrderActiveDto getManufactureOrderActive(String stackNumber);
 }

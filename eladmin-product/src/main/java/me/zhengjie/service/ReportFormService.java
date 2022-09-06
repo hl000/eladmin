@@ -2,6 +2,7 @@ package me.zhengjie.service;
 
 import me.zhengjie.service.dto.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -20,4 +21,10 @@ public interface ReportFormService {
     List<SemiFinishedStockDto> getRepertory(String cInvUnit, String adrName);
 
     Object getPitchList();
+
+    void allReportFromDownload(HttpServletResponse response, String startDate, String endDate, String address, String invName);
+
+    void processCompletedDownload(HttpServletResponse response, String startDate, String endDate, String address, String invProcess);
+
+    void repertoryDownload(HttpServletResponse response, String cInvUnit, String adrName);
 }

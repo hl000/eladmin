@@ -56,9 +56,11 @@ public class HttpClientUtil {
     //从连接池中获取到连接的最长时间
     private static int connectionRequestTimeout = 1000;
     //数据传输的最长时间，5秒
-    private static int socketTimeout = 5*1000;
+    private static int socketTimeout = 250*1000;
+//    private static int socketTimeout = 5*1000;
     //数据传输的最长时间，25秒
-    private static int socketTimeoutLong = 25*1000;
+    private static int socketTimeoutLong = 250*1000;
+//    private static int socketTimeoutLong = 25*1000;
     //连接空闲，调整为15秒，小于kdls的20秒，单位：秒
     private static int connectionIdleTimeout = 15;
     private static CloseableHttpClient httpClient;

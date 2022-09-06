@@ -61,8 +61,6 @@ public class PersonnelServiceImpl implements PersonnelService {
         deptIds.add(1L);
         //获取所有部门id列表
         recursive(deptIds, 1L);
-
-        System.out.println(deptIds);
         List<DingDepartment> dingDepartments = new ArrayList<>();
         List<DingUser> dingUserList = new ArrayList<>();
         for (int i = 0; i < deptIds.size(); i++) {
@@ -91,7 +89,6 @@ public class PersonnelServiceImpl implements PersonnelService {
         }
 
         saveDepartmentAndUser(dingDepartments, dingUserList);
-        System.out.println(dingDepartments);
     }
 
     @Override
@@ -104,6 +101,7 @@ public class PersonnelServiceImpl implements PersonnelService {
     public void saveDepartmentAndUser(List<DingDepartment> dingDepartments, List<DingUser> dingUserList) {
         dingUserList = dingUserList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(
                 () -> new TreeSet<>(Comparator.comparing(DingUser::getUserid))), ArrayList::new));
+
         List<DingDepartment> dingDepartmentList = personnelMapper.findAllDepartment();
         List<DingUser> dingUsers = personnelMapper.findAllUser();
         for (DingDepartment dingDepartment : dingDepartments) {

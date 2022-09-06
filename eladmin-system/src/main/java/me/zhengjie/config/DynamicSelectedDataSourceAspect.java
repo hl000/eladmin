@@ -33,6 +33,9 @@ public class DynamicSelectedDataSourceAspect {
         }else if(annos.type() == DatabaseType.jpaDatasource){
             DatabaseContextHolder.setDatabaseType(DatabaseType.jpaDatasource);
             System.out.println("-------------> selected Mysql dataSource");
+        }else if(annos.type() == DatabaseType.mybatis){
+            DatabaseContextHolder.setDatabaseType(DatabaseType.mybatis);
+            System.out.println("-------------> selected First dataSource");
         }
     }
 }
