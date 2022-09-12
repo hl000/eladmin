@@ -21,39 +21,43 @@ import java.util.Objects;
 @Getter
 @Setter
 @Table(name = "electric_pipe_activation")
-    public class ElectricPipeActivation implements Serializable {
-        @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        @Column(name = "id")
-        @ApiModelProperty(value = "主键id")
-        private Integer id;
+public class ElectricPipeActivation implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    @ApiModelProperty(value = "主键id")
+    private Integer id;
 
-        @JoinColumn(name = "manufacture_order_id")
-        @ManyToOne(fetch = FetchType.EAGER)
-        private ManufactureOrder manufactureOrder;
+    @JoinColumn(name = "manufacture_order_id")
+    @ManyToOne(fetch = FetchType.EAGER)
+    private ManufactureOrder manufactureOrder;
 
-        @Column(name = "active_times")
-        @ApiModelProperty(value = "活化次数")
-        private Integer activeTimes;
+    @Column(name = "active_times")
+    @ApiModelProperty(value = "活化次数")
+    private Integer activeTimes;
 
-        @JoinColumn(name = "work_device_id")
-        @ApiModelProperty(value = "设备")
-        @ManyToOne(fetch = FetchType.EAGER)
-        private WorkDevice workDevice;
+    @JoinColumn(name = "work_device_id")
+    @ApiModelProperty(value = "设备")
+    @ManyToOne(fetch = FetchType.EAGER)
+    private WorkDevice workDevice;
 
-        @JoinColumn(name = "user_id")
-        @ApiModelProperty(value = "用户")
-        @ManyToOne(fetch = FetchType.EAGER)
-        private SysUser sysUser;
+//    @JoinColumn(name = "user_id")
+//    @ApiModelProperty(value = "用户")
+//    @ManyToOne(fetch = FetchType.EAGER)
+//    private SysUser sysUser;
 
-        @Column(name = "create_date")
-        @ApiModelProperty(value = "创建日期")
-        @CreationTimestamp
-        private Timestamp createDate;
+    @Column(name = "tester")
+    @ApiModelProperty(value = "测试人员")
+    private String tester;
 
-        @Column(name = "remark")
-        @ApiModelProperty(value = "备注")
-        private String remark;
+    @Column(name = "create_date")
+    @ApiModelProperty(value = "创建日期")
+    @CreationTimestamp
+    private Timestamp createDate;
+
+    @Column(name = "remark")
+    @ApiModelProperty(value = "备注")
+    private String remark;
 
     //    @OneToMany(mappedBy = "electricPipeActivation", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     //    private List<ElectricPipeActivationDetail> electricPipeActivationDetails;
@@ -63,7 +67,7 @@ import java.util.Objects;
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ElectricPipeActivation that = (ElectricPipeActivation) o;
-        return Objects.equals(id, that.id) && Objects.equals(activeTimes, that.activeTimes) && Objects.equals(manufactureOrder.getId(), that.manufactureOrder.getId()) && Objects.equals(workDevice.getId(), that.workDevice.getId()) && Objects.equals(sysUser.getUserId(), that.sysUser.getUserId());
+        return Objects.equals(id, that.id) && Objects.equals(activeTimes, that.activeTimes) && Objects.equals(manufactureOrder.getId(), that.manufactureOrder.getId()) && Objects.equals(workDevice.getId(), that.workDevice.getId()) && Objects.equals(tester, that.tester);
     }
 
     public void copy(ElectricPipeActivation source) {

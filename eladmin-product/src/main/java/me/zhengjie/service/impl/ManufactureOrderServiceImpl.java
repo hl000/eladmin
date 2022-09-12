@@ -63,6 +63,8 @@ public class ManufactureOrderServiceImpl implements ManufactureOrderService {
         min = min < resources.getSpringDimension3() ? min : resources.getSpringDimension3();
         resources.setSpringDimensionGap(convertDouble((max - min), "#########.#"));
         resources.setAverageMix(convertDouble((resources.getHydrogenOxygenMix() + resources.getOxygenHydrogenMix()) / 2.0, "#########.#"));
+        WorkDevice workDevice = workDeviceRepository.findById(resources.getWorkDevice().getId()).orElseGet(WorkDevice::new);
+        resources.setWorkDevice(workDevice);
         return manufactureOrderRepository.save(resources);
     }
 
@@ -82,6 +84,8 @@ public class ManufactureOrderServiceImpl implements ManufactureOrderService {
         ManufactureOrder manufactureOrder = manufactureOrderRepository.findById(resources.getId()).orElseGet(ManufactureOrder::new);
         ValidationUtil.isNull(manufactureOrder.getId(), "manufactureOrder", "id", resources.getId());
         manufactureOrder.copy(resources);
+        WorkDevice workDevice = workDeviceRepository.findById(resources.getWorkDevice().getId()).orElseGet(WorkDevice::new);
+        manufactureOrder.setWorkDevice(workDevice);
         return manufactureOrderRepository.save(manufactureOrder);
     }
 

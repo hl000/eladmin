@@ -43,10 +43,14 @@ public class ManufactureOrder {
     @ApiModelProperty(value = "活性面积")
     private Double activeArea;
 
-    @JoinColumn(name = "user_id")
+//    @JoinColumn(name = "user_id")
+//    @ApiModelProperty(value = "实验设计人")
+//    @ManyToOne(fetch = FetchType.EAGER)
+//    private SysUser experimentDesigner;
+
+    @Column(name = "experiment_designer")
     @ApiModelProperty(value = "实验设计人")
-    @ManyToOne(fetch = FetchType.EAGER)
-    private SysUser experimentDesigner;
+    private String experimentDesigner;
 
     @Column(name = "FBIP")
     @ApiModelProperty(value = "BIP编号")
@@ -83,10 +87,6 @@ public class ManufactureOrder {
     @Column(name = "stack_identification")
     @ApiModelProperty(value = "电堆新旧标识")
     private String stackIdentification;
-
-//    @Column(name = "relief_pressure")
-//    @ApiModelProperty(value = "泄压压力")
-//    private Double reliefPressure;
 
     @Column(name = "equipment_flatness")
     @ApiModelProperty(value = "设备平整度")
