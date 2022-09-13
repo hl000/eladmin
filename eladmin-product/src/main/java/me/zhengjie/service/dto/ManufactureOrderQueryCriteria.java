@@ -1,10 +1,7 @@
 package me.zhengjie.service.dto;
 
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import me.zhengjie.annotation.Query;
-
-import javax.persistence.Column;
 
 /**
  * @author HL
@@ -21,4 +18,7 @@ public class ManufactureOrderQueryCriteria {
 
     @Query
     private String FBIP;
+
+    @Query
+    private String assemblyPersonnel;
 }

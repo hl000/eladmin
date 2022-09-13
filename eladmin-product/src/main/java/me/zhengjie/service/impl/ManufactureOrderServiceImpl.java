@@ -1,14 +1,8 @@
 package me.zhengjie.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import me.zhengjie.domain.ElectricPipeActivation;
-import me.zhengjie.domain.ElectricPipeActivationDetail;
-import me.zhengjie.domain.ManufactureOrder;
-import me.zhengjie.domain.WorkDevice;
-import me.zhengjie.repository.ElectricPipeActivationDetailRepository;
-import me.zhengjie.repository.ElectricPipeActivationRepository;
-import me.zhengjie.repository.ManufactureOrderRepository;
-import me.zhengjie.repository.WorkDeviceRepository;
+import me.zhengjie.domain.*;
+import me.zhengjie.repository.*;
 import me.zhengjie.service.ManufactureOrderService;
 import me.zhengjie.service.dto.*;
 import me.zhengjie.utils.PageUtil;
@@ -38,6 +32,8 @@ public class ManufactureOrderServiceImpl implements ManufactureOrderService {
     private final ElectricPipeActivationRepository electricPipeActivationRepository;
 
     private final ElectricPipeActivationDetailRepository electricPipeActivationDetailRepository;
+
+    private final WorkGroupRepository workGroupRepository;
 
     @Override
     public Map<String, Object> queryAll(ManufactureOrderQueryCriteria criteria, Pageable pageable) {
@@ -105,9 +101,9 @@ public class ManufactureOrderServiceImpl implements ManufactureOrderService {
         List<ElectricPipeActivationDetail> electricPipeActivationDetailList = electricPipeActivationDto.getElectricPipeActivationDetailList();
         electricPipeActivationDetailList.stream().forEach(a -> {
             a.setElectricPipeActivation(electricPipeActivationResult);
-            a.setElectricity(a.getAmpereDensity() / 1000 * electricPipeActivation.getManufactureOrder().getActiveArea());
-            a.setPower(a.getElectricity() * a.getVoltage() / 1000);
-            a.setAvgvoltage(a.getVoltage() / electricPipeActivation.getManufactureOrder().getPitchNumber() * 1.0);
+//            a.setElectricity(convertDouble(a.getAmpereDensity() / 1000 * electricPipeActivation.getManufactureOrder().getActiveArea(), "#########.#"));
+//            a.setPower(convertDouble(a.getElectricity() * a.getVoltage() / 1000, "#########.#"));
+//            a.setAvgvoltage(convertDouble(a.getVoltage() / electricPipeActivation.getManufactureOrder().getPitchNumber() * 1.0, "#########.###"));
         });
 
         //处理新增
@@ -158,9 +154,9 @@ public class ManufactureOrderServiceImpl implements ManufactureOrderService {
         List<ElectricPipeActivationDetail> electricPipeActivationDetails = electricPipeActivationDto.getElectricPipeActivationDetailList();
         electricPipeActivationDetails.stream().forEach(a -> {
             a.setElectricPipeActivation(electricPipeActivation1);
-            a.setElectricity(convertDouble(a.getAmpereDensity() / 1000 * electricPipeActivation.getManufactureOrder().getActiveArea(), "#########.#"));
-            a.setPower(convertDouble(a.getElectricity() * a.getVoltage() / 1000, "#########.#"));
-            a.setAvgvoltage(convertDouble(a.getVoltage() / electricPipeActivation.getManufactureOrder().getPitchNumber() * 1.0, "#########.###"));
+//            a.setElectricity(convertDouble(a.getAmpereDensity() / 1000 * electricPipeActivation.getManufactureOrder().getActiveArea(), "#########.#"));
+//            a.setPower(convertDouble(a.getElectricity() * a.getVoltage() / 1000, "#########.#"));
+//            a.setAvgvoltage(convertDouble(a.getVoltage() / electricPipeActivation.getManufactureOrder().getPitchNumber() * 1.0, "#########.###"));
         });
         List<ElectricPipeActivationDetail> electricPipeActivationDetailList = electricPipeActivationDetailRepository.saveAll(electricPipeActivationDetails);
 
@@ -208,6 +204,11 @@ public class ManufactureOrderServiceImpl implements ManufactureOrderService {
             manufactureOrderActiveDto.setActiveTimes(electricPipeActivations.size() + 1);
         }
         return manufactureOrderActiveDto;
+    }
+
+    @Override
+    public List<WorkGroup> queryWorkGroup(WorkGroupQueryCriteria criteria) {
+        return workGroupRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder));
     }
 
     private Double convertDouble(Double source, String format) {

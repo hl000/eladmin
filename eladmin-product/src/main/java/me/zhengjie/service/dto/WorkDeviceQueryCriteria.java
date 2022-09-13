@@ -1,6 +1,7 @@
 package me.zhengjie.service.dto;
 
 import lombok.Data;
+import me.zhengjie.annotation.Query;
 
 /**
  * @author HL
@@ -9,7 +10,9 @@ import lombok.Data;
 @Data
 public class WorkDeviceQueryCriteria {
 
+    @Query
     private Integer isActive = 1;
 
+    @Query
     private String deviceType;
 }

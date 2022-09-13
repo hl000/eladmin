@@ -7,16 +7,16 @@ import lombok.extern.slf4j.Slf4j;
 import me.zhengjie.annotation.Log;
 import me.zhengjie.domain.ElectricPipeActivation;
 import me.zhengjie.domain.ManufactureOrder;
+import me.zhengjie.domain.WorkGroup;
 import me.zhengjie.service.ManufactureOrderService;
-import me.zhengjie.service.dto.ElectricPipeActivationDto;
-import me.zhengjie.service.dto.ElectricPipeActivationQueryCriteria;
-import me.zhengjie.service.dto.ManufactureOrderActiveDto;
-import me.zhengjie.service.dto.ManufactureOrderQueryCriteria;
+import me.zhengjie.service.dto.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author HL
@@ -94,4 +94,10 @@ public class ManufactureOrderController {
         return manufactureOrderService.getManufactureOrderActive(stackNumber);
     }
 
+    @GetMapping("/queryWorkGroup")
+    @Log("查询组装活化人员")
+    @ApiOperation("查询组装活化人员")
+    public List<WorkGroup> queryWorkGroup(WorkGroupQueryCriteria criteria) {
+        return manufactureOrderService.queryWorkGroup(criteria);
+    }
 }

@@ -1,12 +1,9 @@
 package me.zhengjie.service;
 
-import me.zhengjie.domain.ElectricPipeActivation;
 import me.zhengjie.domain.ManufactureOrder;
 import me.zhengjie.domain.WorkDevice;
-import me.zhengjie.service.dto.ElectricPipeActivationDto;
-import me.zhengjie.service.dto.ElectricPipeActivationQueryCriteria;
-import me.zhengjie.service.dto.ManufactureOrderActiveDto;
-import me.zhengjie.service.dto.ManufactureOrderQueryCriteria;
+import me.zhengjie.domain.WorkGroup;
+import me.zhengjie.service.dto.*;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -57,4 +54,6 @@ public interface ManufactureOrderService {
     List<WorkDevice> queryWorkDevice();
 
     ManufactureOrderActiveDto getManufactureOrderActive(String stackNumber);
+
+    List<WorkGroup> queryWorkGroup(WorkGroupQueryCriteria criteria);
 }
