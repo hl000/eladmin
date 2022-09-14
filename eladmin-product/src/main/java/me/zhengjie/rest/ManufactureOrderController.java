@@ -100,4 +100,11 @@ public class ManufactureOrderController {
     public List<WorkGroup> queryWorkGroup(WorkGroupQueryCriteria criteria) {
         return manufactureOrderService.queryWorkGroup(criteria);
     }
+
+    @GetMapping("/findAllStackNumber")
+    @Log("查询所有电堆编号")
+    @ApiOperation("查询所有电堆编号")
+    public List<String> findAllStackNumber(StackNumberQueryCriteria criteria) {
+        return manufactureOrderService.findAllStackNumber(criteria);
+    }
 }

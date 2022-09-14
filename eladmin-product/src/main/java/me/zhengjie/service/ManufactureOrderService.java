@@ -27,6 +27,8 @@ public interface ManufactureOrderService {
     List<ManufactureOrder> queryAll(ManufactureOrderQueryCriteria criteria);
 
 
+    List<String> findAllStackNumber(StackNumberQueryCriteria criteria);
+
     /**
      * 创建
      *

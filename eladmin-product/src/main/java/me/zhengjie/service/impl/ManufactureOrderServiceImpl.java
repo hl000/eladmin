@@ -47,6 +47,13 @@ public class ManufactureOrderServiceImpl implements ManufactureOrderService {
     }
 
     @Override
+    public List<String> findAllStackNumber(StackNumberQueryCriteria criteria) {
+        List<ManufactureOrder> manufactureOrders = manufactureOrderRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder));
+        List<String> stackNumbers = manufactureOrders.stream().map(a->a.getStackNumber()).collect(Collectors.toList());
+        return stackNumbers;
+    }
+
+    @Override
     public ManufactureOrder create(ManufactureOrder resources) {
         resources.setAverageInnerRuler(convertDouble((resources.getInOptionOne() + resources.getInOptionTwo()) / 2.0, "#########.#"));
         resources.setInnerRulerGap(convertDouble(Math.abs((resources.getInOptionOne() - resources.getInOptionTwo())), "#########.#"));
