@@ -42,7 +42,7 @@ public class ElectricPipeActivationDetail implements Serializable {
 
     @Column(name = "voltage")
     @ApiModelProperty(value = "总电压")
-    private Integer voltage;
+    private Double voltage;
 
     @Column(name = "power")
     @ApiModelProperty(value = "功率")
