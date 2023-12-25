@@ -53,7 +53,7 @@
     <orderEntry type="module" module-name="eladmin-plm" />
     <orderEntry type="library" name="Maven: commons-net:commons-net:3.6" level="project" />
     <orderEntry type="module" module-name="eladmin-product" />
-    <orderEntry type="module" module-name="eladmin-common" />
+    <orderEntry type="library" name="Maven: me.zhengjie:eladmin-common:2.6" level="project" />
     <orderEntry type="library" name="Maven: cn.hutool:hutool-all:5.3.4" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: com.microsoft.sqlserver:mssql-jdbc:6.4.0.jre8" level="project" />
     <orderEntry type="module-library">
@@ -70,6 +70,7 @@
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpmime:4.5.6" level="project" />
     <orderEntry type="library" name="Maven: com.squareup.okhttp3:okhttp:3.10.0" level="project" />
     <orderEntry type="library" name="Maven: com.squareup.okio:okio:1.14.0" level="project" />
+    <orderEntry type="library" name="Maven: commons-io:commons-io:2.6" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot-starter-websocket:2.1.0.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-messaging:5.1.2.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-beans:5.1.2.RELEASE" level="project" />

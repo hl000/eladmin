@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.InventoryErpMapper">
+    <select id="queryInventoryErp" resultType="me.zhengjie.domain.InventoryErp">
+
+        SELECT
+        CBO_ItemMaster.code code,
+        CBO_ItemMaster.name name,
+        CBO_ItemMaster.specs specs,
+        a.StorageInitQty storageInitQty,
+       <![CDATA[
+        CASE
+
+        WHEN a.结存 < 0 THEN
+        0 ELSE 结存
+        END balance,
+        a.入库 storage,
+        CASE
+
+        WHEN a.结存 < 0 THEN
+        a.入库 ELSE a.出库
+        END outbound,
+               ]]>
+        b.采购数量 purchase,
+        b.实到数量 actual,
+        b.实收数量 received,
+        b.未到数量 notArrived
+        FROM
+            U9CEDB.dbo.CBO_ItemMaster
+        LEFT JOIN U9CEDB.dbo.ERP_Procure b ON CBO_ItemMaster.Code = b.code
+        LEFT JOIN U9CEDB.dbo.ERP_Inventory a ON CBO_ItemMaster.Code = a.ItemInfo_ItemCode
+        WHERE
+        org = '1002212163585419'
+        <if test="code!=null and code!=''">
+            and CBO_ItemMaster.code like '%${code}%'
+        </if>
+        <if test="name!=null and name!=''">
+            and CBO_ItemMaster.name like '%${name}%'
+        </if>
+        <if test="specs!=null and specs!=''">
+            and CBO_ItemMaster.specs = #{specs}
+        </if>
+        ORDER BY
+        CBO_ItemMaster.code
+    </select>
+
+</mapper>

@@ -126,6 +126,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/api/personnel/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/device/download").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/device/iomoreimgcom").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/purchase/*").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/inventory/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/workTicket/queryAllWorkTicket").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/workTicket/queryAllUserMatch").permitAll()
                 // 自定义匿名访问所有url放行：允许匿名和带Token访问，细腻化到每个 Request 类型
                 // GET
                 .antMatchers(HttpMethod.GET, anonymousUrls.get(RequestMethodEnum.GET.getType()).toArray(new String[0])).permitAll()

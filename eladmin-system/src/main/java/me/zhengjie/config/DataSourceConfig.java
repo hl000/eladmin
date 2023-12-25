@@ -35,13 +35,21 @@ public class DataSourceConfig {
         return new DruidDataSource();
     }
 
+    @ConfigurationProperties(prefix = "spring.datasource.third")
+    @Bean("thirdDatasource")
+    public DataSource thirdDatasource() {
+        return new DruidDataSource();
+    }
+
     @Bean
     public DynamicDataSource dataSource(@Qualifier("mybatisDatasource") DataSource mybatisDatasource,
                                         @Qualifier("secondDatasource") DataSource secondDatasource,
+                                        @Qualifier("thirdDatasource") DataSource thirdDatasource,
                                         @Qualifier("jpaDatasource") DataSource jpaDatasource) {
         Map<Object, Object> targetDataSources = new HashMap<>();
         targetDataSources.put(DatabaseType.mybatis, mybatisDatasource);
         targetDataSources.put(DatabaseType.second, secondDatasource);
+        targetDataSources.put(DatabaseType.third, thirdDatasource);
         targetDataSources.put(DatabaseType.jpaDatasource, jpaDatasource);
         DynamicDataSource dataSource = new DynamicDataSource();
         dataSource.setTargetDataSources(targetDataSources);// 该方法是AbstractRoutingDataSource的方法

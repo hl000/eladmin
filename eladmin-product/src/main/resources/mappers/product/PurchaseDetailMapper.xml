@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.PurchaseDetailMapper">
+    <select id="queryPurchaseDetail" resultType="me.zhengjie.domain.PurchaseDetail">
+        select cCode
+             , aa.cInvCode
+             , bb.cInvName
+             , bb.cInvStd
+             , iQuantity
+             , cc.cOrderCode
+             , cc.cDefine8
+             , AutoID as autoId
+        from UFDATA_002_2020.dbo.rdrecords01 aa
+                 inner join UFDATA_002_2020.dbo.Inventory bb on aa.cInvCode = bb.cInvCode
+                 left join UFDATA_002_2020.dbo.rdrecord01 cc on aa.ID = cc.ID
+                 left join UFDATA_002_2020.dbo.PO_Pomain dd on dd.cPOID = cc.cOrderCode
+       <![CDATA[  where cc.cDefine8 is not null
+          and aa.AutoID > #{processNumber} ]]>
+        order by AutoID asc;
+    </select>
+
+    <select id="getProcessNumber" resultType="java.lang.Long">
+        select process_number
+        from Device_ManagerDemo.dbo.purchase_process
+        where id = 1;
+    </select>
+
+    <update id="updateProcessNumber">
+        update Device_ManagerDemo.dbo.purchase_process
+        set process_number = #{processNumber}
+        where id = 1
+    </update>
+
+    <insert id="insertPurchase" parameterType="me.zhengjie.domain.PurchaseDetail">
+        insert into Device_ManagerDemo.dbo.purchase_detail (cCode, cInvCode,cInvName,cInvStd,iQuantity,cOrderCode,cDefine8)
+        values (#{cCode,jdbcType=VARCHAR}, #{cInvCode,jdbcType=VARCHAR}, #{cInvName,jdbcType=VARCHAR},
+                #{cInvStd,jdbcType=VARCHAR}, #{iQuantity,jdbcType=INTEGER}, #{cOrderCode,jdbcType=VARCHAR},
+                #{cDefine8,jdbcType=VARCHAR})
+    </insert>
+
+    <select id="findPurchaseDetail" resultType="me.zhengjie.domain.PurchaseDetail">
+        select a.id    as id
+             , cCode
+             , cInvCode
+             , cInvName
+             , cInvStd
+             , iQuantity
+             , cOrderCode
+             , cDefine8
+             , user_id as userId
+        from Device_ManagerDemo.dbo.purchase_detail a
+                 inner join Device_ManagerDemo.dbo.sys_dingding_user b on a.cDefine8 = b.user_name
+        where a.status is null;
+    </select>
+
+    <update id="updatePurchaseDetail">
+        update Device_ManagerDemo.dbo.purchase_detail
+        set status = 'true'
+        where id = #{id}
+    </update>
+</mapper>

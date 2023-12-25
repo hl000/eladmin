@@ -63,3 +63,17 @@ mybatis:
 scheduled:
   dailyPlan-timer: "${dailyPlan-timer:0 0 3 * * ?}"
   autoManufacture-timer: "${autoManufacture-timer:0 45 23 * * ?}"
+
+ftp:
+  address: "${FTP_ADDRESS:10.10.100.235}"
+  port: "${FTP_PORT:21}"
+  username: "${FTP_USERNAME:caradmin}"
+  password: "${FTP_PASSWORD:8ZT4$9q6J}"
+  storePath: "${FTP_FILE_PATH:/files}"
+
+ftp1:
+  address: "${FTP_ADDRESS:10.10.100.235}"
+  port: "${FTP_PORT:21}"
+  username: "${FTP_USERNAME:caradmin}"
+  password: "${FTP_PASSWORD:8ZT4$9q6J}"
+  storePath: "${FTP_FILE_PATH:/temp}"

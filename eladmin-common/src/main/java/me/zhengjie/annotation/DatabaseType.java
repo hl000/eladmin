@@ -7,5 +7,5 @@ package me.zhengjie.annotation;
  * 2）DatabaseType中的变量名称就是数据库的名称
  */
 public enum DatabaseType {
-    mybatis,second,jpaDatasource
+    mybatis,second,jpaDatasource,third
 }

@@ -84,6 +84,7 @@ public class FileUtil extends cn.hutool.core.io.FileUtil {
     public static final String VIDEO = "视频";
     public static final String COMPRESS = "压缩";
     public static final String PROGRAM = "执行文件";
+    public static final String DATA = "数据文件";
     public static final String OTHER = "其他";
 
 
@@ -211,7 +212,7 @@ public class FileUtil extends cn.hutool.core.io.FileUtil {
         BigExcelWriter writer = ExcelUtil.getBigWriter(file);
         // 一次性写出内容，使用默认样式，强制输出标题
         writer.write(list, true);
-        SXSSFSheet sheet = (SXSSFSheet)writer.getSheet();
+        SXSSFSheet sheet = (SXSSFSheet) writer.getSheet();
         //上面需要强转SXSSFSheet  不然没有trackAllColumnsForAutoSizing方法
         sheet.trackAllColumnsForAutoSizing();
         //列宽自适应
@@ -234,6 +235,7 @@ public class FileUtil extends cn.hutool.core.io.FileUtil {
         String video = "avi mpg mpe mpeg asf wmv mov qt rm mp4 flv m4v webm ogv ogg";
         String image = "bmp dib pcp dif wmf gif jpg tif eps psd cdr iff tga pcd mpt png jpeg";
         String program = "exe msi";
+        String data = "dat";
         String compressed = "zip rar";
         if (image.contains(type)) {
             return IMAGE;
@@ -247,6 +249,8 @@ public class FileUtil extends cn.hutool.core.io.FileUtil {
             return COMPRESS;
         } else if (program.contains(type)) {
             return PROGRAM;
+        } else if (data.contains(type)) {
+            return DATA;
         } else {
             return OTHER;
         }

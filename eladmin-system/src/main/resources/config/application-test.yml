@@ -81,6 +81,25 @@ spring:
       testOnReturn: false
       poolPreparedStatements: false
       maxPoolPreparedStatementPerConnectionSize: 200
+    third:
+      type: com.alibaba.druid.pool.DruidDataSource
+      driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+      url: jdbc:log4jdbc:sqlserver://10.10.100.239:1433;DatabaseName=U9CEDB
+      username: ${DB_USER:sa}
+      password: ${DB_PWD:U9C.admin}
+      filters: stat
+      initialSize: 2
+      maxActive: 300
+      maxWait: 60000
+      timeBetweenEvictionRunsMillis: 60000
+      minEvictableIdleTimeMillis: 300000
+      validationQuery: SELECT 1
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+      poolPreparedStatements: false
+      maxPoolPreparedStatementPerConnectionSize: 200
+
 # 登录相关配置
 login:
   # 登录缓存
@@ -140,6 +159,10 @@ generator:
 #是否开启 swagger-ui
 swagger:
   enabled: true
+
+scheduled:
+  purchase-timer: "${purchase-timer:0 0 11 * * ?}"
+  purchase-send-timer: "${purchase-send-timer:0 0 14 * * ?}"
 
 # 文件存储路径
 file:

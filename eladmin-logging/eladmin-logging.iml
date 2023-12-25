@@ -30,7 +30,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="eladmin-common" />
+    <orderEntry type="library" name="Maven: me.zhengjie:eladmin-common:2.6" level="project" />
     <orderEntry type="library" name="Maven: cn.hutool:hutool-all:5.3.4" level="project" />
     <orderEntry type="library" name="Maven: commons-net:commons-net:3.6" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot-starter-data-jpa:2.1.0.RELEASE" level="project" />
